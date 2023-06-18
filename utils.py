@@ -3,6 +3,7 @@ import scipy.sparse as sp
 import pandas as pd
 import numpy as np
 import anndata as ad
+import networkx as nx
 
 def dense2sparse(data_path):
     '''
@@ -106,6 +107,19 @@ def combine_inter_intra_graph(inter_graph_path, intra_graph_path, n_nodes_ref, n
     col = list(col)
 
     return [row, col]
+
+
+#graph central
+def centralissimo(G):
+    centralities = []
+    centralities.append(nx.pagerank(G))
+    L = len(centralities[0])
+    Nc = len(centralities)
+    cenarray = np.zeros((Nc,L))
+    for i in range(Nc):
+        cenarray[i][list(centralities[i].keys())]=list(centralities[i].values())
+    normcen = (cenarray.astype(float)-np.min(cenarray,axis=1)[:,None])/(np.max(cenarray,axis=1)-np.min(cenarray,axis=1))[:,None]
+    return normcen
 
 
 
