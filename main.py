@@ -1,7 +1,10 @@
 import scipy.stats
 import torch
 import os
-from utils import read_data_with_mm, capsule_pd_data_to_anndata, read_data_with_csv, combine_inter_intra_graph, centralissimo, perc_for_entropy, perc_for_density
+
+import torch_geometric.data
+from utils import read_data_with_mm, capsule_pd_data_to_anndata, read_data_with_csv, combine_inter_intra_graph, \
+    centralissimo, perc_for_entropy, perc_for_density
 import anndata as ad
 import pandas as pd
 import torch.functional as F
@@ -10,6 +13,9 @@ from sklearn.metrics.pairwise import euclidean_distances
 import networkx as nx
 from torch_geometric.utils import to_dense_adj
 import numpy as np
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
+
 # Data preparation
 
 data_config = {
@@ -28,6 +34,7 @@ parameter_config = {
     'epochs': 200,
     'gcn_lr': 1e-3,
     'basef': 0.99,
+    'label_rate': 0.2,
 }
 
 root_data_path = 'experiment/Baron_Xin'
@@ -50,18 +57,17 @@ def get_anndata():
                                                n_nodes_query=len(query_label))
         adata = capsule_pd_data_to_anndata(data, label, edge_index)
 
-        # 设置好train val test mask位置
+        # 随机分层采样
+        adata.uns['train_idx'], adata.uns['val_idx'] = random_stratify_sample(ref_label.numpy())
 
-        # adata.uns['train_mask'] = [i for i in range]
-        # adata.uns['test_mask'] =
-        # adata.uns['val_mask'] =
+        # test_idx即query data的idx
+        adata.uns['test_idx'] = [len(ref_label) + i for i in range(len(query_label))]
         adata.write(os.path.join(root_data_path, 'data.h5ad'), compression="gzip")
         return adata
     elif data_config['data_mode'] == 'ann':
         '''ann data已存在'''
         adata = ad.read_hdf(data_config['anndata_path'])
         return adata
-
 
 
 def train(model, g_data):
@@ -75,11 +81,18 @@ def train(model, g_data):
     norm_centrality = centralissimo(nx.Graph(dense_adj))
 
     for epoch in parameter_config['epochs']:
+        mode.train()
+
         gamma = np.random.beta(1, 1.005 - parameter_config['basef'] ** epoch)
         alpha = beta = (1 - gamma) / 2
         optimizer.zero_grad()
         out = model(g_data.x, g_data.edge_index)
         prob = F.softmax(out).cpu().numpy()
+
+        loss = criterion(out[g_data.train_idx], g_data.y_predict[g_data.train_idx])
+        loss.backward()
+        optimizer.step()
+
         # prob是样本 * 类别
         # 这里的entropy函数计算的是一列的信息熵，所以我们要转置一下，让一列成类，计算一个样本的信息熵
         entropy = scipy.stats.entropy(prob.T)
@@ -91,20 +104,67 @@ def train(model, g_data):
         norm_density = [perc_for_entropy(density, i) for i in range(len(density))]
         finalweight = alpha * norm_entropy + beta * norm_density + gamma * norm_centrality
 
-        # 把train, val和test数据排除
-        finalweight[g_data.train_mask + g_data.val_mask + g_data.test_mask] = -100
+        # 把train, val的数据排除
+        finalweight[g_data.train_idx + g_data.val_idx] = -100
         select = np.argmax(finalweight)
-        g_data.train_mask.append(select)
+
+        # 每一个epoch就增加一个节点，前提是预测的准确率大于设置的置信度
+        # 不考虑原论文的budget，感觉没用
+        if prob[select].max() >= 0.6 and select not in g_data.train_idx:
+            g_data.train_idx.append(select)
+            # 注意y_predict是tensor
+            g_data.y_predict[select] = prob[select].argmax()
+            print("Epoch {:}: pick up one node to the training set!".format(epoch))
+
+            # validation
+        model.eval()
+        val_pred = out[g_data.val_idx].argmax()
+        val_acc = accuracy_score(val_pred.cpu().numpy(), g_data.y_true[g_data.val_idx].cpu().numpy())
+        val_loss = criterion(out[g_data.val_idx], g_data.y_true[g_data.val_idx])
+
+        print("Epoch {:}: traing loss: {:.3f}, val_loss {:.3f}, val_acc {:.3f}".format(epoch, loss, val_loss, val_acc))
+        # todo: 加入早停法
+
+        return model
 
 
+def test(model, g_data):
+    model.eval()
+    out = model(g_data.x, g_data.edge_index)
+    test_pred = out[g_data.test_idx].argmax()
+    test_acc = accuracy_score(test_pred.cpu().numpy(), g_data.y_true[g_data.test_idx].cpu().numpy())
+    test_loss = criterion(out[g_data.test_idx], g_data.y_true[g_data.test_idx])
+    print("test acc {:.3f}".format(test_acc))
 
-        loss = criterion(out[g_data.train_mask], g_data.y[g_data.train_mask])
-        loss.backward()
-        optimizer.step()
 
-        print("Epoch {:}, training loss is {:.3f}, validation loss is {:.3f}, ")
+def random_stratify_sample(ref_labels):
+    # 对每个类都进行随机采样，分成train, val
+    # 这地方要保证train的数据是从0开始计数的,
+    label_set = set(list(ref_labels))
+    train_idx = []
+    val_idx = []
+    for c in label_set:
+        idx = np.where(ref_labels == c)[0]
+        np.random.shuffle(idx)
+        train_num = int(0.8 * len(ref_labels))
+        train_idx += list(idx[:train_num])
+        val_idx += list(idx[train_num:])
+    return train_idx, val_idx
 
 
+# 数据准备
 adata = get_anndata()
 
+# g_data准备
+# 将所有的adata的数据转为tensor
+g_data = torch_geometric.data.Data(x=torch.tensor(adata.x, dtype=torch.float),
+                                   edge_index=torch.tensor(adata.uns['edge_index'], dtype=torch.long))
+
+#todo: additional information
+y_true = adata.obs['cell_type']
+y_predict = adata.obs['cell_type']
+
+
+
+g_data.y_true = torch.tensor()
 
