@@ -122,5 +122,10 @@ def centralissimo(G):
     return normcen
 
 
+# calculate the percentage of elements smaller than the k-th element
+def perc_for_entropy(input, k):
+    return sum([1 if i else 0 for i in input < input[k]]) / float(len(input))
 
 
+# calculate the percentage of elements larger than the k-th element
+def perc_for_density(input, k): return sum([1 if i else 0 for i in input > input[k]]) / float(len(input))

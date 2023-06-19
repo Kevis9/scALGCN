@@ -1,7 +1,7 @@
 import scipy.stats
 import torch
 import os
-from utils import read_data_with_mm, capsule_pd_data_to_anndata, read_data_with_csv, combine_inter_intra_graph, centralissimo
+from utils import read_data_with_mm, capsule_pd_data_to_anndata, read_data_with_csv, combine_inter_intra_graph, centralissimo, perc_for_entropy, perc_for_density
 import anndata as ad
 import pandas as pd
 import torch.functional as F
@@ -9,7 +9,7 @@ from sklearn.cluster import KMeans
 from sklearn.metrics.pairwise import euclidean_distances
 import networkx as nx
 from torch_geometric.utils import to_dense_adj
-
+import numpy as np
 # Data preparation
 
 data_config = {
@@ -86,9 +86,18 @@ def train(model, g_data):
         kmeans = KMeans(n_clusters=g_data.NCL, random_state=0).fit(prob)
         ed_score = euclidean_distances(prob, kmeans.cluster_centers_)
         density = np.min(ed_score, axis=1)
+        # entropy和density的norm: 计算样本中的百分位数（因为只需要比较样本之间的分数即可）
+        norm_entropy = [perc_for_entropy(entropy, i) for i in range(len(entropy))]
+        norm_density = [perc_for_entropy(density, i) for i in range(len(density))]
+        finalweight = alpha * norm_entropy + beta * norm_density + gamma * norm_centrality
 
-        # todo : 还需要对density和entropy做Normalization
-        
+        # 把train, val和test数据排除
+        finalweight[g_data.train_mask + g_data.val_mask + g_data.test_mask] = -100
+        select = np.argmax(finalweight)
+        g_data.train_mask.append(select)
+
+
+
         loss = criterion(out[g_data.train_mask], g_data.y[g_data.train_mask])
         loss.backward()
         optimizer.step()
