@@ -23,7 +23,7 @@ def capsule_pd_data_to_anndata(data, label, edge_index):
     adata = ad.AnnData(sp.coo_matrix(data.to_numpy()))
     adata.obs_names = data.index.tolist()
     adata.var_names = data.columns.tolist()
-    adata.obs['cell_type'] = label.iloc[:, 0].tolist()
+    adata.obs['cell_type'] = label.iloc[:, 0].numpy()
     adata.uns['edge_index'] = edge_index
     return adata
 
@@ -106,7 +106,7 @@ def combine_inter_intra_graph(inter_graph_path, intra_graph_path, n_nodes_ref, n
     row = list(row)
     col = list(col)
 
-    return [row, col]
+    return np.array([row, col])
 
 
 #graph central

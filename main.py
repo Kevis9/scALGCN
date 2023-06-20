@@ -3,8 +3,10 @@ import torch
 import os
 
 import torch_geometric.data
-from utils import read_data_with_mm, capsule_pd_data_to_anndata, read_data_with_csv, combine_inter_intra_graph, \
+from utils import capsule_pd_data_to_anndata, combine_inter_intra_graph, \
     centralissimo, perc_for_entropy, perc_for_density
+
+from model import GCN
 import anndata as ad
 import pandas as pd
 import torch.functional as F
@@ -14,10 +16,10 @@ import networkx as nx
 from torch_geometric.utils import to_dense_adj
 import numpy as np
 from sklearn.metrics import accuracy_score
-from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
 
-# Data preparation
 
+# device = 'gpu' if torch.device
 data_config = {
     'ref_data_path': 'ref_data',
     'query_data_path': 'query_data',
@@ -81,7 +83,7 @@ def train(model, g_data):
     norm_centrality = centralissimo(nx.Graph(dense_adj))
 
     for epoch in parameter_config['epochs']:
-        mode.train()
+        model.train()
 
         gamma = np.random.beta(1, 1.005 - parameter_config['basef'] ** epoch)
         alpha = beta = (1 - gamma) / 2
@@ -101,7 +103,7 @@ def train(model, g_data):
         density = np.min(ed_score, axis=1)
         # entropy和density的norm: 计算样本中的百分位数（因为只需要比较样本之间的分数即可）
         norm_entropy = [perc_for_entropy(entropy, i) for i in range(len(entropy))]
-        norm_density = [perc_for_entropy(density, i) for i in range(len(density))]
+        norm_density = [perc_for_density(density, i) for i in range(len(density))]
         finalweight = alpha * norm_entropy + beta * norm_density + gamma * norm_centrality
 
         # 把train, val的数据排除
@@ -133,7 +135,6 @@ def test(model, g_data):
     out = model(g_data.x, g_data.edge_index)
     test_pred = out[g_data.test_idx].argmax()
     test_acc = accuracy_score(test_pred.cpu().numpy(), g_data.y_true[g_data.test_idx].cpu().numpy())
-    test_loss = criterion(out[g_data.test_idx], g_data.y_true[g_data.test_idx])
     print("test acc {:.3f}".format(test_acc))
 
 
@@ -160,11 +161,18 @@ adata = get_anndata()
 g_data = torch_geometric.data.Data(x=torch.tensor(adata.x, dtype=torch.float),
                                    edge_index=torch.tensor(adata.uns['edge_index'], dtype=torch.long))
 
-#todo: additional information
+
 y_true = adata.obs['cell_type']
-y_predict = adata.obs['cell_type']
+label_encoder = LabelEncoder()
+y_true = label_encoder.fit_transform(y_true)
 
+g_data.y_true = torch.tensor(y_true, dtype=torch.long)
+g_data.y_predict = torch.tensor(y_true, dtype=torch.long)
+g_data.train_idx = adata.uns['train_idx']
+g_data.val_idx = adata.uns['val_idx']
+g_data.test_idx = adata.uns['test_idx']
+g_data.NCL = len(set(adata.obs['cell_type'][adata.uns['train_idx']]))
 
+model = GCN(input_dim=g_data.x.shape[1], hidden_units=parameter_config['gcn_hidden_units'], output_dim=g_data.NCL)
 
-g_data.y_true = torch.tensor()
-
+train(model, g_data)
