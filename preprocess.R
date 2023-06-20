@@ -142,12 +142,12 @@ main <- function(ref_data_path, query_data_path, ref_label_path, ref_save_path, 
 
 args = commandArgs(trailingOnly = TRUE)
 base_path = args[[1]]
-ref_data_path = paste(base_path, 'raw_data' ,'ref', 'data_1.csv', sep='/')
-query_data_path = paste(base_path, 'raw_data', 'query', 'data_1.csv', sep='/')
-ref_label_path = paste(base_path, 'raw_data', 'ref', 'label_1.csv', sep='/')
+ref_data_path = paste(base_path, 'raw_data' , 'ref_data.csv', sep='/')
+query_data_path = paste(base_path, 'raw_data', 'query_data1.csv', sep='/')
+ref_label_path = paste(base_path, 'raw_data','ref_label.csv', sep='/')
 
-ref_save_path = paste(base_path, 'data', 'ref', 'data_1.csv',sep='/')
-query_save_path = paste(base_path, 'data', 'query', 'data_1.csv', sep='/')
+ref_save_path = paste(base_path, 'data', 'ref_data.csv',sep='/')
+query_save_path = paste(base_path, 'data', 'query_data.csv', sep='/')
 
 print("Path is")
 print(base_path)

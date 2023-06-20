@@ -39,7 +39,7 @@ parameter_config = {
     'label_rate': 0.2,
 }
 
-root_data_path = 'experiment/Baron_Xin'
+root_data_path = 'experiment/baron_xin/data'
 for key in data_config:
     if "path" in key:
         data_config[key] = os.path.join(root_data_path, data_config[key])
@@ -60,7 +60,7 @@ def get_anndata():
         adata = capsule_pd_data_to_anndata(data, label, edge_index)
 
         # 随机分层采样
-        adata.uns['train_idx'], adata.uns['val_idx'] = random_stratify_sample(ref_label.numpy())
+        adata.uns['train_idx'], adata.uns['val_idx'] = random_stratify_sample(ref_label.numpy(), 0.8)
 
         # test_idx即query data的idx
         adata.uns['test_idx'] = [len(ref_label) + i for i in range(len(query_label))]
@@ -138,7 +138,7 @@ def test(model, g_data):
     print("test acc {:.3f}".format(test_acc))
 
 
-def random_stratify_sample(ref_labels):
+def random_stratify_sample(ref_labels, train_size):
     # 对每个类都进行随机采样，分成train, val
     # 这地方要保证train的数据是从0开始计数的,
     label_set = set(list(ref_labels))
@@ -147,7 +147,7 @@ def random_stratify_sample(ref_labels):
     for c in label_set:
         idx = np.where(ref_labels == c)[0]
         np.random.shuffle(idx)
-        train_num = int(0.8 * len(ref_labels))
+        train_num = int(train_size * len(ref_labels))
         train_idx += list(idx[:train_num])
         val_idx += list(idx[train_num:])
     return train_idx, val_idx
@@ -174,6 +174,6 @@ g_data.NCL = len(set(adata.obs['cell_type'][adata.uns['train_idx']]))
 label_rate = [0.1, 0.2, 0.3, 0.4, 0.5]
 for rate in label_rate:
     #todo: 对于随机性实验，为了严谨考虑，要多做几组
-    g_data.train_idx = adata.uns['train_idx'][:int(rate*len(adata.uns['train_idx']))]
+    g_data.train_idx, _ = random_stratify_sample(y_true[adata.uns['train_idx']], rate)
     model = GCN(input_dim=g_data.x.shape[1], hidden_units=parameter_config['gcn_hidden_units'], output_dim=g_data.NCL)
     train(model, g_data)
