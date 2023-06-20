@@ -165,14 +165,15 @@ g_data = torch_geometric.data.Data(x=torch.tensor(adata.x, dtype=torch.float),
 y_true = adata.obs['cell_type']
 label_encoder = LabelEncoder()
 y_true = label_encoder.fit_transform(y_true)
-
 g_data.y_true = torch.tensor(y_true, dtype=torch.long)
 g_data.y_predict = torch.tensor(y_true, dtype=torch.long)
-g_data.train_idx = adata.uns['train_idx']
 g_data.val_idx = adata.uns['val_idx']
 g_data.test_idx = adata.uns['test_idx']
 g_data.NCL = len(set(adata.obs['cell_type'][adata.uns['train_idx']]))
 
-model = GCN(input_dim=g_data.x.shape[1], hidden_units=parameter_config['gcn_hidden_units'], output_dim=g_data.NCL)
-
-train(model, g_data)
+label_rate = [0.1, 0.2, 0.3, 0.4, 0.5]
+for rate in label_rate:
+    #todo: 对于随机性实验，为了严谨考虑，要多做几组
+    g_data.train_idx = adata.uns['train_idx'][:int(rate*len(adata.uns['train_idx']))]
+    model = GCN(input_dim=g_data.x.shape[1], hidden_units=parameter_config['gcn_hidden_units'], output_dim=g_data.NCL)
+    train(model, g_data)
