@@ -130,10 +130,10 @@ main <- function(ref_data_path, query_data_path, ref_label_path, ref_save_path, 
 
     graphs <- suppressWarnings(GenerateGraph(Dat1=sel.ref_data,Dat2=sel.query_data,
                                                  Lab1=ref_label,K=10,
-                                                 check.unknown=false))
+                                                 check.unknown=FALSE))
 
-    write.csv(graphs[[1]],file=paste(ref_save_path, 'inter_graph.csv'), quote=F,row.names=T)
-    write.csv(graphs[[2]],file=paste(query_save_path, 'intra_graph.csv'),quote=F,row.names=T)
+    write.csv(graphs[[1]],file=paste(paste(base_path, 'data' , 'inter_graph.csv', sep='/')), quote=F,row.names=T)
+    write.csv(graphs[[2]],file=paste(paste(base_path, 'data' , 'intra_graph.csv', sep='/')),quote=F,row.names=T)
     write.csv(new.ref_data, file=ref_save_path, row.names=TRUE)
     write.csv(new.query_data, file=query_save_path, row.names=TRUE)
 
@@ -143,7 +143,7 @@ main <- function(ref_data_path, query_data_path, ref_label_path, ref_save_path, 
 args = commandArgs(trailingOnly = TRUE)
 base_path = args[[1]]
 ref_data_path = paste(base_path, 'raw_data' , 'ref_data.csv', sep='/')
-query_data_path = paste(base_path, 'raw_data', 'query_data1.csv', sep='/')
+query_data_path = paste(base_path, 'raw_data', 'query_data.csv', sep='/')
 ref_label_path = paste(base_path, 'raw_data','ref_label.csv', sep='/')
 
 ref_save_path = paste(base_path, 'data', 'ref_data.csv',sep='/')

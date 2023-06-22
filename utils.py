@@ -20,10 +20,10 @@ def capsule_pd_data_to_anndata(data, label, edge_index):
     :param edge_index: COO format [[row...], [col...]]
     :return:
     '''
-    adata = ad.AnnData(sp.coo_matrix(data.to_numpy()))
+    adata = ad.AnnData(data.to_numpy())
     adata.obs_names = data.index.tolist()
     adata.var_names = data.columns.tolist()
-    adata.obs['cell_type'] = label.iloc[:, 0].numpy()
+    adata.obs['cell_type'] = label.iloc[:, 0].to_numpy()
     adata.uns['edge_index'] = edge_index
     return adata
 
@@ -88,13 +88,13 @@ def combine_inter_intra_graph(inter_graph_path, intra_graph_path, n_nodes_ref, n
     intra_graph = pd.read_csv(intra_graph_path, index_col=0)
 
     # 先对cell2的数目做一个映射
-    inter_graph['cell2'] += n_nodes_ref
-    intra_graph['cell1'] += n_nodes_ref
-    intra_graph['cell2'] += n_nodes_ref
+    inter_graph['V2'] += n_nodes_ref
+    intra_graph['V1'] += n_nodes_ref
+    intra_graph['V2'] += n_nodes_ref
 
     # 获取row和col
-    row = inter_graph['cell1'].tolist() + intra_graph['cell1'].tolist()
-    col = inter_graph['cell2'].tolist() + intra_graph['cell2'].tolist()
+    row = inter_graph['V1'].tolist() + intra_graph['V1'].tolist()
+    col = inter_graph['V2'].tolist() + intra_graph['V2'].tolist()
 
     # 构建一个adj矩阵（保证是对称矩阵）
     adj = np.identity(n_nodes_ref+n_nodes_query)
