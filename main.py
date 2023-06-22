@@ -73,7 +73,7 @@ def get_anndata():
         return adata
 
 
-def train(model, g_data):
+def train(model, g_data, select_mode):
     model.train()
     model.to(device)
     g_data.to(device)
@@ -117,7 +117,7 @@ def train(model, g_data):
 
         # 每一个epoch就增加一个节点，前提是预测的准确率大于设置的置信度
         # 不考虑原论文的budget，感觉没用
-        if prob[select].max() >= 0.6 and select not in g_data.train_idx:
+        if select_mode and prob[select].max() >= 0.6 and select not in g_data.train_idx:
             g_data.train_idx.append(select)
             # 注意y_predict是tensor
             g_data.y_predict[select] = prob[select].argmax()
@@ -144,7 +144,7 @@ def test(model, g_data):
     test_true = g_data.y_true[g_data.test_idx].cpu().numpy()
     test_acc = accuracy_score(test_true, test_pred)
     print("test acc {:.3f}".format(test_acc))
-
+    return test_acc
 
 def random_stratify_sample(ref_labels, train_size):
     # 对每个类都进行随机采样，分成train, val
@@ -183,10 +183,28 @@ g_data.test_idx = adata.uns['test_idx']
 g_data.NCL = len(set(adata.obs['cell_type'][adata.uns['train_idx']]))
 
 label_rate = [0.01, 0.05, 0.1, 0.15, 0.2]
+
+ours_acc = []
+scGCN_acc = []
 for rate in label_rate:
     #todo: 对于随机性实验，为了严谨考虑，要多做几组
     g_data.train_idx, _ = random_stratify_sample(y_true[adata.uns['train_idx']], rate)
     model = GCN(input_dim=g_data.x.shape[1], hidden_units=parameter_config['gcn_hidden_units'], output_dim=g_data.NCL)
-    train(model, g_data)
-    test(model, g_data)
-    
+    train(model, g_data, select_mode=True)
+    test_acc = test(model, g_data)
+    ours_acc.append(test_acc)
+
+    model = GCN(input_dim=g_data.x.shape[1], hidden_units=parameter_config['gcn_hidden_units'], output_dim=g_data.NCL)
+    train(model, g_data, select_mode=False)
+    test_acc = test(model, g_data)
+    ours_acc.append(test_acc)
+
+
+print("ours")
+print(ours_acc)
+print("scGCN")
+print(scGCN_acc)
+
+
+
+
