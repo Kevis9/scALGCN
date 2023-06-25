@@ -77,6 +77,7 @@ def train(model, g_data, select_mode):
     model.train()
     model.to(device)
     g_data.to(device)
+    print(device)
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(),
                                  lr=parameter_config['gcn_lr'],
@@ -150,7 +151,6 @@ def random_stratify_sample(ref_labels, train_size):
     # 对每个类都进行随机采样，分成train, val
     # 这地方要保证train的数据是从0开始计数的,
     # print(ref_labels.squeeze())
-    
     label_set = set(list(ref_labels.squeeze()))
     train_idx = []
     val_idx = []
@@ -184,25 +184,33 @@ g_data.NCL = len(set(adata.obs['cell_type'][adata.uns['train_idx']]))
 
 label_rate = [0.01, 0.05, 0.1, 0.15, 0.2]
 
-ours_acc = []
-scGCN_acc = []
-for rate in label_rate:
-    #todo: 对于随机性实验，为了严谨考虑，要多做几组
-    g_data.train_idx, _ = random_stratify_sample(y_true[adata.uns['train_idx']], rate)
-    model = GCN(input_dim=g_data.x.shape[1], hidden_units=parameter_config['gcn_hidden_units'], output_dim=g_data.NCL)
-    train(model, g_data, select_mode=True)
-    test_acc = test(model, g_data)
-    ours_acc.append(test_acc)
-    # check
-    print("ours train idx")
-    print(len(g_data.train_idx))
-    model = GCN(input_dim=g_data.x.shape[1], hidden_units=parameter_config['gcn_hidden_units'], output_dim=g_data.NCL)
-    train(model, g_data, select_mode=False)
+ave_ours_acc = []
+ave_scGCN_acc = []
 
-    test_acc = test(model, g_data)
-    scGCN_acc.append(test_acc)
-    print("ours train idx")
-    print(len(g_data.train_idx))
+for rate in label_rate:
+    ours_acc = []
+    scGCN_acc = []
+
+    for i in range(10):
+        g_data.train_idx, _ = random_stratify_sample(y_true[adata.uns['train_idx']], rate)
+        model = GCN(input_dim=g_data.x.shape[1], hidden_units=parameter_config['gcn_hidden_units'], output_dim=g_data.NCL)
+        train(model, g_data, select_mode=True)
+        test_acc = test(model, g_data)
+        ours_acc.append(test_acc)
+        # check
+        print("ours train idx")
+        print(len(g_data.train_idx))
+        model = GCN(input_dim=g_data.x.shape[1], hidden_units=parameter_config['gcn_hidden_units'], output_dim=g_data.NCL)
+        train(model, g_data, select_mode=False)
+
+        test_acc = test(model, g_data)
+        scGCN_acc.append(test_acc)
+        print("ours train idx")
+        print(len(g_data.train_idx))
+
+    ave_ours_acc.append(sum(ours_acc)/len(ours_acc))
+    ave_scGCN_acc.append(sum(scGCN_acc)/ken(scGCN_acc))
+
 
 print("ours")
 print(ours_acc)
