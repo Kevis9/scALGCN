@@ -150,7 +150,7 @@ def random_stratify_sample(ref_labels, train_size):
     # 对每个类都进行随机采样，分成train, val
     # 这地方要保证train的数据是从0开始计数的,
     # print(ref_labels.squeeze())
-
+    
     label_set = set(list(ref_labels.squeeze()))
     train_idx = []
     val_idx = []
@@ -193,12 +193,16 @@ for rate in label_rate:
     train(model, g_data, select_mode=True)
     test_acc = test(model, g_data)
     ours_acc.append(test_acc)
-
+    # check
+    print("ours train idx")
+    print(len(g_data.train_idx))
     model = GCN(input_dim=g_data.x.shape[1], hidden_units=parameter_config['gcn_hidden_units'], output_dim=g_data.NCL)
     train(model, g_data, select_mode=False)
-    test_acc = test(model, g_data)
-    ours_acc.append(test_acc)
 
+    test_acc = test(model, g_data)
+    scGCN_acc.append(test_acc)
+    print("ours train idx")
+    print(len(g_data.train_idx))
 
 print("ours")
 print(ours_acc)
