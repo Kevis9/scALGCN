@@ -34,10 +34,10 @@ data_config = {
 
 parameter_config = {
     'gcn_hidden_units': 256,
-    'epochs': 100,
+    'epochs': 50,
     'gcn_lr': 1e-3,
     'basef': 0.99,
-    'label_rate': 0.2,
+    'k_select': 5,
 }
 
 root_data_path = data_config['root_path']
@@ -77,7 +77,6 @@ def train(model, g_data, select_mode):
     model.to(device)
     g_data.to(device)
     model.train()
-
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(),
                                  lr=parameter_config['gcn_lr'],
@@ -114,11 +113,11 @@ def train(model, g_data, select_mode):
 
         # 把train, val的数据排除
         finalweight[g_data.train_idx + g_data.val_idx] = -100
-        select = np.argmax(finalweight)
-
+        select = np.argpartion(finalweight, -parameter_config['k_select'])[-parameter_config['k_select']:]
+        # select = np.argmax(finalweight)
         # 每一个epoch就增加一个节点，前提是预测的准确率大于设置的置信度
         # 不考虑原论文的budget，感觉没用
-        if select_mode and prob[select].max() >= 0.6 and select not in g_data.train_idx:
+        if select_mode and select not in g_data.train_idx:
             g_data.train_idx.append(select)
             # 注意y_predict是tensor
             g_data.y_predict[select] = prob[select].argmax()
@@ -126,7 +125,7 @@ def train(model, g_data, select_mode):
 
             # validation
         model.eval()
-        #做一个detach
+        # 做一个detach
         out = out.detach()
         val_pred = torch.argmax(out[g_data.val_idx], dim=1).cpu().numpy()
         val_true = g_data.y_true[g_data.val_idx].cpu().numpy()
@@ -146,6 +145,7 @@ def test(model, g_data):
     test_acc = accuracy_score(test_true, test_pred)
     print("test acc {:.3f}".format(test_acc))
     return test_acc
+
 
 def random_stratify_sample(ref_labels, train_size):
     # 对每个类都进行随机采样，分成train, val
@@ -172,7 +172,6 @@ adata = get_anndata()
 g_data = torch_geometric.data.Data(x=torch.tensor(adata.X, dtype=torch.float),
                                    edge_index=torch.tensor(adata.uns['edge_index'], dtype=torch.long))
 
-
 y_true = adata.obs['cell_type']
 label_encoder = LabelEncoder()
 y_true = label_encoder.fit_transform(y_true)
@@ -180,43 +179,31 @@ g_data.y_true = torch.tensor(y_true, dtype=torch.long)
 g_data.y_predict = torch.tensor(y_true, dtype=torch.long)
 g_data.val_idx = adata.uns['val_idx']
 g_data.test_idx = adata.uns['test_idx']
+g_data.train_idx = adata.uns['train_idx']
 g_data.NCL = len(set(adata.obs['cell_type'][adata.uns['train_idx']]))
 
-label_rate = [0.001, 0.005, 0.01]
 
-ave_ours_acc = []
-ave_scGCN_acc = []
+our_acc = []
+scGCN_acc = []
 
-for rate in label_rate:
-    ours_acc = []
-    scGCN_acc = []
 
-    for i in range(10):
-        g_data.train_idx, _ = random_stratify_sample(y_true[adata.uns['train_idx']], rate)
-        model = GCN(input_dim=g_data.x.shape[1], hidden_units=parameter_config['gcn_hidden_units'], output_dim=g_data.NCL)
-        train(model, g_data, select_mode=True)
-        test_acc = test(model, g_data)
-        ours_acc.append(test_acc)
-        # check
-        print("ours train idx")
-        print(len(g_data.train_idx))
-        model = GCN(input_dim=g_data.x.shape[1], hidden_units=parameter_config['gcn_hidden_units'], output_dim=g_data.NCL)
-        train(model, g_data, select_mode=False)
+# ours
+model = GCN(input_dim=g_data.x.shape[1], hidden_units=parameter_config['gcn_hidden_units'],
+            output_dim=g_data.NCL)
 
-        test_acc = test(model, g_data)
-        scGCN_acc.append(test_acc)
-        print("ours train idx")
-        print(len(g_data.train_idx))
+train(model, g_data, select_mode=True)
+test_acc = test(model, g_data)
+ours_acc.append(test_acc)
 
-    ave_ours_acc.append(sum(ours_acc)/len(ours_acc))
-    ave_scGCN_acc.append(sum(scGCN_acc)/len(scGCN_acc))
-
+# scGCN
+model = GCN(input_dim=g_data.x.shape[1], hidden_units=parameter_config['gcn_hidden_units'],
+                    output_dim=g_data.NCL)
+train(model, g_data, select_mode=False)
+test_acc = test(model, g_data)
+scGCN_acc.append(test_acc)
 
 print("ours")
-print(ave_ours_acc)
-print("scGCN")
-print(ave_scGCN_acc)
+print(ours_acc)
 
-
-
-
+print("scGCN_acc")
+print(scGCN_acc)
