@@ -34,7 +34,7 @@ data_config = {
 
 parameter_config = {
     'gcn_hidden_units': 256,
-    'epochs': 20,
+    'epochs': 100,
     'gcn_lr': 1e-3,
     'basef': 0.99,
     'label_rate': 0.2,
@@ -74,10 +74,10 @@ def get_anndata():
 
 
 def train(model, g_data, select_mode):
-    model.train()
     model.to(device)
     g_data.to(device)
-    print(device)
+    model.train()
+
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(),
                                  lr=parameter_config['gcn_lr'],
@@ -182,7 +182,7 @@ g_data.val_idx = adata.uns['val_idx']
 g_data.test_idx = adata.uns['test_idx']
 g_data.NCL = len(set(adata.obs['cell_type'][adata.uns['train_idx']]))
 
-label_rate = [0.01, 0.05, 0.1, 0.15, 0.2]
+label_rate = [0.001, 0.005, 0.01]
 
 ave_ours_acc = []
 ave_scGCN_acc = []
@@ -209,13 +209,13 @@ for rate in label_rate:
         print(len(g_data.train_idx))
 
     ave_ours_acc.append(sum(ours_acc)/len(ours_acc))
-    ave_scGCN_acc.append(sum(scGCN_acc)/ken(scGCN_acc))
+    ave_scGCN_acc.append(sum(scGCN_acc)/len(scGCN_acc))
 
 
 print("ours")
-print(ours_acc)
+print(ave_ours_acc)
 print("scGCN")
-print(scGCN_acc)
+print(ave_scGCN_acc)
 
 
 
