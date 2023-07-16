@@ -21,7 +21,7 @@ from sklearn.preprocessing import LabelEncoder
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 data_config = {
-    'root_path': 'experiment/baron_xin/data',
+    'root_path': 'experiment/cel_seq_drop_seq/data',
     'ref_data_path': 'ref_data.csv',
     'query_data_path': 'query_data.csv',
     'ref_label_path': 'ref_label.csv',
@@ -33,11 +33,11 @@ data_config = {
 }
 
 parameter_config = {
-    'gcn_hidden_units': 256,
+    'gcn_hidden_units': 32,
     'epochs': 50,
     'gcn_lr': 1e-3,
     'basef': 0.99,
-    'k_select': 5,
+    'k_select': 1,
 }
 
 root_data_path = data_config['root_path']
@@ -113,15 +113,17 @@ def train(model, g_data, select_mode):
 
         # 把train, val的数据排除
         finalweight[g_data.train_idx + g_data.val_idx] = -100
-        select = np.argpartion(finalweight, -parameter_config['k_select'])[-parameter_config['k_select']:]
+        select = np.argpartition(finalweight, -parameter_config['k_select'])[-parameter_config['k_select']:]
         # select = np.argmax(finalweight)
         # 每一个epoch就增加一个节点，前提是预测的准确率大于设置的置信度
         # 不考虑原论文的budget，感觉没用
-        if select_mode and select not in g_data.train_idx:
-            g_data.train_idx.append(select)
-            # 注意y_predict是tensor
-            g_data.y_predict[select] = prob[select].argmax()
-            print("Epoch {:}: pick up one node to the training set!".format(epoch))
+        if select_mode:
+            for node in select:
+                if node not in g_data.train_idx:
+                    g_data.train_idx.append(node)
+                    # 注意y_predict是tensor
+                    g_data.y_predict[node] = prob[node].argmax()
+                    print("Epoch {:}: pick up one node to the training set!".format(epoch))
 
             # validation
         model.eval()
@@ -182,10 +184,8 @@ g_data.test_idx = adata.uns['test_idx']
 g_data.train_idx = adata.uns['train_idx']
 g_data.NCL = len(set(adata.obs['cell_type'][adata.uns['train_idx']]))
 
-
-our_acc = []
+ours_acc = []
 scGCN_acc = []
-
 
 # ours
 model = GCN(input_dim=g_data.x.shape[1], hidden_units=parameter_config['gcn_hidden_units'],
@@ -197,7 +197,7 @@ ours_acc.append(test_acc)
 
 # scGCN
 model = GCN(input_dim=g_data.x.shape[1], hidden_units=parameter_config['gcn_hidden_units'],
-                    output_dim=g_data.NCL)
+            output_dim=g_data.NCL)
 train(model, g_data, select_mode=False)
 test_acc = test(model, g_data)
 scGCN_acc.append(test_acc)
