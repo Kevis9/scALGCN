@@ -4,7 +4,7 @@ import os
 
 import torch_geometric.data
 from utils import capsule_pd_data_to_anndata, combine_inter_intra_graph, \
-    centralissimo, perc_for_entropy, perc_for_density
+    centralissimo, perc_for_entropy, perc_for_density, setup_seed
 
 from model import GCN
 import anndata as ad
@@ -34,10 +34,13 @@ data_config = {
 
 parameter_config = {
     'gcn_hidden_units': 32,
-    'epochs': 50,
-    'gcn_lr': 1e-3,
+    'epochs': 200,
+    'gcn_lr': 1e-2,
     'basef': 0.99,
-    'k_select': 1,
+    'k_select': 2,
+    'LB':1000, # 选取系统的阈值
+    'wd':5e-4, #weight decay
+    'threshold':0,
 }
 
 root_data_path = data_config['root_path']
@@ -80,11 +83,14 @@ def train(model, g_data, select_mode):
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(),
                                  lr=parameter_config['gcn_lr'],
-                                 weight_decay=5e-4)
+                                 weight_decay=parameter_config['wd'])
 
     dense_adj = to_dense_adj(g_data.edge_index).cpu().numpy().squeeze()
     graph = nx.Graph(dense_adj)
     norm_centrality = centralissimo(graph)
+    # 已选取的节点数目
+    select_num = 0
+
     for epoch in range(parameter_config['epochs']):
         model.train()
 
@@ -98,31 +104,33 @@ def train(model, g_data, select_mode):
         loss.backward()
         optimizer.step()
 
-        prob = F.softmax(out.detach()).cpu().numpy()
+        prob = F.softmax(out.detach(), dim=1).cpu().numpy()
+
         # prob是样本 * 类别
         # 这里的entropy函数计算的是一列的信息熵，所以我们要转置一下，让一列成类，计算一个样本的信息熵
-        entropy = scipy.stats.entropy(prob.T)
-        kmeans = KMeans(n_clusters=g_data.NCL, random_state=0).fit(prob)
-        ed_score = euclidean_distances(prob, kmeans.cluster_centers_)
-        density = np.min(ed_score, axis=1)
-        # entropy和density的norm: 计算样本中的百分位数（因为只需要比较样本之间的分数即可）
-        norm_entropy = np.array([perc_for_entropy(entropy, i) for i in range(len(entropy))])
-        norm_density = np.array([perc_for_density(density, i) for i in range(len(density))])
-        norm_centrality = norm_centrality.squeeze()
-        finalweight = alpha * norm_entropy + beta * norm_density + gamma * norm_centrality
+        if select_mode and select_num < parameter_config['LB'] and epoch > parameter_config['epochs']/2:
+            entropy = scipy.stats.entropy(prob.T)
+            kmeans = KMeans(n_clusters=g_data.NCL, random_state=0).fit(prob)
+            ed_score = euclidean_distances(prob, kmeans.cluster_centers_)
+            density = np.min(ed_score, axis=1)
+            # entropy和density的norm: 计算样本中的百分位数（因为只需要比较样本之间的分数即可）
+            norm_entropy = np.array([perc_for_entropy(entropy, i) for i in range(len(entropy))])
+            norm_density = np.array([perc_for_density(density, i) for i in range(len(density))])
+            norm_centrality = norm_centrality.squeeze()
+            finalweight = alpha * norm_entropy + beta * norm_density + gamma * norm_centrality
 
-        # 把train, val的数据排除
-        finalweight[g_data.train_idx + g_data.val_idx] = -100
-        select = np.argpartition(finalweight, -parameter_config['k_select'])[-parameter_config['k_select']:]
-        # select = np.argmax(finalweight)
-        # 每一个epoch就增加一个节点，前提是预测的准确率大于设置的置信度
-        # 不考虑原论文的budget，感觉没用
-        if select_mode:
-            for node in select:
-                if node not in g_data.train_idx:
-                    g_data.train_idx.append(node)
+            # 把train, val的数据排除
+            finalweight[g_data.train_idx + g_data.val_idx] = -100
+            select = np.argpartition(finalweight, -parameter_config['k_select'])[-parameter_config['k_select']:]
+            # select = np.argmax(finalweight)
+            prob_max = prob.max(axis=1)
+
+            for node_idx in select:
+                if node_idx not in g_data.train_idx:
+                    g_data.train_idx.append(node_idx)
                     # 注意y_predict是tensor
-                    g_data.y_predict[node] = prob[node].argmax()
+                    g_data.y_predict[node_idx] = prob[node_idx].argmax()
+                    select_num += 1
                     print("Epoch {:}: pick up one node to the training set!".format(epoch))
 
             # validation
@@ -158,6 +166,7 @@ def random_stratify_sample(ref_labels, train_size):
     val_idx = []
     for c in label_set:
         idx = np.where(ref_labels == c)[0]
+        np.random.seed(seed)
         np.random.shuffle(idx)
         train_num = int(train_size * len(idx))
         train_idx += list(idx[:train_num])
@@ -165,6 +174,8 @@ def random_stratify_sample(ref_labels, train_size):
 
     return train_idx, val_idx
 
+seed = 32
+setup_seed(seed)
 
 # 数据准备
 adata = get_anndata()
@@ -187,6 +198,10 @@ g_data.NCL = len(set(adata.obs['cell_type'][adata.uns['train_idx']]))
 ours_acc = []
 scGCN_acc = []
 
+
+
+g_data_cp = g_data.clone()
+
 # ours
 model = GCN(input_dim=g_data.x.shape[1], hidden_units=parameter_config['gcn_hidden_units'],
             output_dim=g_data.NCL)
@@ -198,9 +213,10 @@ ours_acc.append(test_acc)
 # scGCN
 model = GCN(input_dim=g_data.x.shape[1], hidden_units=parameter_config['gcn_hidden_units'],
             output_dim=g_data.NCL)
-train(model, g_data, select_mode=False)
-test_acc = test(model, g_data)
+train(model, g_data_cp, select_mode=False)
+test_acc = test(model, g_data_cp)
 scGCN_acc.append(test_acc)
+
 
 print("ours")
 print(ours_acc)

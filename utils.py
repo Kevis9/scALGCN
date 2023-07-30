@@ -1,10 +1,23 @@
+import random
+
+import numpy.random
 from scipy.io import mmread
 import scipy.sparse as sp
 import pandas as pd
 import numpy as np
 import anndata as ad
 import networkx as nx
-
+import torch
+import os
+def setup_seed(seed):
+    torch.manual_seed(seed)
+    # random.seed(seed)
+    torch.cuda.manual_seed_all(seed) #所有GPU
+    torch.cuda.manual_seed(seed)     # 当前GPU
+    # CUDA有些算法是non deterministic, 需要限制    
+    os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8' # CUDA >= 10.2版本会提示设置这个环境变量
+    torch.use_deterministic_algorithms(True)
+    
 def dense2sparse(data_path):
     '''
     transform dense matrix to sparse matrix of matrix market format
@@ -20,7 +33,7 @@ def capsule_pd_data_to_anndata(data, label, edge_index):
     :param edge_index: COO format [[row...], [col...]]
     :return:
     '''
-    adata = ad.AnnData(data.to_numpy())
+    adata = ad.AnnData(data.to_numpy(), dtype=np.float)
     adata.obs_names = data.index.tolist()
     adata.var_names = data.columns.tolist()
     adata.obs['cell_type'] = label.iloc[:, 0].to_numpy()
