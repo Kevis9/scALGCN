@@ -36,8 +36,8 @@ parameter_config = {
     'gcn_hidden_units': 32,
     'epochs': 200,
     'gcn_lr': 1e-2,
-    'basef': 0.99,
-    'k_select': 2,
+    'basef': 0.995,
+    'k_select': 1,
     'NL': 100,  # 有标签节点选取的阈值，这里的初始值不重要，最后 = NC * 20, 按照论文里面的设置
     'wd': 5e-4,  # weight decay
     'initial_class_train_num': 4,
@@ -66,13 +66,14 @@ def get_anndata():
 
         # 随机分层采样
         adata.uns['train_idx'], adata.uns['val_idx'] = random_stratify_sample(ref_label.to_numpy(), train_size=0.8)
+        adata.uns['train_idx_for_no_al'] = adata.uns['train_idx']
         # test_idx即query data的idx
         adata.uns['test_idx'] = [len(ref_label) + i for i in range(len(query_label))]
         # 按照论文，train label一开始每个类别设置成4个, 剩余的节点作为label budget里面的一部分
-        adata.uns['train_idx'] = random_stratify_sample_with_train_idx(ref_label,
-                                                                       train_idx=adata['train_idx'],
-                                                                       train_class_num=parameter_config[
-                                                                           'initial_class_train_num'])
+        # adata.uns['train_idx'] = random_stratify_sample_with_train_idx(ref_label.to_numpy(),
+        #                                                                train_idx=adata.uns['train_idx'],
+        #                                                                train_class_num=parameter_config[
+        #                                                                    'initial_class_train_num'])
 
         adata.write(os.path.join(root_data_path, 'data.h5ad'), compression="gzip")
         return adata
@@ -94,8 +95,7 @@ def train(model, g_data, select_mode):
     dense_adj = to_dense_adj(g_data.edge_index).cpu().numpy().squeeze()
     graph = nx.Graph(dense_adj)
     norm_centrality = centralissimo(graph)
-    # 已选取的节点数目
-    select_num = 0
+    # # 已选取的节点数目
 
     for epoch in range(parameter_config['epochs']):
         model.train()
@@ -114,7 +114,7 @@ def train(model, g_data, select_mode):
 
         # prob是样本 * 类别
         # 这里的entropy函数计算的是一列的信息熵，所以我们要转置一下，让一列成类，计算一个样本的信息熵
-        if select_mode and select_num < parameter_config['NL']:
+        if select_mode and len(g_data.train_idx) < parameter_config['NL']:
             entropy = scipy.stats.entropy(prob.T)
             kmeans = KMeans(n_clusters=g_data.NCL, random_state=0).fit(prob)
             ed_score = euclidean_distances(prob, kmeans.cluster_centers_)
@@ -132,7 +132,6 @@ def train(model, g_data, select_mode):
                 g_data.train_idx.append(node_idx)
                 # 注意y_predict是tensor
                 g_data.y_predict[node_idx] = g_data.y_true[node_idx]
-                select_num += 1
                 print("Epoch {:}: pick up one node to the training set!".format(epoch))
 
             # validation
@@ -183,15 +182,16 @@ def random_stratify_sample_with_train_idx(ref_labels, train_idx, train_class_num
         train_idx: 训练集下标
         train_class_num: 训练数据集中类别的数目
     '''
-    label_set = set(list(ref_labels.squeeze()))
+    label_set = list(set(list(ref_labels.squeeze())))
+    label_set.sort()
     new_train_idx = []
-    val_idx = []
     for c in label_set:
-        idx = np.where(ref_labels[train_idx] == c)[0]
+        idx = np.array(train_idx)[np.where(ref_labels[train_idx] == c)[0]]
         np.random.seed(seed)
         # 在当前类随机抽取n个元素
-        train_idx += list(np.random.choice(idx, train_class_num, replace=False))
-    return train_idx
+        random_nodes = list(np.random.choice(idx, train_class_num, replace=False))
+        new_train_idx += random_nodes
+    return new_train_idx
 
 
 seed = 32
@@ -214,6 +214,8 @@ g_data.val_idx = adata.uns['val_idx']
 g_data.test_idx = adata.uns['test_idx']
 g_data.train_idx = adata.uns['train_idx']
 g_data.NCL = len(set(adata.obs['cell_type'][adata.uns['train_idx']]))
+# 设置好NL的值
+parameter_config['NL'] = g_data.NCL * 20
 
 ours_acc = []
 scGCN_acc = []
@@ -221,22 +223,27 @@ scGCN_acc = []
 g_data_cp = g_data.clone()
 
 # ours
-model = GCN(input_dim=g_data.x.shape[1], hidden_units=parameter_config['gcn_hidden_units'],
-            output_dim=g_data.NCL)
+GCN(input_dim=2000, hidden_units=32,
+            output_dim=7)
 
-train(model, g_data, select_mode=True)
-test_acc = test(model, g_data)
-ours_acc.append(test_acc)
+
+# train(model, g_data, select_mode=False)
+# test_acc = test(model, g_data)
+# ours_acc.append(test_acc)
 
 # scGCN
+g_data.train_idx = adata.uns['train_idx_for_no_al']
 model = GCN(input_dim=g_data.x.shape[1], hidden_units=parameter_config['gcn_hidden_units'],
             output_dim=g_data.NCL)
-train(model, g_data_cp, select_mode=False)
-test_acc = test(model, g_data_cp)
+train(model, g_data, select_mode=False)
+test_acc = test(model, g_data)
 scGCN_acc.append(test_acc)
+
 
 print("ours")
 print(ours_acc)
+print("reference nodes num : {:} \n query nodes num  {:}".format(len(g_data.train_idx), len(g_data.test_idx)))
 
 print("scGCN_acc")
 print(scGCN_acc)
+print("reference nodes num : {:} \n query nodes num  {:}".format(len(g_data_cp.train_idx), len(g_data_cp.test_idx)))
