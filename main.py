@@ -38,9 +38,9 @@ parameter_config = {
     'gcn_lr': 1e-2,
     'basef': 0.99,
     'k_select': 2,
-    'LB':1000, # 选取系统的阈值
-    'wd':5e-4, #weight decay
-    'threshold':0,
+    'NL': 100,  # 有标签节点选取的阈值，这里的初始值不重要，最后 = NC * 20, 按照论文里面的设置
+    'wd': 5e-4,  # weight decay
+    'initial_class_train_num': 4,
 }
 
 root_data_path = data_config['root_path']
@@ -68,6 +68,12 @@ def get_anndata():
         adata.uns['train_idx'], adata.uns['val_idx'] = random_stratify_sample(ref_label.to_numpy(), train_size=0.8)
         # test_idx即query data的idx
         adata.uns['test_idx'] = [len(ref_label) + i for i in range(len(query_label))]
+        # 按照论文，train label一开始每个类别设置成4个, 剩余的节点作为label budget里面的一部分
+        adata.uns['train_idx'] = random_stratify_sample_with_train_idx(ref_label,
+                                                                       train_idx=adata['train_idx'],
+                                                                       train_class_num=parameter_config[
+                                                                           'initial_class_train_num'])
+
         adata.write(os.path.join(root_data_path, 'data.h5ad'), compression="gzip")
         return adata
     elif data_config['data_mode'] == 'ann':
@@ -108,7 +114,7 @@ def train(model, g_data, select_mode):
 
         # prob是样本 * 类别
         # 这里的entropy函数计算的是一列的信息熵，所以我们要转置一下，让一列成类，计算一个样本的信息熵
-        if select_mode and select_num < parameter_config['LB'] and epoch > parameter_config['epochs']/2:
+        if select_mode and select_num < parameter_config['NL']:
             entropy = scipy.stats.entropy(prob.T)
             kmeans = KMeans(n_clusters=g_data.NCL, random_state=0).fit(prob)
             ed_score = euclidean_distances(prob, kmeans.cluster_centers_)
@@ -119,19 +125,15 @@ def train(model, g_data, select_mode):
             norm_centrality = norm_centrality.squeeze()
             finalweight = alpha * norm_entropy + beta * norm_density + gamma * norm_centrality
 
-            # 把train, val的数据排除
-            finalweight[g_data.train_idx + g_data.val_idx] = -100
-            select = np.argpartition(finalweight, -parameter_config['k_select'])[-parameter_config['k_select']:]
-            # select = np.argmax(finalweight)
-            prob_max = prob.max(axis=1)
-
-            for node_idx in select:
-                if node_idx not in g_data.train_idx:
-                    g_data.train_idx.append(node_idx)
-                    # 注意y_predict是tensor
-                    g_data.y_predict[node_idx] = prob[node_idx].argmax()
-                    select_num += 1
-                    print("Epoch {:}: pick up one node to the training set!".format(epoch))
+            # 把train, val, test的数据排除, 从剩余的label budget里面获取节点
+            finalweight[g_data.train_idx + g_data.train_idx + g_data.val_idx] = -100
+            select_arr = np.argpartition(finalweight, -parameter_config['k_select'])[-parameter_config['k_select']:]
+            for node_idx in select_arr:
+                g_data.train_idx.append(node_idx)
+                # 注意y_predict是tensor
+                g_data.y_predict[node_idx] = g_data.y_true[node_idx]
+                select_num += 1
+                print("Epoch {:}: pick up one node to the training set!".format(epoch))
 
             # validation
         model.eval()
@@ -143,7 +145,7 @@ def train(model, g_data, select_mode):
         val_loss = criterion(out[g_data.val_idx], g_data.y_true[g_data.val_idx])
         print("Epoch {:}: traing loss: {:.3f}, val_loss {:.3f}, val_acc {:.3f}".format(epoch, loss, val_loss, val_acc))
         # todo: 加入早停法
-
+        
     return model
 
 
@@ -174,6 +176,24 @@ def random_stratify_sample(ref_labels, train_size):
 
     return train_idx, val_idx
 
+
+def random_stratify_sample_with_train_idx(ref_labels, train_idx, train_class_num):
+    '''
+    paramters:
+        train_idx: 训练集下标
+        train_class_num: 训练数据集中类别的数目
+    '''
+    label_set = set(list(ref_labels.squeeze()))
+    new_train_idx = []
+    val_idx = []
+    for c in label_set:
+        idx = np.where(ref_labels[train_idx] == c)[0]
+        np.random.seed(seed)
+        # 在当前类随机抽取n个元素
+        train_idx += list(np.random.choice(idx, train_class_num, replace=False))
+    return train_idx
+
+
 seed = 32
 setup_seed(seed)
 
@@ -198,8 +218,6 @@ g_data.NCL = len(set(adata.obs['cell_type'][adata.uns['train_idx']]))
 ours_acc = []
 scGCN_acc = []
 
-
-
 g_data_cp = g_data.clone()
 
 # ours
@@ -216,7 +234,6 @@ model = GCN(input_dim=g_data.x.shape[1], hidden_units=parameter_config['gcn_hidd
 train(model, g_data_cp, select_mode=False)
 test_acc = test(model, g_data_cp)
 scGCN_acc.append(test_acc)
-
 
 print("ours")
 print(ours_acc)
