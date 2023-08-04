@@ -8,6 +8,7 @@ class GCN(torch.nn.Module):
     '''
     def __init__(self, input_dim, hidden_units, output_dim):
         super(GCN, self).__init__()
+        torch.manual_seed(32)
         self.conv1 = GCNConv(input_dim, hidden_units)
         self.conv2 = GCNConv(hidden_units, output_dim)
         

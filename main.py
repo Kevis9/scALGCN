@@ -21,7 +21,7 @@ from sklearn.preprocessing import LabelEncoder
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 data_config = {
-    'root_path': 'experiment/cel_seq_drop_seq/data',
+    'root_path': 'experiment/baron_xin/data',
     'ref_data_path': 'ref_data.csv',
     'query_data_path': 'query_data.csv',
     'ref_label_path': 'ref_label.csv',
@@ -33,14 +33,15 @@ data_config = {
 }
 
 parameter_config = {
-    'gcn_hidden_units': 32,
+    'gcn_hidden_units': 64,
     'epochs': 200,
     'gcn_lr': 1e-2,
-    'basef': 0.995,
+    'basef': 0.8,
     'k_select': 1,
     'NL': 100,  # 有标签节点选取的阈值，这里的初始值不重要，最后 = NC * 20, 按照论文里面的设置
     'wd': 5e-4,  # weight decay
-    'initial_class_train_num': 4,
+    'initial_class_train_num': 10,
+    'epoch_print_flag': 0,
 }
 
 root_data_path = data_config['root_path']
@@ -70,10 +71,10 @@ def get_anndata():
         # test_idx即query data的idx
         adata.uns['test_idx'] = [len(ref_label) + i for i in range(len(query_label))]
         # 按照论文，train label一开始每个类别设置成4个, 剩余的节点作为label budget里面的一部分
-        # adata.uns['train_idx'] = random_stratify_sample_with_train_idx(ref_label.to_numpy(),
-        #                                                                train_idx=adata.uns['train_idx'],
-        #                                                                train_class_num=parameter_config[
-        #                                                                    'initial_class_train_num'])
+        adata.uns['train_idx'] = random_stratify_sample_with_train_idx(ref_label.to_numpy(),
+                                                                       train_idx=adata.uns['train_idx'],
+                                                                       train_class_num=parameter_config[
+                                                                           'initial_class_train_num'])
 
         adata.write(os.path.join(root_data_path, 'data.h5ad'), compression="gzip")
         return adata
@@ -132,7 +133,8 @@ def train(model, g_data, select_mode):
                 g_data.train_idx.append(node_idx)
                 # 注意y_predict是tensor
                 g_data.y_predict[node_idx] = g_data.y_true[node_idx]
-                print("Epoch {:}: pick up one node to the training set!".format(epoch))
+                if (parameter_config['epoch_print_flag']):
+                    print("Epoch {:}: pick up one node to the training set!".format(epoch))
 
             # validation
         model.eval()
@@ -142,7 +144,8 @@ def train(model, g_data, select_mode):
         val_true = g_data.y_true[g_data.val_idx].cpu().numpy()
         val_acc = accuracy_score(val_true, val_pred)
         val_loss = criterion(out[g_data.val_idx], g_data.y_true[g_data.val_idx])
-        print("Epoch {:}: traing loss: {:.3f}, val_loss {:.3f}, val_acc {:.3f}".format(epoch, loss, val_loss, val_acc))
+        if (parameter_config['epoch_print_flag']):
+            print("Epoch {:}: traing loss: {:.3f}, val_loss {:.3f}, val_acc {:.3f}".format(epoch, loss, val_loss, val_acc))
         # todo: 加入早停法
         
     return model
@@ -220,16 +223,20 @@ parameter_config['NL'] = g_data.NCL * 20
 ours_acc = []
 scGCN_acc = []
 
-g_data_cp = g_data.clone()
+# g_data_cp = g_data.clone()
 
 # ours
-GCN(input_dim=2000, hidden_units=32,
-            output_dim=7)
+model = GCN(input_dim=g_data.x.shape[1], hidden_units=parameter_config['gcn_hidden_units'],
+            output_dim=g_data.NCL)
+train(model, g_data, select_mode=True)
+test_acc = test(model, g_data)
+ours_acc.append(test_acc)
+
+print("ours")
+print(ours_acc)
+print("reference nodes num : {:} \n query nodes num  {:}".format(len(g_data.train_idx), len(g_data.test_idx)))
 
 
-# train(model, g_data, select_mode=False)
-# test_acc = test(model, g_data)
-# ours_acc.append(test_acc)
 
 # scGCN
 g_data.train_idx = adata.uns['train_idx_for_no_al']
@@ -239,11 +246,6 @@ train(model, g_data, select_mode=False)
 test_acc = test(model, g_data)
 scGCN_acc.append(test_acc)
 
-
-print("ours")
-print(ours_acc)
-print("reference nodes num : {:} \n query nodes num  {:}".format(len(g_data.train_idx), len(g_data.test_idx)))
-
 print("scGCN_acc")
 print(scGCN_acc)
-print("reference nodes num : {:} \n query nodes num  {:}".format(len(g_data_cp.train_idx), len(g_data_cp.test_idx)))
+print("reference nodes num : {:} \n query nodes num  {:}".format(len(g_data.train_idx), len(g_data.test_idx)))
