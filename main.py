@@ -197,55 +197,88 @@ def random_stratify_sample_with_train_idx(ref_labels, train_idx, train_class_num
     return new_train_idx
 
 
+projects = [
+    "10x_v3_drop_seq",
+    "10x_v3_indrop",
+    "5061_84133",
+    "84133_5061",
+    "84133_81608",
+    "84133_85241",
+    "84133_combine",
+    "drop_seq_10x_v3",
+    "drop_seq_seq_well",
+    "indrop_10x_v3",
+    "indrop_drop_seq",
+    "seq_well_10x_v3",
+    "seq_well_drop_seq"
+]
+AL_acc = []
+AL_ref_num = []
+scGCN_acc = []
+scGCN_ref_num = []
+query_num_arr = []
+
 seed = 32
 setup_seed(seed)
 
-# 数据准备
-adata = get_anndata()
+for proj in projects:
+    # 数据准备
+    adata = get_anndata()
+    # g_data准备
+    # 将所有的adata的数据转为tensor
+    g_data = torch_geometric.data.Data(x=torch.tensor(adata.X, dtype=torch.float),
+                                       edge_index=torch.tensor(adata.uns['edge_index'], dtype=torch.long))
 
-# g_data准备
-# 将所有的adata的数据转为tensor
-g_data = torch_geometric.data.Data(x=torch.tensor(adata.X, dtype=torch.float),
-                                   edge_index=torch.tensor(adata.uns['edge_index'], dtype=torch.long))
+    y_true = adata.obs['cell_type']
+    label_encoder = LabelEncoder()
+    y_true = label_encoder.fit_transform(y_true)
+    g_data.y_true = torch.tensor(y_true, dtype=torch.long)
+    g_data.y_predict = torch.tensor(y_true, dtype=torch.long)
+    g_data.val_idx = adata.uns['val_idx']
+    g_data.test_idx = adata.uns['test_idx']
+    g_data.train_idx = adata.uns['train_idx']
+    g_data.NCL = len(set(adata.obs['cell_type'][adata.uns['train_idx']]))
+    # 设置好NL的值
+    parameter_config['NL'] = g_data.NCL * 20
 
-y_true = adata.obs['cell_type']
-label_encoder = LabelEncoder()
-y_true = label_encoder.fit_transform(y_true)
-g_data.y_true = torch.tensor(y_true, dtype=torch.long)
-g_data.y_predict = torch.tensor(y_true, dtype=torch.long)
-g_data.val_idx = adata.uns['val_idx']
-g_data.test_idx = adata.uns['test_idx']
-g_data.train_idx = adata.uns['train_idx']
-g_data.NCL = len(set(adata.obs['cell_type'][adata.uns['train_idx']]))
-# 设置好NL的值
-parameter_config['NL'] = g_data.NCL * 20
+    ours_acc = []
+    scGCN_acc = []
 
-ours_acc = []
-scGCN_acc = []
+    # g_data_cp = g_data.clone()
 
-# g_data_cp = g_data.clone()
+    # ours
+    model = GCN(input_dim=g_data.x.shape[1], hidden_units=parameter_config['gcn_hidden_units'],
+                output_dim=g_data.NCL)
+    train(model, g_data, select_mode=True)
+    test_acc = test(model, g_data)
+    ours_acc.append(test_acc)
 
-# ours
-model = GCN(input_dim=g_data.x.shape[1], hidden_units=parameter_config['gcn_hidden_units'],
-            output_dim=g_data.NCL)
-train(model, g_data, select_mode=True)
-test_acc = test(model, g_data)
-ours_acc.append(test_acc)
-
-print("ours")
-print(ours_acc)
-print("reference nodes num : {:} \n query nodes num  {:}".format(len(g_data.train_idx), len(g_data.test_idx)))
+    print("ours")
+    print(ours_acc)
+    print("reference nodes num : {:} \n query nodes num  {:}".format(len(g_data.train_idx), len(g_data.test_idx)))
+    AL_acc.append(ours_acc)
+    AL_ref_num.append(len(g_data.train_idx))
 
 
+    # scGCN
+    g_data.train_idx = adata.uns['train_idx_for_no_al']
+    model = GCN(input_dim=g_data.x.shape[1], hidden_units=parameter_config['gcn_hidden_units'],
+                output_dim=g_data.NCL)
+    train(model, g_data, select_mode=False)
+    test_acc = test(model, g_data)
+    scGCN_acc.append(test_acc)
 
-# scGCN
-g_data.train_idx = adata.uns['train_idx_for_no_al']
-model = GCN(input_dim=g_data.x.shape[1], hidden_units=parameter_config['gcn_hidden_units'],
-            output_dim=g_data.NCL)
-train(model, g_data, select_mode=False)
-test_acc = test(model, g_data)
-scGCN_acc.append(test_acc)
+    print("scGCN_acc")
+    print(scGCN_acc)
+    print("reference nodes num : {:} \n query nodes num  {:}".format(len(g_data.train_idx), len(g_data.test_idx)))
+    scGCN_acc.append(scGCN_acc)
+    scGCN_ref_num.append(len(g_data.train_idx))
 
-print("scGCN_acc")
+    query_num_arr.append(len(g_data.test_idx))
+
+
+print(AL_acc)
+print(AL_ref_num)
 print(scGCN_acc)
-print("reference nodes num : {:} \n query nodes num  {:}".format(len(g_data.train_idx), len(g_data.test_idx)))
+print(scGCN_ref_num)
+print(query_num_arr)
