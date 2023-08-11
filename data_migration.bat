@@ -1,17 +1,22 @@
 @echo off
 setlocal enabledelayedexpansion
-set ab_path=E:\YuAnHuang\kevislin\Cell_Classification\experiment\platform_v2
+set ab_path=E:\YuAnHuang\kevislin\Cell_Classification\experiment\omic
 set des_ab_path=E:\YuAnHuang\kevislin\second_proj\scALGCN\experiment
-set projects=84133_5061,^
-84133_81608,^
-84133_85241,^
-84133_combine,^
-drop_seq_10x_v3,^
-drop_seq_seq_well,^
-indrop_10x_v3,^
-indrop_drop_seq,^
-seq_well_10x_v3,^
-seq_well_drop_seq
+set projects=A549,^
+kidney,^
+lung
+@REM 10x_v3_drop_seq,^
+@REM 5061_84133,^
+@REM 84133_5061,^
+@REM 84133_81608,^
+@REM 84133_85241,^
+@REM 84133_combine,^
+@REM drop_seq_10x_v3,^
+@REM drop_seq_seq_well,^
+@REM indrop_10x_v3,^
+@REM indrop_drop_seq,^
+@REM seq_well_10x_v3,^
+@REM seq_well_drop_seq
 
 for %%i in (%projects%) do (
     set ref_path=!ab_path!\%%i\raw_data\ref
@@ -22,6 +27,8 @@ for %%i in (%projects%) do (
     if not exist !des_path! mkdir !des_path!
     if not exist !des_data_path! mkdir !des_data_path!
     if not exist !des_raw_data_path! mkdir !des_raw_data_path!
+    copy !ref_path!\label_1.csv !des_data_path!\ref_label.csv
+    copy !query_path!\label_1.csv !des_data_path!\query_label.csv
     copy !ref_path!\data_1.csv !des_raw_data_path!\ref_data.csv
     copy !ref_path!\label_1.csv !des_raw_data_path!\ref_label.csv
     copy !query_path!\data_1.csv !des_raw_data_path!\query_data.csv
@@ -30,3 +37,6 @@ for %%i in (%projects%) do (
 echo File copy successfully
 echo start preprocess
 auto.bat
+
+echo start train
+python main.py

@@ -21,7 +21,7 @@ from sklearn.preprocessing import LabelEncoder
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 data_config = {
-    'root_path': 'experiment/baron_xin/data',
+    'root': 'experiment/baron_xin/data',
     'ref_data_path': 'ref_data.csv',
     'query_data_path': 'query_data.csv',
     'ref_label_path': 'ref_label.csv',
@@ -42,12 +42,8 @@ parameter_config = {
     'wd': 5e-4,  # weight decay
     'initial_class_train_num': 10,
     'epoch_print_flag': 0,
+    'final_class_num': 30
 }
-
-root_data_path = data_config['root_path']
-for key in data_config:
-    if "path" in key:
-        data_config[key] = os.path.join(root_data_path, data_config[key])
 
 
 def get_anndata():
@@ -56,6 +52,7 @@ def get_anndata():
         ref_label = pd.read_csv(data_config['ref_label_path'])
         query_data = pd.read_csv(data_config['query_data_path'], index_col=0)
         query_label = pd.read_csv(data_config['query_label_path'])
+
         data = pd.concat([ref_data, query_data], axis=0)
         label = pd.concat([ref_label, query_label], axis=0)
         edge_index = combine_inter_intra_graph(inter_graph_path=data_config['inter_graph_path'],
@@ -70,6 +67,7 @@ def get_anndata():
         adata.uns['train_idx_for_no_al'] = adata.uns['train_idx']
         # test_idx即query data的idx
         adata.uns['test_idx'] = [len(ref_label) + i for i in range(len(query_label))]
+
         # 按照论文，train label一开始每个类别设置成4个, 剩余的节点作为label budget里面的一部分
         adata.uns['train_idx'] = random_stratify_sample_with_train_idx(ref_label.to_numpy(),
                                                                        train_idx=adata.uns['train_idx'],
@@ -191,26 +189,33 @@ def random_stratify_sample_with_train_idx(ref_labels, train_idx, train_class_num
     for c in label_set:
         idx = np.array(train_idx)[np.where(ref_labels[train_idx] == c)[0]]
         np.random.seed(seed)
-        # 在当前类随机抽取n个元素
-        random_nodes = list(np.random.choice(idx, train_class_num, replace=False))
+        if len(idx) < train_class_num:
+            random_nodes = list(np.random.choice(idx, len(idx), replace=False))
+        else:
+            random_nodes = list(np.random.choice(idx, train_class_num, replace=False))
         new_train_idx += random_nodes
     return new_train_idx
 
 
 projects = [
-    "10x_v3_drop_seq",
-    "10x_v3_indrop",
-    "5061_84133",
-    "84133_5061",
-    "84133_81608",
-    "84133_85241",
-    "84133_combine",
-    "drop_seq_10x_v3",
-    "drop_seq_seq_well",
-    "indrop_10x_v3",
-    "indrop_drop_seq",
-    "seq_well_10x_v3",
-    "seq_well_drop_seq"
+    # "10x_v3_drop_seq",
+    # "10x_v3_indrop",
+    # "5061_84133",
+    # "84133_5061",
+    # "84133_81608",
+    # "84133_85241",
+    # "84133_combine",
+    # "drop_seq_10x_v3",
+    # "drop_seq_seq_well",
+    # "indrop_10x_v3",
+    # "indrop_drop_seq",
+    # "seq_well_10x_v3",
+    # "seq_well_drop_seq"
+    # "human_mouse",
+    # "mouse_human"
+    'A549',
+    'kidney',
+    'lung'
 ]
 AL_acc = []
 AL_ref_num = []
@@ -222,6 +227,12 @@ seed = 32
 setup_seed(seed)
 
 for proj in projects:
+    data_config['root'] = 'experiment/' + proj + '/data'
+    root_data_path = data_config['root']
+    data_config_cp = data_config.copy()
+    for key in data_config:
+        if "path" in key:
+            data_config[key] = os.path.join(root_data_path, data_config[key])
     # 数据准备
     adata = get_anndata()
     # g_data准备
@@ -237,12 +248,13 @@ for proj in projects:
     g_data.val_idx = adata.uns['val_idx']
     g_data.test_idx = adata.uns['test_idx']
     g_data.train_idx = adata.uns['train_idx']
+
     g_data.NCL = len(set(adata.obs['cell_type'][adata.uns['train_idx']]))
     # 设置好NL的值
-    parameter_config['NL'] = g_data.NCL * 20
+    parameter_config['NL'] = g_data.NCL * parameter_config['final_class_num']
 
-    ours_acc = []
-    scGCN_acc = []
+    # ours_acc = []
+    # scGCN_acc = []
 
     # g_data_cp = g_data.clone()
 
@@ -251,12 +263,12 @@ for proj in projects:
                 output_dim=g_data.NCL)
     train(model, g_data, select_mode=True)
     test_acc = test(model, g_data)
-    ours_acc.append(test_acc)
+    # ours_acc.append(test_acc)
 
-    print("ours")
-    print(ours_acc)
-    print("reference nodes num : {:} \n query nodes num  {:}".format(len(g_data.train_idx), len(g_data.test_idx)))
-    AL_acc.append(ours_acc)
+    # print("ours")
+    # print(ours_acc)
+    # print("reference nodes num : {:} \n query nodes num  {:}".format(len(g_data.train_idx), len(g_data.test_idx)))
+    AL_acc.append(test_acc)
     AL_ref_num.append(len(g_data.train_idx))
 
 
@@ -268,17 +280,24 @@ for proj in projects:
     test_acc = test(model, g_data)
     scGCN_acc.append(test_acc)
 
-    print("scGCN_acc")
-    print(scGCN_acc)
-    print("reference nodes num : {:} \n query nodes num  {:}".format(len(g_data.train_idx), len(g_data.test_idx)))
-    scGCN_acc.append(scGCN_acc)
+    # print("scGCN_acc")
+    # print(scGCN_acc)
+    # print("reference nodes num : {:} \n query nodes num  {:}".format(len(g_data.train_idx), len(g_data.test_idx)))
+    # scGCN_acc.append(scGCN_acc)
     scGCN_ref_num.append(len(g_data.train_idx))
 
     query_num_arr.append(len(g_data.test_idx))
+    data_config = data_config_cp
+    print(projects)
+    print(AL_acc)
+    print(AL_ref_num)
+    print(scGCN_acc)
+    print(scGCN_ref_num)
+    print(query_num_arr)
 
-
-print(AL_acc)
-print(AL_ref_num)
-print(scGCN_acc)
-print(scGCN_ref_num)
-print(query_num_arr)
+# print(projects)
+# print(AL_acc)
+# print(AL_ref_num)
+# print(scGCN_acc)
+# print(scGCN_ref_num)
+# print(query_num_arr)
