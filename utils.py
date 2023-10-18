@@ -9,6 +9,9 @@ import anndata as ad
 import networkx as nx
 import torch
 import os
+
+
+
 def setup_seed(seed):
     torch.manual_seed(seed)
     # random.seed(seed)
@@ -142,3 +145,7 @@ def perc_for_entropy(input, k):
 
 # calculate the percentage of elements larger than the k-th element
 def perc_for_density(input, k): return sum([1 if i else 0 for i in input > input[k]]) / float(len(input))
+
+
+
+
