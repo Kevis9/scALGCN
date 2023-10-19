@@ -72,7 +72,7 @@ def create_G_mat(n):
 def create_static_matrices_for_L_opt(num_vertices, beta):
     # Static matrices are those independent of Y
     M_mat = create_dup_matrix(num_vertices)
-    P_mat = 2 * beta * np.dot(M_mat.T, M_mat).todense()
+    P_mat = sparse.csr_matrix(2 * beta * np.dot(M_mat.T, M_mat))
     A_mat = create_A_mat(num_vertices)
     b_mat = create_b_mat(num_vertices)
     G_mat = create_G_mat(num_vertices)
@@ -91,7 +91,7 @@ def gl_sig_model(inp_signal, max_iter, alpha, beta):
     M_mat, P_mat, A_mat, b_mat, G_mat, h_mat = create_static_matrices_for_L_opt(num_vertices, beta)
     # For convenience, only M_mat is sparse format (csr)
     # M_c = matrix(M_mat)
-    P_c = matrix(P_mat)
+    # P_c = matrix(P_mat)
     A_c = matrix(A_mat)
     b_c = matrix(b_mat)
     G_c = matrix(G_mat)
@@ -107,8 +107,8 @@ def gl_sig_model(inp_signal, max_iter, alpha, beta):
         q_c = q_mat
         sol = solvers.qp(P_c, q_c, G_c, h_c, A_c, b_c)
         l_vech = np.array(sol['x'])
-        l_vec = np.dot(M_mat, sparse.csr_matrix(l_vech)).todense()
-        L = l_vec.reshape(num_vertices, num_vertices)
+        l_vec = np.dot(M_mat, sparse.csr_matrix(l_vech))
+        L = l_vec.reshape(num_vertices, num_vertices).todense()
         # Assert L is correctly learnt.
         # assert L.trace() == num_vertices
         assert np.allclose(L.trace(), num_vertices)
@@ -123,7 +123,7 @@ def gl_sig_model(inp_signal, max_iter, alpha, beta):
                      beta * np.linalg.norm(L, 'fro')**2)
         q_mat = alpha * np.dot(sparse.csr_matrix(np.ravel(np.dot(Y, Y.T))), M_mat).todense()
         # pdb.set_trace()
-        calc_cost = (0.5 * np.dot(np.dot(l_vech.T, P_mat), l_vech).squeeze() +
+        calc_cost = (0.5 * np.dot(np.dot(sparse.csr_matrix(l_vech.T), P_mat), sparse.csr_matrix(l_vech)).todense().squeeze() +
                      np.dot(q_mat, l_vech).squeeze() + np.linalg.norm(inp_signal.T - Y, 'fro')**2)
         # pdb.set_trace()
         assert np.allclose(curr_cost, calc_cost)
