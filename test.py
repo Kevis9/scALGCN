@@ -40,7 +40,3 @@ label = pd.read_csv('experiment/cel_seq/cel_seq2_label.csv').to_numpy()
 A = get_adjacent_matrix(data)
 check_out_similarity_matrix(A, label, 'cel_seq')
 
-
-
-
-

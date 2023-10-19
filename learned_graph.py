@@ -1,5 +1,6 @@
 from cvxopt import matrix, solvers
 import numpy as np
+from scipy import sparse
 
 def get_u_vec(i, j, n):
     u_vec = np.zeros(n*(n+1)//2)
@@ -15,16 +16,30 @@ def get_T_mat(i, j, n):
 
 
 def create_dup_matrix(num_vertices):
-    M_mat = np.zeros((num_vertices**2, num_vertices*(num_vertices + 1)//2))
+    M_mat = sparse.csr_matrix((num_vertices**2, num_vertices*(num_vertices + 1)//2))
     # tmp_mat = np.arange(num_vertices**2).reshape(num_vertices, num_vertices)
     for j in range(1, num_vertices+1):
         for i in range(j, num_vertices+1):
-            u_vec = get_u_vec(i, j, num_vertices)
-            Tij = get_T_mat(i, j, num_vertices)
+            u_vec = sparse.csr_matrix(get_u_vec(i, j, num_vertices))
+            Tij = sparse.csr_matrix(get_T_mat(i, j, num_vertices))
             # pdb.set_trace()
-            M_mat += np.outer(u_vec, Tij).T
+            M_mat += sparse.kron(u_vec, Tij).reshape(u_vec.shape[1], Tij.shape[1]).T
     return M_mat
 
+
+def get_a_vec(i, n):
+    a_vec = np.zeros(n*(n+1)//2)
+    if i == 0:
+        a_vec[np.arange(n)] = 1
+    else:
+        tmp_vec = np.arange(n-1, n-i-1, -1)
+        tmp2_vec = np.append([i], tmp_vec)
+        tmp3_vec = np.cumsum(tmp2_vec)
+        a_vec[tmp3_vec] = 1
+        end_pt = tmp3_vec[-1]
+        a_vec[np.arange(end_pt, end_pt + n-i)] = 1
+
+    return a_vec
 
 def create_A_mat(n):
     A_mat = np.zeros((n+1, n*(n+1)//2))
@@ -35,13 +50,13 @@ def create_A_mat(n):
     A_mat[n, 0] = 1
     A_mat[n, np.cumsum(np.arange(n, 1, -1))] = 1
 
-    return A_mat
+    return sparse.csr_matrix(A_mat)
 
 
 def create_b_mat(n):
     b_mat = np.zeros(n+1)
     b_mat[n] = n
-    return b_mat
+    return sparse.csr_matrix(b_mat)
 
 
 def create_G_mat(n):
@@ -52,16 +67,16 @@ def create_G_mat(n):
     for i in range(G_mat.shape[0]):
         G_mat[i, tmp3_vec[i]] = 1
 
-    return G_mat
+    return sparse.csr_matrix(G_mat)
 
 def create_static_matrices_for_L_opt(num_vertices, beta):
     # Static matrices are those independent of Y
     M_mat = create_dup_matrix(num_vertices)
-    P_mat = 2 * beta * np.dot(M_mat.T, M_mat)
+    P_mat = sparse.csr_matrix(2 * beta * np.dot(M_mat.T, M_mat))
     A_mat = create_A_mat(num_vertices)
     b_mat = create_b_mat(num_vertices)
     G_mat = create_G_mat(num_vertices)
-    h_mat = np.zeros(G_mat.shape[0])
+    h_mat = sparse.csr_matrix(np.zeros(G_mat.shape[0]))
     return M_mat, P_mat, A_mat, b_mat, G_mat, h_mat
 
 
