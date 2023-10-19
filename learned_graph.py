@@ -50,13 +50,13 @@ def create_A_mat(n):
     A_mat[n, 0] = 1
     A_mat[n, np.cumsum(np.arange(n, 1, -1))] = 1
 
-    return sparse.csr_matrix(A_mat)
+    return A_mat
 
 
 def create_b_mat(n):
     b_mat = np.zeros(n+1)
     b_mat[n] = n
-    return sparse.csr_matrix(b_mat)
+    return b_mat
 
 
 def create_G_mat(n):
@@ -67,16 +67,16 @@ def create_G_mat(n):
     for i in range(G_mat.shape[0]):
         G_mat[i, tmp3_vec[i]] = 1
 
-    return sparse.csr_matrix(G_mat)
+    return G_mat
 
 def create_static_matrices_for_L_opt(num_vertices, beta):
     # Static matrices are those independent of Y
     M_mat = create_dup_matrix(num_vertices)
-    P_mat = sparse.csr_matrix(2 * beta * np.dot(M_mat.T, M_mat))
+    P_mat = 2 * beta * np.dot(M_mat.T, M_mat).todense()
     A_mat = create_A_mat(num_vertices)
     b_mat = create_b_mat(num_vertices)
     G_mat = create_G_mat(num_vertices)
-    h_mat = sparse.csr_matrix(np.zeros(G_mat.shape[0]))
+    h_mat = np.zeros(G_mat.shape[0])
     return M_mat, P_mat, A_mat, b_mat, G_mat, h_mat
 
 
@@ -89,6 +89,7 @@ def gl_sig_model(inp_signal, max_iter, alpha, beta):
     Y = inp_signal.T
     num_vertices = inp_signal.shape[1]
     M_mat, P_mat, A_mat, b_mat, G_mat, h_mat = create_static_matrices_for_L_opt(num_vertices, beta)
+    # For convenience, only M_mat is sparse format (csr)
     # M_c = matrix(M_mat)
     P_c = matrix(P_mat)
     A_c = matrix(A_mat)
@@ -96,16 +97,17 @@ def gl_sig_model(inp_signal, max_iter, alpha, beta):
     G_c = matrix(G_mat)
     h_c = matrix(h_mat)
     curr_cost = np.linalg.norm(np.ones((num_vertices, num_vertices)), 'fro')
-    q_mat = alpha * np.dot(np.ravel(np.dot(Y, Y.T)), M_mat)
+    q_mat = alpha * np.dot(sparse.csr_matrix(np.ravel(np.dot(Y, Y.T))), M_mat)
     for it in range(max_iter):
         # pdb.set_trace()
         # Update L
         prev_cost = curr_cost
         # pdb.set_trace()
-        q_c = matrix(q_mat)
+        # q_c = matrix(q_mat)
+        q_c = q_mat
         sol = solvers.qp(P_c, q_c, G_c, h_c, A_c, b_c)
         l_vech = np.array(sol['x'])
-        l_vec = np.dot(M_mat, l_vech)
+        l_vec = np.dot(M_mat, sparse.csr_matrix(l_vech)).todense()
         L = l_vec.reshape(num_vertices, num_vertices)
         # Assert L is correctly learnt.
         # assert L.trace() == num_vertices
@@ -119,7 +121,7 @@ def gl_sig_model(inp_signal, max_iter, alpha, beta):
         curr_cost = (np.linalg.norm(inp_signal.T - Y, 'fro')**2 +
                      alpha * np.dot(np.dot(Y.T, L), Y).trace() +
                      beta * np.linalg.norm(L, 'fro')**2)
-        q_mat = alpha * np.dot(np.ravel(np.dot(Y, Y.T)), M_mat)
+        q_mat = alpha * np.dot(sparse.csr_matrix(np.ravel(np.dot(Y, Y.T))), M_mat).todense()
         # pdb.set_trace()
         calc_cost = (0.5 * np.dot(np.dot(l_vech.T, P_mat), l_vech).squeeze() +
                      np.dot(q_mat, l_vech).squeeze() + np.linalg.norm(inp_signal.T - Y, 'fro')**2)
