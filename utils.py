@@ -148,4 +148,42 @@ def perc_for_density(input, k): return sum([1 if i else 0 for i in input > input
 
 
 
+def random_stratify_sample(ref_labels, train_size):
+    # 对每个类都进行随机采样，分成train, val
+    # 这地方要保证train的数据是从0开始计数的,
+    # print(ref_labels.squeeze())
+    label_set = set(list(ref_labels.squeeze()))
+    train_idx = []
+    val_idx = []
+    for c in label_set:
+        idx = np.where(ref_labels == c)[0]
+        np.random.seed(seed)
+        np.random.shuffle(idx)
+        train_num = int(train_size * len(idx))
+        train_idx += list(idx[:train_num])
+        val_idx += list(idx[train_num:])
+
+    return train_idx, val_idx
+
+
+def random_stratify_sample_with_train_idx(ref_labels, train_idx, train_class_num):
+    '''
+    paramters:
+        train_idx: 训练集下标
+        train_class_num: 训练数据集中类别的数目
+    '''
+    label_set = list(set(list(ref_labels.squeeze())))
+    label_set.sort()
+    new_train_idx = []
+    for c in label_set:
+        idx = np.array(train_idx)[np.where(ref_labels[train_idx] == c)[0]]
+        np.random.seed(seed)
+        if len(idx) < train_class_num:
+            random_nodes = list(np.random.choice(idx, len(idx), replace=False))
+        else:
+            random_nodes = list(np.random.choice(idx, train_class_num, replace=False))
+        new_train_idx += random_nodes
+    return new_train_idx
+
+
 

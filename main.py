@@ -4,7 +4,7 @@ import os
 
 import torch_geometric.data
 from utils import capsule_pd_data_to_anndata, combine_inter_intra_graph, \
-    centralissimo, perc_for_entropy, perc_for_density, setup_seed
+    centralissimo, perc_for_entropy, perc_for_density, setup_seed, random_stratify_sample, random_stratify_sample_with_train_idx
 
 from model import GCN
 import anndata as ad
@@ -68,7 +68,7 @@ def get_anndata():
         # test_idx即query data的idx
         adata.uns['test_idx'] = [len(ref_label) + i for i in range(len(query_label))]
 
-        # 按照论文，train label一开始每个类别设置成4个, 剩余的节点作为label budget里面的一部分
+        # 按照论文，train label一开始每个类别设置成4个, 剩余的training node作为label budget里面的一部分
         adata.uns['train_idx'] = random_stratify_sample_with_train_idx(ref_label.to_numpy(),
                                                                        train_idx=adata.uns['train_idx'],
                                                                        train_class_num=parameter_config[
@@ -78,7 +78,7 @@ def get_anndata():
         return adata
     elif data_config['data_mode'] == 'ann':
         '''ann data已存在'''
-        adata = ad.read_hdf(data_config['anndata_path'])
+        adata = ad.read(data_config['anndata_path'])
         return adata
 
 
@@ -158,43 +158,6 @@ def test(model, g_data):
     print("test acc {:.3f}".format(test_acc))
     return test_acc
 
-
-def random_stratify_sample(ref_labels, train_size):
-    # 对每个类都进行随机采样，分成train, val
-    # 这地方要保证train的数据是从0开始计数的,
-    # print(ref_labels.squeeze())
-    label_set = set(list(ref_labels.squeeze()))
-    train_idx = []
-    val_idx = []
-    for c in label_set:
-        idx = np.where(ref_labels == c)[0]
-        np.random.seed(seed)
-        np.random.shuffle(idx)
-        train_num = int(train_size * len(idx))
-        train_idx += list(idx[:train_num])
-        val_idx += list(idx[train_num:])
-
-    return train_idx, val_idx
-
-
-def random_stratify_sample_with_train_idx(ref_labels, train_idx, train_class_num):
-    '''
-    paramters:
-        train_idx: 训练集下标
-        train_class_num: 训练数据集中类别的数目
-    '''
-    label_set = list(set(list(ref_labels.squeeze())))
-    label_set.sort()
-    new_train_idx = []
-    for c in label_set:
-        idx = np.array(train_idx)[np.where(ref_labels[train_idx] == c)[0]]
-        np.random.seed(seed)
-        if len(idx) < train_class_num:
-            random_nodes = list(np.random.choice(idx, len(idx), replace=False))
-        else:
-            random_nodes = list(np.random.choice(idx, train_class_num, replace=False))
-        new_train_idx += random_nodes
-    return new_train_idx
 
 
 projects = [
