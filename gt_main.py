@@ -21,6 +21,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import LabelEncoder
 from model import GTModel
 
+
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 data_config = {

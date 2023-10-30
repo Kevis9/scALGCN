@@ -105,6 +105,7 @@ class GTModel(nn.Module):
     ):
         super().__init__()
         self.atom_encoder = AtomEncoder(hidden_size)
+        self.hiddens_size = hidden_size
         self.pos_linear = nn.Linear(pos_enc_size, hidden_size)
         self.layers = nn.ModuleList(
             [GTLayer(hidden_size, num_heads) for _ in range(num_layers)]
@@ -122,7 +123,8 @@ class GTModel(nn.Module):
         indices = torch.stack(g.edges())
         N = g.num_nodes()
         A = dglsp.spmatrix(indices, shape=(N, N))
-        h = self.atom_encoder(X) + self.pos_linear(pos_enc)
+        self.h_encoder = torch.nn.Embedding(X.shape[1], self.hiddens_size)
+        h = self.h_encoder(X) + self.pos_linear(pos_enc)
         for layer in self.layers:
             h = layer(A, h)
         h = self.pooler(g, h)
