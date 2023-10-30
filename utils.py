@@ -36,7 +36,7 @@ def capsule_pd_data_to_anndata(data, label, edge_index):
     :param edge_index: COO format [[row...], [col...]]
     :return:
     '''
-    adata = ad.AnnData(data.to_numpy(), dtype=np.float)
+    adata = ad.AnnData(data.to_numpy(), dtype=float)
     adata.obs_names = data.index.tolist()
     adata.var_names = data.columns.tolist()
     adata.obs['cell_type'] = label.iloc[:, 0].to_numpy()
