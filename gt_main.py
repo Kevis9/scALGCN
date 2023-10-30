@@ -219,7 +219,7 @@ for proj in projects:
     # ours
     pos_enc_size = 8
     g_data.ndata['PE'] = dgl.laplacian_pe(g_data, k=pos_enc_size, padding=True)
-    model = GTModel(out_size=g_data.NCL, pos_enc_size=pos_enc_size).to(device)
+    model = GTModel(out_size=data_info['NCL'], pos_enc_size=pos_enc_size).to(device)
     train(model, g_data, data_info, select_mode=True)
 
     test_acc = test(model, g_data, data_info)
@@ -228,7 +228,7 @@ for proj in projects:
 
     # scGCN
     g_data.train_idx = adata.uns['train_idx_for_no_al']
-    model = GTModel(out_size=g_data.NCL, pos_enc_size=pos_enc_size).to(device)
+    model = GTModel(out_size=data_info['NCL'], pos_enc_size=pos_enc_size).to(device)
     train(model, g_data, data_info, select_mode=False)
     test_acc = test(model, g_data, data_info)
     scGCN_acc.append(test_acc)
