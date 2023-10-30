@@ -177,7 +177,7 @@ def random_stratify_sample_with_train_idx(ref_labels, train_idx, train_class_num
     new_train_idx = []
     for c in label_set:
         idx = np.array(train_idx)[np.where(ref_labels[train_idx] == c)[0]]
-        np.random.seed(seed)
+        np.random.seed(20)
         if len(idx) < train_class_num:
             random_nodes = list(np.random.choice(idx, len(idx), replace=False))
         else:
