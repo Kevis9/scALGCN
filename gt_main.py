@@ -114,7 +114,7 @@ def train(model, g_data, data_info, select_mode):
 
         optimizer.zero_grad()
 
-        out = model(g_data, g_data.ndata["x"], g_data.ndata["PE"])
+        out = model(g_data, g_data.ndata["x"],to(device), g_data.ndata["PE"].to(device))
 
         loss = criterion(out[data_info['train_idx']], g_data.ndata['y_predict'][data_info['train_idx']])
         loss.backward()
@@ -162,7 +162,8 @@ def train(model, g_data, data_info, select_mode):
 
 def test(model, g_data, data_info):
     model.eval()
-    out = model(g_data, g_data.ndata["x"], g_data.ndata["PE"])
+    g_data.to(device)
+    out = model(g_data, g_data.ndata["x"].to(device), g_data.ndata["PE"].to(device))
     test_pred = torch.argmax(out[data_info['test_idx']], dim=1).cpu().numpy()
     test_true = g_data['y_true'][data_info['test_idx']].cpu().numpy()
     test_acc = accuracy_score(test_true, test_pred)
