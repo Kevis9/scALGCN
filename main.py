@@ -187,7 +187,7 @@ scGCN_ref_num = []
 query_num_arr = []
 
 seed = 32
-setup_seed(seed)
+
 
 for proj in projects:
     data_config['root'] = 'experiment/' + proj + '/data'

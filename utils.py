@@ -157,7 +157,7 @@ def random_stratify_sample(ref_labels, train_size):
     val_idx = []
     for c in label_set:
         idx = np.where(ref_labels == c)[0]
-        np.random.seed(seed)
+        np.random.seed(20)
         np.random.shuffle(idx)
         train_num = int(train_size * len(idx))
         train_idx += list(idx[:train_num])
