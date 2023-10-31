@@ -15,7 +15,7 @@ from dgl.dataloading import GraphDataLoader
 from ogb.graphproppred import collate_dgl, DglGraphPropPredDataset, Evaluator
 from ogb.graphproppred.mol_encoder import AtomEncoder
 from tqdm import tqdm
-
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 class GCN(torch.nn.Module):
     '''
@@ -66,7 +66,7 @@ class SparseMHA(nn.Module):
         # >>>>> There is a problem in dglsp.bsdmm: the program will crash without any prompts
         # attn = dglsp.bsddmm(A, q, k.transpose(1, 0))  # (sparse) [N, N, nh]
         # >>>>> Instead, we will use normal dense computation
-        attn = (q.transpose(0, 2).transpose(1, 2) @ k.transpose(0, 2)) * A.to_dense() # [nh, N, N]
+        attn = (q.transpose(0, 2).transpose(1, 2) @ k.transpose(0, 2)) * A.to_dense().to(device) # [nh, N, N]
         attn = attn.softmax(dim=0)  # [nh, N, N]
         # out = dglsp.bspmm(attn, v)  # [N, dh, nh]
         out = attn @ v.transpose(0, 2).transpose(1, 2) # [nh, N, dh]
