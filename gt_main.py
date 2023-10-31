@@ -201,9 +201,9 @@ for proj in projects:
     y_true = adata.obs['cell_type']
     label_encoder = LabelEncoder()
     y_true = label_encoder.fit_transform(y_true)
-    g_data.ndata['x'] = torch.tensor(adata.X, dtype=torch.float)
-    g_data.ndata['y_true'] = torch.tensor(y_true, dtype=torch.long)
-    g_data.ndata['y_predict'] = torch.tensor(y_true, dtype=torch.long)
+    g_data.ndata['x'] = torch.tensor(adata.X, dtype=torch.float).to(device)
+    g_data.ndata['y_true'] = torch.tensor(y_true, dtype=torch.long).to(device)
+    g_data.ndata['y_predict'] = torch.tensor(y_true, dtype=torch.long).to(device)
 
     data_info = {}
     data_info['val_idx'] = adata.uns['val_idx']
