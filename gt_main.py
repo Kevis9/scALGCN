@@ -170,9 +170,7 @@ def test(model, g_data, data_info):
 
 
 projects = [
-    'A549',
-    'kidney',
-    'lung'
+    'cel_seq_10x_v3'
 ]
 
 AL_acc = []
