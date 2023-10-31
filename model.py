@@ -66,11 +66,11 @@ class SparseMHA(nn.Module):
         # >>>>> There is a problem in dglsp.bsdmm: the program will crash without any prompts
         # attn = dglsp.bsddmm(A, q, k.transpose(1, 0))  # (sparse) [N, N, nh]
         # >>>>> Instead, we will use normal dense computation
-        attn = (q @ k.transpose(1, 0)) * A.to_dense()
-        attn = attn.softmax(dim=2)  # (sparse) [N, N, nh]
+        attn = (q.transpose(0, 2).transpose(1, 2) @ k.transpose(0, 2)) * A.to_dense() # [nh, N, N]
+        attn = attn.softmax(dim=0)  # [nh, N, N]
         # out = dglsp.bspmm(attn, v)  # [N, dh, nh]
-        out = attn @ v
-
+        out = attn @ v.transpose(0, 2).transpose(1, 2) # [nh, N, dh]
+        
         return self.out_proj(out.reshape(N, -1))
 
 
