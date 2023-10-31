@@ -16,16 +16,17 @@ from ogb.graphproppred import collate_dgl, DglGraphPropPredDataset, Evaluator
 from ogb.graphproppred.mol_encoder import AtomEncoder
 from tqdm import tqdm
 
+
 class GCN(torch.nn.Module):
     '''
         Two layer GCN network
     '''
+
     def __init__(self, input_dim, hidden_units, output_dim):
         super(GCN, self).__init__()
         torch.manual_seed(32)
         self.conv1 = GCNConv(input_dim, hidden_units)
         self.conv2 = GCNConv(hidden_units, output_dim)
-        
 
     def forward(self, x, edge_idx):
         adj = SparseTensor(row=edge_idx[0], col=edge_idx[1], sparse_sizes=(x.shape[0], x.shape[0]))
@@ -44,7 +45,7 @@ class SparseMHA(nn.Module):
         self.hidden_size = hidden_size
         self.num_heads = num_heads
         self.head_dim = hidden_size // num_heads
-        self.scaling = self.head_dim**-0.5
+        self.scaling = self.head_dim ** -0.5
 
         self.q_proj = nn.Linear(hidden_size, hidden_size)
         self.k_proj = nn.Linear(hidden_size, hidden_size)
@@ -61,13 +62,14 @@ class SparseMHA(nn.Module):
         # [N, dh, nh]
         v = self.v_proj(h).reshape(N, self.head_dim, self.num_heads)
 
-        ######################################################################
-        # (HIGHLIGHT) Compute the multi-head attention with Sparse Matrix API
-        ######################################################################
-        attn = dglsp.bsddmm(A, q, k.transpose(1, 0))  # (sparse) [N, N, nh]
-        # Sparse softmax by default applies on the last sparse dimension.
-        attn = attn.softmax()  # (sparse) [N, N, nh]
-        out = dglsp.bspmm(attn, v)  # [N, dh, nh]
+        # >>>>> Using sparse matrix to compute
+        # >>>>> There is a problem in dglsp.bsdmm: the program will crash without any prompts
+        # attn = dglsp.bsddmm(A, q, k.transpose(1, 0))  # (sparse) [N, N, nh]
+        # >>>>> Instead, we will use normal dense computation
+        attn = (q @ k.transpose(1, 0)) * A.to_dense()
+        attn = attn.softmax(dim=2)  # (sparse) [N, N, nh]
+        # out = dglsp.bspmm(attn, v)  # [N, dh, nh]
+        out = attn @ v
 
         return self.out_proj(out.reshape(N, -1))
 
@@ -94,15 +96,16 @@ class GTLayer(nn.Module):
 
         return self.batchnorm2(h)
 
+
 class GTModel(nn.Module):
     def __init__(
-        self,
-        input_dim,
-        out_size,
-        hidden_size=80,
-        pos_enc_size=2,
-        num_layers=8,
-        num_heads=8,
+            self,
+            input_dim,
+            out_size,
+            hidden_size=80,
+            pos_enc_size=2,
+            num_layers=8,
+            num_heads=8,
     ):
         super().__init__()
         self.atom_encoder = AtomEncoder(hidden_size)
@@ -131,4 +134,3 @@ class GTModel(nn.Module):
         h = self.pooler(g, h)
 
         return self.predictor(h)
-

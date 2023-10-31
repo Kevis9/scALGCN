@@ -111,10 +111,8 @@ def train(model, g_data, data_info, select_mode):
 
         gamma = np.random.beta(1, 1.005 - parameter_config['basef'] ** epoch)
         alpha = beta = (1 - gamma) / 2
-
         optimizer.zero_grad()
-
-        out = model(g_data, g_data.ndata["x"],to(device), g_data.ndata["PE"].to(device))
+        out = model(g_data, g_data.ndata["x"].to(device), g_data.ndata["PE"].to(device))
 
         loss = criterion(out[data_info['train_idx']], g_data.ndata['y_predict'][data_info['train_idx']])
         loss.backward()
