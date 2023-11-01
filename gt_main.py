@@ -38,15 +38,18 @@ data_config = {
 
 # For Graph Transformer parameters
 parameter_config = {
-    'gcn_hidden_units': 64,
     'epochs': 200,
-    'gt_lr': 1e-2,
+    'gt_lr': 1e-3,
+    'num_heads': 1,
+    'num_layers': 5,
+    'pos_enc_size': 8,
+    'hidden_size': 128,
     'basef': 0.8,
     'k_select': 1,
     'NL': 100,  # 有标签节点选取的阈值，这里的初始值不重要，最后 = NC * 20, 按照论文里面的设置
     'wd': 5e-4,  # weight decay
     'initial_class_train_num': 10,
-    'epoch_print_flag': False,
+    'epoch_print_flag': True,
     'final_class_num': 30
 }
 
@@ -171,7 +174,7 @@ def test(model, g_data, data_info):
 
 
 projects = [
-    'cel_seq_10x_v3'
+    'seq_well_10x_v3'
 ]
 
 AL_acc = []
@@ -218,8 +221,7 @@ for proj in projects:
     parameter_config['NL'] = data_info['NCL'] * parameter_config['final_class_num']
 
     # ours
-    # pos_enc_size = 8
-    # g_data.ndata['PE'] = dgl.laplacian_pe(g_data, k=pos_enc_size, padding=True)
+    g_data.ndata['PE'] = dgl.laplacian_pe(g_data, k=parameter_config['pos_enc_size'], padding=True)
     # model = GTModel(input_dim=g_data.ndata['x'].shape[1], out_size=data_info['NCL'], pos_enc_size=pos_enc_size).to(device)
     # train(model, g_data, data_info, select_mode=True)
     #
@@ -229,7 +231,12 @@ for proj in projects:
 
     # Graph Transformer
     data_info['train_idx'] = adata.uns['train_idx_for_no_al']
-    model = GTModel(input_dim=g_data.ndata['x'].shape[1], out_size=data_info['NCL'], pos_enc_size=pos_enc_size).to(device)
+    model = GTModel(input_dim=g_data.ndata['x'].shape[1],
+                    out_size=data_info['NCL'],
+                    hidden_size=parameter_config['hidden_size'],
+                    num_heads=parameter_config['num_heads'],
+                    num_layers=parameter_config['num_layers'],
+                    pos_enc_size=parameter_config['pos_enc_size']).to(device)
     train(model, g_data, data_info, select_mode=False)
     test_acc = test(model, g_data, data_info)
     gt_acc.append(test_acc)

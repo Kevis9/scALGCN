@@ -118,9 +118,9 @@ class GTModel(nn.Module):
         self.predictor = nn.Sequential(
             nn.Linear(hidden_size, hidden_size // 2),
             nn.ReLU(),
-            nn.Linear(hidden_size // 2, hidden_size // 4),
-            nn.ReLU(),
-            nn.Linear(hidden_size // 4, out_size),
+            # nn.Linear(hidden_size // 2, hidden_size // 4),
+            # nn.ReLU(),
+            nn.Linear(hidden_size // 2, out_size),
         )
 
     def forward(self, g, X, pos_enc):
