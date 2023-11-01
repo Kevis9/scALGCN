@@ -250,7 +250,7 @@ for proj in projects:
     parameter_config['NL'] = data_info['NCL'] * parameter_config['final_class_num']
 
     # ours
-    g_data.ndata['PE'] = dgl.laplacian_pe(g_data, k=parameter_config['pos_enc_size'], padding=True)
+    g_data.ndata['PE'] = dgl.laplacian_pe(g_data, k=net_params['pos_enc_dim'], padding=True)
     # model = GTModel(input_dim=g_data.ndata['x'].shape[1], out_size=data_info['NCL'], pos_enc_size=pos_enc_size).to(device)
     # train(model, g_data, data_info, select_mode=True)
     #
@@ -270,7 +270,7 @@ for proj in projects:
     net_params['in_dim'] = g_data.ndata['x'].shape[1]
     net_params['n_classes'] = data_info['NCL']
     model = GraphTransformerModel(net_params)
-    
+
     train(model, g_data, data_info, select_mode=False)
     test_acc = test(model, g_data, data_info)
     gt_acc.append(test_acc )
