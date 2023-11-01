@@ -176,9 +176,11 @@ projects = [
 
 AL_acc = []
 AL_ref_num = []
+gt_acc = []
+gt_ref_num = []
+query_num_arr = []
 scGCN_acc = []
 scGCN_ref_num = []
-query_num_arr = []
 
 seed = 32
 setup_seed(seed)
@@ -216,33 +218,29 @@ for proj in projects:
     parameter_config['NL'] = data_info['NCL'] * parameter_config['final_class_num']
 
     # ours
-    pos_enc_size = 8
-    g_data.ndata['PE'] = dgl.laplacian_pe(g_data, k=pos_enc_size, padding=True)
-    model = GTModel(input_dim=g_data.ndata['x'].shape[1], out_size=data_info['NCL'], pos_enc_size=pos_enc_size).to(device)
-    train(model, g_data, data_info, select_mode=True)
-
-    test_acc = test(model, g_data, data_info)
-    AL_acc.append(test_acc)
-    AL_ref_num.append(len(data_info['train_idx']))
+    # pos_enc_size = 8
+    # g_data.ndata['PE'] = dgl.laplacian_pe(g_data, k=pos_enc_size, padding=True)
+    # model = GTModel(input_dim=g_data.ndata['x'].shape[1], out_size=data_info['NCL'], pos_enc_size=pos_enc_size).to(device)
+    # train(model, g_data, data_info, select_mode=True)
+    #
+    # test_acc = test(model, g_data, data_info)
+    # AL_acc.append(test_acc)
+    # AL_ref_num.append(len(data_info['train_idx']))
 
     # Graph Transformer
     data_info['train_idx'] = adata.uns['train_idx_for_no_al']
     model = GTModel(input_dim=g_data.ndata['x'].shape[1], out_size=data_info['NCL'], pos_enc_size=pos_enc_size).to(device)
     train(model, g_data, data_info, select_mode=False)
     test_acc = test(model, g_data, data_info)
-    scGCN_acc.append(test_acc)
+    gt_acc.append(test_acc)
+    gt_ref_num.append(len(data_info['train_idx']))
 
-    # print("scGCN_acc")
-    # print(scGCN_acc)
-    # print("reference nodes num : {:} \n query nodes num  {:}".format(len(g_data.train_idx), len(g_data.test_idx)))
-    # scGCN_acc.append(scGCN_acc)
-    scGCN_ref_num.append(len(data_info['train_idx']))
 
     query_num_arr.append(len(data_info['test_idx']))
     data_config = data_config_cp
     print(projects)
     print(AL_acc)
     print(AL_ref_num)
-    print(scGCN_acc)
-    print(scGCN_ref_num)
+    print(gt_acc)
+    print(gt_ref_num)
     print(query_num_arr)

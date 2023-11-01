@@ -161,24 +161,7 @@ def test(model, g_data):
 
 
 projects = [
-    # "10x_v3_drop_seq",
-    # "10x_v3_indrop",
-    # "5061_84133",
-    # "84133_5061",
-    # "84133_81608",
-    # "84133_85241",
-    # "84133_combine",
-    # "drop_seq_10x_v3",
-    # "drop_seq_seq_well",
-    # "indrop_10x_v3",
-    # "indrop_drop_seq",
-    # "seq_well_10x_v3",
-    # "seq_well_drop_seq"
-    # "human_mouse",
-    # "mouse_human"
-    'A549',
-    'kidney',
-    'lung'
+   'cel_seq_10x_v3'
 ]
 AL_acc = []
 AL_ref_num = []
@@ -216,23 +199,13 @@ for proj in projects:
     # 设置好NL的值
     parameter_config['NL'] = g_data.NCL * parameter_config['final_class_num']
 
-    # ours_acc = []
-    # scGCN_acc = []
-
-    # g_data_cp = g_data.clone()
-
     # ours
-    model = GCN(input_dim=g_data.x.shape[1], hidden_units=parameter_config['gcn_hidden_units'],
-                output_dim=g_data.NCL)
-    train(model, g_data, select_mode=True)
-    test_acc = test(model, g_data)
-    # ours_acc.append(test_acc)
-
-    # print("ours")
-    # print(ours_acc)
-    # print("reference nodes num : {:} \n query nodes num  {:}".format(len(g_data.train_idx), len(g_data.test_idx)))
-    AL_acc.append(test_acc)
-    AL_ref_num.append(len(g_data.train_idx))
+    # model = GCN(input_dim=g_data.x.shape[1], hidden_units=parameter_config['gcn_hidden_units'],
+    #             output_dim=g_data.NCL)
+    # train(model, g_data, select_mode=True)
+    # test_acc = test(model, g_data)
+    # AL_acc.append(test_acc)
+    # AL_ref_num.append(len(g_data.train_idx))
 
 
     # scGCN
@@ -242,11 +215,6 @@ for proj in projects:
     train(model, g_data, select_mode=False)
     test_acc = test(model, g_data)
     scGCN_acc.append(test_acc)
-
-    # print("scGCN_acc")
-    # print(scGCN_acc)
-    # print("reference nodes num : {:} \n query nodes num  {:}".format(len(g_data.train_idx), len(g_data.test_idx)))
-    # scGCN_acc.append(scGCN_acc)
     scGCN_ref_num.append(len(g_data.train_idx))
 
     query_num_arr.append(len(g_data.test_idx))
@@ -257,10 +225,3 @@ for proj in projects:
     print(scGCN_acc)
     print(scGCN_ref_num)
     print(query_num_arr)
-
-# print(projects)
-# print(AL_acc)
-# print(AL_ref_num)
-# print(scGCN_acc)
-# print(scGCN_ref_num)
-# print(query_num_arr)
