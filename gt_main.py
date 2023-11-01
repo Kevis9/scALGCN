@@ -19,7 +19,7 @@ from torch_geometric.utils import to_dense_adj
 import numpy as np
 from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import LabelEncoder
-from model import GTModel
+from model import GTModel, GraphTransformerModel
 
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -40,10 +40,7 @@ data_config = {
 parameter_config = {
     'epochs': 200,
     'gt_lr': 1e-3,
-    'num_heads': 1,
-    'num_layers': 5,
-    'pos_enc_size': 8,
-    'hidden_size': 128,
+    # For active learning
     'basef': 0.8,
     'k_select': 1,
     'NL': 100,  # 有标签节点选取的阈值，这里的初始值不重要，最后 = NC * 20, 按照论文里面的设置
@@ -51,6 +48,24 @@ parameter_config = {
     'initial_class_train_num': 10,
     'epoch_print_flag': True,
     'final_class_num': 30
+}
+
+net_params = {
+    'in_dim': 0, # not sure now
+    'hidden_dim': 128,
+    'out_dim': 64,
+    'n_classes': 0, # not sure now
+    'n_heads': 1,
+    'in_feat_dropout': 0.2,
+    'dropout': 0.2,
+    'n_layers': 3,
+    'layer_norm': False,
+    'batch_norm': True,
+    'residual': True,
+    'device': device,
+    'lap_pos_enc': True,
+    'wl_pos_enc': False,
+    'pos_enc_dim': 8,
 }
 
 
@@ -115,9 +130,13 @@ def train(model, g_data, data_info, select_mode):
         gamma = np.random.beta(1, 1.005 - parameter_config['basef'] ** epoch)
         alpha = beta = (1 - gamma) / 2
         optimizer.zero_grad()
-        out = model(g_data.to(device), g_data.ndata["x"].to(device), g_data.ndata["PE"].to(device))
-       
-        
+
+        g_data = g_data.to(device)
+        node_x = g_data.ndata['x'].to(device)
+        lap_pe = g_data.ndata['PE'].to(device)
+
+        out = model(g_data, node_x, h_lap_pos_enc=lap_pe)
+
         loss = criterion(out[data_info['train_idx']], g_data.ndata['y_predict'][data_info['train_idx']])
         loss.backward()
         optimizer.step()
@@ -155,15 +174,25 @@ def train(model, g_data, data_info, select_mode):
         val_true = g_data.ndata['y_true'][data_info['val_idx']].cpu().numpy()
         val_acc = accuracy_score(val_true, val_pred)
         val_loss = criterion(out[data_info['val_idx']], g_data.ndata['y_true'][data_info['val_idx']])
+
+        test_pred = torch.argmax(out[data_info['test_idx']], dim=1).cpu().numpy()
+        test_true = g_data.ndata['y_true'][data_info['test_idx']].cpu().numpy()
+        test_acc = accuracy_score(test_pred, test_true)
+
+        train_pred = torch.argmax(out[data_info['train_idx']], dim=1).cpu().numpy()
+        train_true = g_data.ndata['y_true'][data_info['train_idx']].cpu().numpy()
+        train_acc = accuracy_score(train_pred, train_true)
+
         if (parameter_config['epoch_print_flag']):
-            print("Epoch {:}: traing loss: {:.3f}, val_loss {:.3f}, val_acc {:.3f}".format(epoch, loss, val_loss,
-                                                                                           val_acc))
+            print("Epoch {:}: traing loss: {:.3f}, train_acc: {:.3f}, val_loss {:.3f}, val_acc {:.3f}, test_acc {:.3f}".format(epoch, loss, train_acc, val_loss,
+                                                                                           val_acc, test_acc))
+
 
     return model
 
 
 def test(model, g_data, data_info):
-    model.eval()
+    # model.eval()
     g_data.to(device)
     out = model(g_data.to(device), g_data.ndata["x"].to(device), g_data.ndata["PE"].to(device))
     test_pred = torch.argmax(out[data_info['test_idx']], dim=1).cpu().numpy()
@@ -231,15 +260,20 @@ for proj in projects:
 
     # Graph Transformer
     data_info['train_idx'] = adata.uns['train_idx_for_no_al']
-    model = GTModel(input_dim=g_data.ndata['x'].shape[1],
-                    out_size=data_info['NCL'],
-                    hidden_size=parameter_config['hidden_size'],
-                    num_heads=parameter_config['num_heads'],
-                    num_layers=parameter_config['num_layers'],
-                    pos_enc_size=parameter_config['pos_enc_size']).to(device)
+    # model = GTModel(input_dim=g_data.ndata['x'].shape[1],
+    #                 out_size=data_info['NCL'],
+    #                 hidden_size=parameter_config['hidden_size'],
+    #                 num_heads=parameter_config['num_heads'],
+    #                 num_layers=parameter_config['num_layers'],
+    #                 pos_enc_size=parameter_config['pos_enc_size']).to(device)
+    #
+    net_params['in_dim'] = g_data.ndata['x'].shape[1]
+    net_params['n_classes'] = data_info['NCL']
+    model = GraphTransformerModel(net_params)
+    
     train(model, g_data, data_info, select_mode=False)
     test_acc = test(model, g_data, data_info)
-    gt_acc.append(test_acc)
+    gt_acc.append(test_acc )
     gt_ref_num.append(len(data_info['train_idx']))
 
 
