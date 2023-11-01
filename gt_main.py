@@ -46,7 +46,7 @@ parameter_config = {
     'NL': 100,  # 有标签节点选取的阈值，这里的初始值不重要，最后 = NC * 20, 按照论文里面的设置
     'wd': 5e-4,  # weight decay
     'initial_class_train_num': 10,
-    'epoch_print_flag': 0,
+    'epoch_print_flag': False,
     'final_class_num': 30
 }
 
@@ -113,7 +113,8 @@ def train(model, g_data, data_info, select_mode):
         alpha = beta = (1 - gamma) / 2
         optimizer.zero_grad()
         out = model(g_data.to(device), g_data.ndata["x"].to(device), g_data.ndata["PE"].to(device))
-
+       
+        
         loss = criterion(out[data_info['train_idx']], g_data.ndata['y_predict'][data_info['train_idx']])
         loss.backward()
         optimizer.step()
@@ -139,7 +140,7 @@ def train(model, g_data, data_info, select_mode):
             for node_idx in select_arr:
                 data_info['train_idx'].append(node_idx)
                 # 注意y_predict是tensor
-                g_data['y_predict'][node_idx] = g_data['y_true'][node_idx]
+                g_data.ndata['y_predict'][node_idx] = g_data.ndata['y_true'][node_idx]
                 if (parameter_config['epoch_print_flag']):
                     print("Epoch {:}: pick up one node to the training set!".format(epoch))
 
@@ -148,9 +149,9 @@ def train(model, g_data, data_info, select_mode):
         # 做一个detach
         out = out.detach()
         val_pred = torch.argmax(out[data_info['val_idx']], dim=1).cpu().numpy()
-        val_true = g_data['y_true'][data_info['val_idx']].cpu().numpy()
+        val_true = g_data.ndata['y_true'][data_info['val_idx']].cpu().numpy()
         val_acc = accuracy_score(val_true, val_pred)
-        val_loss = criterion(out[data_info['val_idx']], g_data['y_true'][data_info['val_idx']])
+        val_loss = criterion(out[data_info['val_idx']], g_data.ndata['y_true'][data_info['val_idx']])
         if (parameter_config['epoch_print_flag']):
             print("Epoch {:}: traing loss: {:.3f}, val_loss {:.3f}, val_acc {:.3f}".format(epoch, loss, val_loss,
                                                                                            val_acc))
@@ -163,7 +164,7 @@ def test(model, g_data, data_info):
     g_data.to(device)
     out = model(g_data.to(device), g_data.ndata["x"].to(device), g_data.ndata["PE"].to(device))
     test_pred = torch.argmax(out[data_info['test_idx']], dim=1).cpu().numpy()
-    test_true = g_data['y_true'][data_info['test_idx']].cpu().numpy()
+    test_true = g_data.ndata['y_true'][data_info['test_idx']].cpu().numpy()
     test_acc = accuracy_score(test_true, test_pred)
     print("test acc {:.3f}".format(test_acc))
     return test_acc
@@ -201,9 +202,9 @@ for proj in projects:
     y_true = adata.obs['cell_type']
     label_encoder = LabelEncoder()
     y_true = label_encoder.fit_transform(y_true)
-    g_data.ndata['x'] = torch.tensor(adata.X, dtype=torch.float).to(device)
-    g_data.ndata['y_true'] = torch.tensor(y_true, dtype=torch.long).to(device)
-    g_data.ndata['y_predict'] = torch.tensor(y_true, dtype=torch.long).to(device)
+    g_data.ndata['x'] = torch.tensor(adata.X, dtype=torch.float)
+    g_data.ndata['y_true'] = torch.tensor(y_true, dtype=torch.long)
+    g_data.ndata['y_predict'] = torch.tensor(y_true, dtype=torch.long)
 
     data_info = {}
     data_info['val_idx'] = adata.uns['val_idx']
@@ -222,10 +223,10 @@ for proj in projects:
 
     test_acc = test(model, g_data, data_info)
     AL_acc.append(test_acc)
-    AL_ref_num.append(len(g_data.train_idx))
+    AL_ref_num.append(len(data_info['train_idx']))
 
-    # scGCN
-    g_data.train_idx = adata.uns['train_idx_for_no_al']
+    # Graph Transformer
+    data_info['train_idx'] = adata.uns['train_idx_for_no_al']
     model = GTModel(input_dim=g_data.ndata['x'].shape[1], out_size=data_info['NCL'], pos_enc_size=pos_enc_size).to(device)
     train(model, g_data, data_info, select_mode=False)
     test_acc = test(model, g_data, data_info)

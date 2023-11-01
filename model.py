@@ -89,7 +89,6 @@ class GTLayer(nn.Module):
         h1 = h
         h = self.MHA(A, h)
         h = self.batchnorm1(h + h1)
-
         h2 = h
         h = self.FFN2(F.relu(self.FFN1(h)))
         h = h2 + h
@@ -131,6 +130,7 @@ class GTModel(nn.Module):
         h = self.h_embedding(X) + self.pos_linear(pos_enc)
         for layer in self.layers:
             h = layer(A, h)
-        h = self.pooler(g, h)
-
+        # print(h.shape)
+        # h = self.pooler(g, h)
+        # exit()
         return self.predictor(h)
