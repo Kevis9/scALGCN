@@ -4,7 +4,6 @@ import torch.nn.functional as F
 from torch_sparse import SparseTensor
 import dgl
 import dgl.nn as dglnn
-import dgl.sparse as dglsp
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -129,7 +128,9 @@ class GTModel(nn.Module):
     def forward(self, g, X, pos_enc):
         indices = torch.stack(g.edges())
         N = g.num_nodes()
-        A = dglsp.spmatrix(indices, shape=(N, N))
+        # A = dglsp.spmatrix(indices, shape=(N, N))
+        # to-do : 整理一下A的邻接矩阵
+        A = g.edges()
         h = self.h_embedding(X) + self.pos_linear(pos_enc)
         for layer in self.layers:
             h = layer(A, h)
