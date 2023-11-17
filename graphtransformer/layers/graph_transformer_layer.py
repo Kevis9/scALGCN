@@ -16,6 +16,9 @@ import numpy as np
 """
 def src_dot_dst(src_field, dst_field, out_field):
     def func(edges):
+        # the edges are generated from dgl internally.
+        # edges.src: a view of ndata of src nodes
+        # edges.src: a view of ndata of dst nodes
         return {out_field: (edges.src[src_field] * edges.dst[dst_field]).sum(-1, keepdim=True)}
     return func
 
@@ -55,8 +58,8 @@ class MultiHeadAttentionLayer(nn.Module):
 
         # Send weighted values to target nodes
         eids = g.edges()
-        fn.u_mul_e(eids, fn.u_mul_e('V_h', 'score', 'V_h'), fn.sum('V_h', 'wV'))
-        fn.u_mul_e(eids, fn.copy_e('score', 'score'), fn.sum('score', 'z'))
+        fn.send_and_recv(eids, fn.u_mul_e('V_h', 'score', 'V_h'), fn.sum('V_h', 'wV'))
+        fn.send_and_recv(eids, fn.copy_e('score', 'score'), fn.sum('score', 'z'))
     
     def forward(self, g, h):
         
