@@ -66,15 +66,15 @@ class SparseMHA(nn.Module):
         k = self.k_proj(h).reshape(N, self.out_dim, self.num_heads)
         # [N, dh, nh]
         v = self.v_proj(h).reshape(N, self.out_dim, self.num_heads)
+        
+        attn = dglsp.bsddmm(A, q, k.transpose(1, 0))  # (sparse) [N, N, nh]
+        # Sparse softmax by default applies on the last sparse dimension.
+        attn = attn.softmax()  # (sparse) [N, N, nh]
+        out = dglsp.bspmm(attn, v)  # [N, dh, nh]
 
-        # >>>>> Using sparse matrix to compute
-        # >>>>> There is a problem in dglsp.bsdmm: the program will crash without any prompts
-        # attn = dglsp.bsddmm(A, q, k.transpose(1, 0))  # (sparse) [N, N, nh]
-        # >>>>> Instead, we will use normal dense computation
-        attn = (q.transpose(0, 2).transpose(1, 2) @ k.transpose(0, 2)) * A.to_dense().to(device) # [nh, N, N]
-        attn = attn.softmax(dim=0)  # [nh, N, N]
-        # out = dglsp.bspmm(attn, v)  # [N, dh, nh]
-        out = attn @ v.transpose(0, 2).transpose(1, 2) # [nh, N, dh]
+        # attn = (q.transpose(0, 2).transpose(1, 2) @ k.transpose(0, 2)) * A.to_dense().to(device) # [nh, N, N]
+        # attn = attn.softmax(dim=0)  # [nh, N, N]        
+        # out = attn @ v.transpose(0, 2).transpose(1, 2) # [nh, N, dh]
         
         return out.reshape(N, -1)
 
