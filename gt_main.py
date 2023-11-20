@@ -209,7 +209,7 @@ for proj in projects:
                     num_heads=net_params['n_heads'],
                     residual=net_params['residual']).to(device)
     
-    train(model, g_data, data_info, is_active_learning=True)    
+    train(model, g_data, data_info, is_active_learning=False)    
     test_acc = test(model, g_data, data_info)
     AL_acc.append(test_acc)
     AL_ref_num.append(len(data_info['train_idx']))
