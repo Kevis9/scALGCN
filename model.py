@@ -55,7 +55,7 @@ class SparseMHA(nn.Module):
         self.q_proj = nn.Linear(in_dim, out_dim * self.num_heads)
         self.k_proj = nn.Linear(in_dim, out_dim * self.num_heads)
         self.v_proj = nn.Linear(in_dim, out_dim * self.num_heads)
-        self.out_proj = nn.Linear(in_dim, out_dim)
+        
 
     def forward(self, A, h):
         N = len(h)
@@ -76,7 +76,7 @@ class SparseMHA(nn.Module):
         # out = dglsp.bspmm(attn, v)  # [N, dh, nh]
         out = attn @ v.transpose(0, 2).transpose(1, 2) # [nh, N, dh]
         
-        return self.out_proj(out.reshape(N, -1))
+        return out.reshape(N, -1)
 
 
 class GTLayer(nn.Module):
