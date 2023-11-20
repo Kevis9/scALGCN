@@ -160,7 +160,7 @@ class GTModel(nn.Module):
         h = self.FFN_layer2(h)
 
         h = self.batch_norm2(h)        
-        
+
         # print(h.shape)
         # h = self.pooler(g, h)
         # exit()
