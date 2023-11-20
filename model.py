@@ -82,9 +82,10 @@ class SparseMHA(nn.Module):
 class GTLayer(nn.Module):
     """Graph Transformer Layer"""
 
-    def __init__(self, in_dim, out_dim, num_heads, dropout):
+    def __init__(self, in_dim, out_dim, num_heads, dropout, residual):
         super().__init__()
         self.dropout = dropout
+        self.residual = residual
         self.MHA = SparseMHA(in_dim=in_dim, out_dim=out_dim, num_heads=num_heads)
         self.batchnorm1 = nn.BatchNorm1d(out_dim)
         self.batchnorm2 = nn.BatchNorm1d(out_dim)
@@ -101,8 +102,11 @@ class GTLayer(nn.Module):
         h = F.dropout(h, self.dropout, training=self.training)
         
         h = self.O(h)
-
-        h = self.batchnorm1(h + h1)
+        
+        if self.residual:
+            h = h + h1
+        
+        h = self.batchnorm1(h)
         
         # residual 
         h2 = h
@@ -110,8 +114,9 @@ class GTLayer(nn.Module):
         h = F.relu(h)
         h = F.dropout(h, self.dropout, training=self.training)
         h = self.FFN2(h)
-                        
-        h = h2 + h
+
+        if self.residual:      
+            h = h2 + h
 
         h = self.batchnorm2(h)
 
@@ -128,6 +133,7 @@ class GTModel(nn.Module):
             pos_enc_size,
             num_layers,
             drop_out,
+            residual,
             num_heads
     ):
         super().__init__()        
@@ -136,13 +142,13 @@ class GTModel(nn.Module):
         self.n_class = n_class
         self.out_dim = out_dim
         self.drop_out = drop_out
-
+        self.residual = residual
         self.pos_linear = nn.Linear(pos_enc_size, hidden_size)
         self.layers = nn.ModuleList(
-            [GTLayer(hidden_size, hidden_size, num_heads, self.drop_out) for _ in range(num_layers - 1)]
+            [GTLayer(hidden_size, hidden_size, num_heads, self.drop_out, residual=residual) for _ in range(num_layers - 1)]
         )        
         self.layers.append(
-            GTLayer(hidden_size, out_dim, num_heads, self.drop_out)
+            GTLayer(hidden_size, out_dim, num_heads, self.drop_out, residual=residual)
         )
         # self.pooler = dglnn.SumPooling()                
         self.predictor = nn.Sequential(

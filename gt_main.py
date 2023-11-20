@@ -53,15 +53,15 @@ parameter_config = {
 net_params = {
     'in_dim': 0, # not sure now
     'hidden_dim': 128,
-    'out_dim': 128,
+    'out_dim': 64,
     'n_classes': 0, # not sure now
     'n_heads': 1,
     'in_feat_dropout': 0.2,
     'dropout': 0.2,
     'n_layers': 2,
     'layer_norm': False,
-    'batch_norm': True,
-    'residual': True,
+    'batch_norm': True,    
+    'residual': False,
     'device': device,
     'lap_pos_enc': True,
     'wl_pos_enc': False,
@@ -206,7 +206,8 @@ for proj in projects:
                     pos_enc_size=net_params['pos_enc_dim'],
                     num_layers=net_params['n_layers'],
                     drop_out=net_params['dropout'],
-                    num_heads=net_params['n_heads']).to(device)
+                    num_heads=net_params['n_heads'],
+                    residual=net_params['residual']).to(device)
     
     train(model, g_data, data_info, is_active_learning=True)    
     test_acc = test(model, g_data, data_info)
