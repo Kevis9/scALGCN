@@ -48,8 +48,7 @@ class MultiHeadAttentionLayer(nn.Module):
         else:
             self.Q = nn.Linear(in_dim, out_dim * num_heads, bias=False)
             self.K = nn.Linear(in_dim, out_dim * num_heads, bias=False)
-            self.V = nn.Linear(in_dim, out_dim * num_heads, bias=False)
-        
+            self.V = nn.Linear(in_dim, out_dim * num_heads, bias=False)                        
     
     def propagate_attention(self, g):
         # Compute attention score
@@ -58,6 +57,12 @@ class MultiHeadAttentionLayer(nn.Module):
 
         # Send weighted values to target nodes
         eids = g.edges()
+        print("打印Q_h, K_h, V_h的shape, from propgate attetion")
+        print(g.ndata['Q_h'].shape)
+        print(g.ndata['K_h'].shape)
+        print(g.ndata['V_h'].shape)        
+        print(self.num_heads)
+        
         g.send_and_recv(eids, fn.u_mul_e('V_h', 'score', 'V_h'), fn.sum('V_h', 'wV'))
         g.send_and_recv(eids, fn.copy_e('score', 'score'), fn.sum('score', 'z'))
     
@@ -72,6 +77,10 @@ class MultiHeadAttentionLayer(nn.Module):
         g.ndata['Q_h'] = Q_h.view(-1, self.num_heads, self.out_dim)
         g.ndata['K_h'] = K_h.view(-1, self.num_heads, self.out_dim)
         g.ndata['V_h'] = V_h.view(-1, self.num_heads, self.out_dim)
+        print("打印Q_h, K_h, V_h的shape, from forward函数")
+        print(g.ndata['Q_h'].shape)
+        print(g.ndata['K_h'].shape)
+        print(g.ndata['V_h'].shape)
         
         self.propagate_attention(g)
         
