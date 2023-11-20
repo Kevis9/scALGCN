@@ -61,7 +61,7 @@ net_params = {
     'layer_norm': False,
     'batch_norm': True,    
     'residual': True,
-    'add_pos_enc':Treu,
+    'add_pos_enc':True,
     'device': device,
     'lap_pos_enc': True,
     'wl_pos_enc': False,
