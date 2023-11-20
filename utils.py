@@ -9,8 +9,8 @@ import anndata as ad
 import networkx as nx
 import torch
 import os
-
-
+from sklearn.preprocessing import LabelEncoder
+import dgl
 
 def setup_seed(seed):
     torch.manual_seed(seed)
@@ -220,5 +220,32 @@ def get_anndata(data_config):
         '''ann data已存在'''
         adata = ad.read(data_config['anndata_path'])
         return adata
+
+
+
+def load_data(data_config):
+    # 数据准备
+    adata = get_anndata(data_config=data_config)
+    # g_data准备
+    # 将所有的adata的数据转为tensor
+    # g_data = torch_geometric.data.Data(x=torch.tensor(adata.X, dtype=torch.float),
+    #                                    edge_index=torch.tensor(adata.uns['edge_index'], dtype=torch.long))
+    src, dst = adata.uns['edge_index'][0], adata.uns['edge_index'][1]
+    g_data = dgl.graph((src, dst), num_nodes=len(adata.obs_names))
+
+    y_true = adata.obs['cell_type']
+    label_encoder = LabelEncoder()
+    y_true = label_encoder.fit_transform(y_true)
+    g_data.ndata['x'] = torch.tensor(adata.X, dtype=torch.float)
+    g_data.ndata['y_true'] = torch.tensor(y_true, dtype=torch.long)
+    g_data.ndata['y_predict'] = torch.tensor(y_true, dtype=torch.long)
+
+    data_info = {}
+    data_info['val_idx'] = adata.uns['val_idx']
+    data_info['test_idx'] = adata.uns['test_idx']
+    data_info['train_idx'] = adata.uns['train_idx']
+    data_info['NCL'] = len(set(adata.obs['cell_type'][adata.uns['train_idx']]))
+    data_info['label_encoder'] = label_encoder
+    return g_data, adata, data_info
 
 
