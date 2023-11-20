@@ -35,7 +35,7 @@ data_config = {
     'data_mode': 'csv'
 }
 
-# For Graph Transformer parameters
+# For active learning and training
 parameter_config = {
     'epochs': 200,
     'gt_lr': 1e-3,
@@ -49,6 +49,7 @@ parameter_config = {
     'final_class_num': 30
 }
 
+# For GT hyper-parameters
 net_params = {
     'in_dim': 0, # not sure now
     'hidden_dim': 128,
@@ -189,7 +190,7 @@ for proj in projects:
             data_config[key] = os.path.join(root_data_path, data_config[key])
     
     # load data
-    g_data, adata, data_info = load_data(data_config=data_config)
+    g_data, adata, data_info = load_data(data_config=data_config, parameter_config=parameter_config)
     
     # 设置好NL的值
     parameter_config['NL'] = data_info['NCL'] * parameter_config['final_class_num']

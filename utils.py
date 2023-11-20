@@ -186,7 +186,7 @@ def random_stratify_sample_with_train_idx(ref_labels, train_idx, train_class_num
     return new_train_idx
 
 
-def get_anndata(data_config):
+def get_anndata(data_config, parameter_config):
     if data_config['data_mode'] == 'csv':
         ref_data = pd.read_csv(data_config['ref_data_path'], index_col=0)
         ref_label = pd.read_csv(data_config['ref_label_path'])
@@ -223,9 +223,9 @@ def get_anndata(data_config):
 
 
 
-def load_data(data_config):
+def load_data(data_config, parameter_config):
     # 数据准备
-    adata = get_anndata(data_config=data_config)
+    adata = get_anndata(data_config=data_config, parameter_config=parameter_config)
     # g_data准备
     # 将所有的adata的数据转为tensor
     # g_data = torch_geometric.data.Data(x=torch.tensor(adata.X, dtype=torch.float),
