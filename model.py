@@ -42,27 +42,29 @@ class GCN(torch.nn.Module):
 class SparseMHA(nn.Module):
     """Sparse Multi-head Attention Module"""
 
-    def __init__(self, hidden_size=80, num_heads=8):
+    def __init__(self, in_dim, out_dim, num_heads):
         super().__init__()
-        self.hidden_size = hidden_size
+        self.in_dim = in_dim
+        self.out_dim = out_dim
         self.num_heads = num_heads
-        self.head_dim = hidden_size // num_heads
-        self.scaling = self.head_dim ** -0.5
+        self.head_dim = in_dim // num_heads
+        self.scaling = self.out_dim ** -0.5
+        
 
-        self.q_proj = nn.Linear(hidden_size, hidden_size)
-        self.k_proj = nn.Linear(hidden_size, hidden_size)
-        self.v_proj = nn.Linear(hidden_size, hidden_size)
-        self.out_proj = nn.Linear(hidden_size, hidden_size)
+        self.q_proj = nn.Linear(in_dim, out_dim * self.num_heads)
+        self.k_proj = nn.Linear(in_dim, out_dim * self.num_heads)
+        self.v_proj = nn.Linear(in_dim, out_dim * self.num_heads)
+        self.out_proj = nn.Linear(in_dim, out_dim)
 
     def forward(self, A, h):
         N = len(h)
         # [N, dh, nh]
-        q = self.q_proj(h).reshape(N, self.head_dim, self.num_heads)
+        q = self.q_proj(h).reshape(N, self.out_dim, self.num_heads)
         q *= self.scaling
         # [N, dh, nh]
-        k = self.k_proj(h).reshape(N, self.head_dim, self.num_heads)
+        k = self.k_proj(h).reshape(N, self.out_dim, self.num_heads)
         # [N, dh, nh]
-        v = self.v_proj(h).reshape(N, self.head_dim, self.num_heads)
+        v = self.v_proj(h).reshape(N, self.out_dim, self.num_heads)
 
         # >>>>> Using sparse matrix to compute
         # >>>>> There is a problem in dglsp.bsdmm: the program will crash without any prompts
@@ -82,58 +84,83 @@ class GTLayer(nn.Module):
     def __init__(self, hidden_size=80, num_heads=8):
         super().__init__()
         self.MHA = SparseMHA(hidden_size=hidden_size, num_heads=num_heads)
-        self.batchnorm1 = nn.BatchNorm1d(hidden_size)
-        self.batchnorm2 = nn.BatchNorm1d(hidden_size)
-        self.FFN1 = nn.Linear(hidden_size, hidden_size * 2)
-        self.FFN2 = nn.Linear(hidden_size * 2, hidden_size)
+        # self.batchnorm1 = nn.BatchNorm1d(hidden_size)
+        # self.batchnorm2 = nn.BatchNorm1d(hidden_size)
+        # self.FFN1 = nn.Linear(hidden_size, hidden_size * 2)
+        # self.FFN2 = nn.Linear(hidden_size * 2, hidden_size)
 
     def forward(self, A, h):
         h1 = h
         h = self.MHA(A, h)
-        h = self.batchnorm1(h + h1)
-        h2 = h
-        h = self.FFN2(F.relu(self.FFN1(h)))
-        h = h2 + h
+        # h = self.batchnorm1(h + h1)
+        # h2 = h
+        # h = self.FFN2(F.relu(self.FFN1(h)))
+        # h = h2 + h
 
-        return self.batchnorm2(h)
+        # return self.batchnorm2(h)
+        return h
 
 
 class GTModel(nn.Module):
     def __init__(
             self,
             input_dim,
-            out_size,
-            hidden_size=80,
-            pos_enc_size=2,
-            num_layers=8,
-            num_heads=8,
+            out_dim,
+            n_class,
+            hidden_size,           
+            pos_enc_size,
+            num_layers,
+            drop_out,
+            num_heads
     ):
-        super().__init__()
-        self.atom_encoder = AtomEncoder(hidden_size)
+        super().__init__()        
         self.h_embedding = nn.Linear(input_dim, hidden_size)
-        self.hiddens_size = hidden_size
+        self.hiddens_size = hidden_size        
+        self.n_class = n_class
+        self.out_dim = out_dim
+        self.drop_out = drop_out
+
         self.pos_linear = nn.Linear(pos_enc_size, hidden_size)
         self.layers = nn.ModuleList(
-            [GTLayer(hidden_size, num_heads) for _ in range(num_layers)]
+            [GTLayer(hidden_size, hidden_size, num_heads) for _ in range(num_layers - 1)]
+        )        
+        self.layers.append(
+            GTLayer(hidden_size, out_dim, num_heads)
         )
-        self.pooler = dglnn.SumPooling()
+        # self.pooler = dglnn.SumPooling()
+        self.O = nn.Linear(out_dim, out_dim)                
+        self.batch_norm1 = nn.BatchNorm1d(out_dim)
         self.predictor = nn.Sequential(
-            nn.Linear(hidden_size, hidden_size // 2),
+            nn.Linear(out_dim, out_dim // 2),
             nn.ReLU(),
             # nn.Linear(hidden_size // 2, hidden_size // 4),
             # nn.ReLU(),
-            nn.Linear(hidden_size // 2, out_size),
+            nn.Linear(out_dim // 2, n_class),
         )
+        # FFN
+        self.FFN_layer1 = nn.Linear(out_dim, out_dim*2)
+        self.FFN_layer2 = nn.Linear(out_dim*2, out_dim)
+        self.batch_norm2 = nn.BatchNorm1d(out_dim)
 
     def forward(self, g, X, pos_enc):
         indices = torch.stack(g.edges())
         N = g.num_nodes()
-        # A = dglsp.spmatrix(indices, shape=(N, N))
-        # to-do : 整理一下A的邻接矩阵
+        # A = dglsp.spmatrix(indices, shape=(N, N))        
         A = g.edges()
         h = self.h_embedding(X) + self.pos_linear(pos_enc)
         for layer in self.layers:
             h = layer(A, h)
+
+        h = self.batchnorm(h)
+        
+        # FNN
+        h = self.FFN_layer1(h)
+        h = F.relu(h)
+        h = F.dropout(h, self.dropout, training=self.training)
+        h = self.FFN_layer2(h)
+
+        h = self.batch_norm2(h)        
+        
         # print(h.shape)
         # h = self.pooler(g, h)
         # exit()

@@ -6,7 +6,7 @@ import os
 import torch_geometric.data
 from utils import capsule_pd_data_to_anndata, combine_inter_intra_graph, \
     centralissimo, perc_for_entropy, perc_for_density, setup_seed, random_stratify_sample, \
-    random_stratify_sample_with_train_idx
+    random_stratify_sample_with_train_idx, load_data
 
 from model import GCN
 import anndata as ad
@@ -18,7 +18,6 @@ import networkx as nx
 from torch_geometric.utils import to_dense_adj
 import numpy as np
 from sklearn.metrics import accuracy_score
-from sklearn.preprocessing import LabelEncoder
 from model import GTModel, GraphTransformerModel
 
 
@@ -53,7 +52,7 @@ parameter_config = {
 net_params = {
     'in_dim': 0, # not sure now
     'hidden_dim': 128,
-    'out_dim': 128,
+    'out_dim': 64,
     'n_classes': 0, # not sure now
     'n_heads': 1,
     'in_feat_dropout': 0.2,
@@ -69,47 +68,11 @@ net_params = {
 }
 
 
-def get_anndata():
-    if data_config['data_mode'] == 'csv':
-        ref_data = pd.read_csv(data_config['ref_data_path'], index_col=0)
-        ref_label = pd.read_csv(data_config['ref_label_path'])
-        query_data = pd.read_csv(data_config['query_data_path'], index_col=0)
-        query_label = pd.read_csv(data_config['query_label_path'])
-
-        data = pd.concat([ref_data, query_data], axis=0)
-        label = pd.concat([ref_label, query_label], axis=0)
-        edge_index = combine_inter_intra_graph(inter_graph_path=data_config['inter_graph_path'],
-                                               intra_graph_path=data_config['intra_graph_path'],
-                                               n_nodes_ref=len(ref_label),
-                                               n_nodes_query=len(query_label))
-
-        adata = capsule_pd_data_to_anndata(data, label, edge_index)
-
-        # 随机分层采样
-        adata.uns['train_idx'], adata.uns['val_idx'] = random_stratify_sample(ref_label.to_numpy(), train_size=0.8)
-        adata.uns['train_idx_for_no_al'] = adata.uns['train_idx']
-        # test_idx即query data的idx
-        adata.uns['test_idx'] = [len(ref_label) + i for i in range(len(query_label))]
-
-        # 按照论文，train label一开始每个类别设置成4个, 剩余的training node作为label budget里面的一部分
-        adata.uns['train_idx'] = random_stratify_sample_with_train_idx(ref_label.to_numpy(),
-                                                                       train_idx=adata.uns['train_idx'],
-                                                                       train_class_num=parameter_config[
-                                                                           'initial_class_train_num'])
-
-        adata.write(os.path.join(root_data_path, 'data.h5ad'), compression="gzip")
-        return adata
-    elif data_config['data_mode'] == 'ann':
-        '''ann data已存在'''
-        adata = ad.read(data_config['anndata_path'])
-        return adata
-
-
-def train(model, g_data, data_info, select_mode):
+def train(model, g_data, data_info, is_active_learning):
     '''
         model: Graph transformer
         g_data: DGLGraph
-        select_mode: for active learning
+        is_active_learning: for active learning
     '''
     model.to(device)
     g_data = g_data.to(device)
@@ -145,7 +108,7 @@ def train(model, g_data, data_info, select_mode):
 
         # prob是样本 * 类别
         # 这里的entropy函数计算的是一列的信息熵，所以我们要转置一下，让一列成类，计算一个样本的信息熵
-        if select_mode and len(data_info['train_idx']) < parameter_config['NL']:
+        if is_active_learning and len(data_info['train_idx']) < parameter_config['NL']:
             entropy = scipy.stats.entropy(prob.T)
             kmeans = KMeans(n_clusters=data_info['NCL'], random_state=0).fit(prob)
             ed_score = euclidean_distances(prob, kmeans.cluster_centers_)
@@ -224,39 +187,24 @@ for proj in projects:
     for key in data_config:
         if "path" in key:
             data_config[key] = os.path.join(root_data_path, data_config[key])
-    # 数据准备
-    adata = get_anndata()
-    # g_data准备
-    # 将所有的adata的数据转为tensor
-    # g_data = torch_geometric.data.Data(x=torch.tensor(adata.X, dtype=torch.float),
-    #                                    edge_index=torch.tensor(adata.uns['edge_index'], dtype=torch.long))
-    src, dst = adata.uns['edge_index'][0], adata.uns['edge_index'][1]
-    g_data = dgl.graph((src, dst), num_nodes=len(adata.obs_names))
-
-    y_true = adata.obs['cell_type']
-    label_encoder = LabelEncoder()
-    y_true = label_encoder.fit_transform(y_true)
-    g_data.ndata['x'] = torch.tensor(adata.X, dtype=torch.float)
-    g_data.ndata['y_true'] = torch.tensor(y_true, dtype=torch.long)
-    g_data.ndata['y_predict'] = torch.tensor(y_true, dtype=torch.long)
-
-    data_info = {}
-    data_info['val_idx'] = adata.uns['val_idx']
-    data_info['test_idx'] = adata.uns['test_idx']
-    data_info['train_idx'] = adata.uns['train_idx']
-    data_info['NCL'] = len(set(adata.obs['cell_type'][adata.uns['train_idx']]))
-
+    
+    # load data
+    g_data, adata, data_info = load_data(data_config=data_config)
+    
     # 设置好NL的值
     parameter_config['NL'] = data_info['NCL'] * parameter_config['final_class_num']
-
-    # ours
     g_data.ndata['PE'] = dgl.laplacian_pe(g_data, k=net_params['pos_enc_dim'], padding=True)
-    # model = GTModel(input_dim=g_data.ndata['x'].shape[1], out_size=data_info['NCL'], pos_enc_size=pos_enc_size).to(device)
-    # train(model, g_data, data_info, select_mode=True)
-    #
-    # test_acc = test(model, g_data, data_info)
-    # AL_acc.append(test_acc)
-    # AL_ref_num.append(len(data_info['train_idx']))
+
+    # ours    
+    model = GTModel(input_dim=g_data.ndata['x'].shape[1], 
+                    n_class=data_info['NCL'], 
+                    out_dim=net_params['out_dim'], 
+                    pos_enc_size=net_params['pos_enc_dim']).to(device)
+    
+    train(model, g_data, data_info, is_active_learning=True)    
+    test_acc = test(model, g_data, data_info)
+    AL_acc.append(test_acc)
+    AL_ref_num.append(len(data_info['train_idx']))
 
     # Graph Transformer
     data_info['train_idx'] = adata.uns['train_idx_for_no_al']
@@ -267,18 +215,19 @@ for proj in projects:
     #                 num_layers=parameter_config['num_layers'],
     #                 pos_enc_size=parameter_config['pos_enc_size']).to(device)
     #
-    net_params['in_dim'] = g_data.ndata['x'].shape[1]
-    net_params['n_classes'] = data_info['NCL']
-    model = GraphTransformerModel(net_params)
+    # net_params['in_dim'] = g_data.ndata['x'].shape[1]
+    # net_params['n_classes'] = data_info['NCL']
+    # model = GraphTransformerModel(net_params)
 
-    train(model, g_data, data_info, select_mode=False)
-    test_acc = test(model, g_data, data_info)
-    gt_acc.append(test_acc )
-    gt_ref_num.append(len(data_info['train_idx']))
+    # train(model, g_data, data_info, is_active_learning=False)
+    # test_acc = test(model, g_data, data_info)
+    # gt_acc.append(test_acc )
+    # gt_ref_num.append(len(data_info['train_idx']))
 
 
     query_num_arr.append(len(data_info['test_idx']))
     data_config = data_config_cp
+    
     print(projects)
     print(AL_acc)
     print(AL_ref_num)

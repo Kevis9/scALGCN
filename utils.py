@@ -186,4 +186,39 @@ def random_stratify_sample_with_train_idx(ref_labels, train_idx, train_class_num
     return new_train_idx
 
 
+def get_anndata(data_config):
+    if data_config['data_mode'] == 'csv':
+        ref_data = pd.read_csv(data_config['ref_data_path'], index_col=0)
+        ref_label = pd.read_csv(data_config['ref_label_path'])
+        query_data = pd.read_csv(data_config['query_data_path'], index_col=0)
+        query_label = pd.read_csv(data_config['query_label_path'])
+
+        data = pd.concat([ref_data, query_data], axis=0)
+        label = pd.concat([ref_label, query_label], axis=0)
+        edge_index = combine_inter_intra_graph(inter_graph_path=data_config['inter_graph_path'],
+                                               intra_graph_path=data_config['intra_graph_path'],
+                                               n_nodes_ref=len(ref_label),
+                                               n_nodes_query=len(query_label))
+
+        adata = capsule_pd_data_to_anndata(data, label, edge_index)
+
+        # 随机分层采样
+        adata.uns['train_idx'], adata.uns['val_idx'] = random_stratify_sample(ref_label.to_numpy(), train_size=0.8)
+        adata.uns['train_idx_for_no_al'] = adata.uns['train_idx']
+        # test_idx即query data的idx
+        adata.uns['test_idx'] = [len(ref_label) + i for i in range(len(query_label))]
+
+        # 按照论文，train label一开始每个类别设置成4个, 剩余的training node作为label budget里面的一部分
+        adata.uns['train_idx'] = random_stratify_sample_with_train_idx(ref_label.to_numpy(),
+                                                                       train_idx=adata.uns['train_idx'],
+                                                                       train_class_num=parameter_config[
+                                                                           'initial_class_train_num'])
+
+        adata.write(os.path.join(data_config['root'], 'data.h5ad'), compression="gzip")
+        return adata
+    elif data_config['data_mode'] == 'ann':
+        '''ann data已存在'''
+        adata = ad.read(data_config['anndata_path'])
+        return adata
+
 
