@@ -52,16 +52,16 @@ parameter_config = {
 # For GT hyper-parameters
 net_params = {
     'in_dim': 0, # not sure now
-    'hidden_dim': 256,
-    'out_dim': 64,
+    'hidden_dim': 128,
+    'out_dim': 128,
     'n_classes': 0, # not sure now
     'n_heads': 1,    
     'dropout': 0.2,
     'n_layers': 2,
     'layer_norm': False,
     'batch_norm': True,    
-    'residual': False,
-    'add_pos_enc':False,
+    'residual': True,
+    'add_pos_enc':Treu,
     'device': device,
     'lap_pos_enc': True,
     'wl_pos_enc': False,
