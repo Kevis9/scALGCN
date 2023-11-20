@@ -55,8 +55,7 @@ net_params = {
     'hidden_dim': 128,
     'out_dim': 64,
     'n_classes': 0, # not sure now
-    'n_heads': 1,
-    'in_feat_dropout': 0.2,
+    'n_heads': 1,    
     'dropout': 0.2,
     'n_layers': 2,
     'layer_norm': False,

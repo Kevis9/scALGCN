@@ -109,16 +109,16 @@ class GTLayer(nn.Module):
         h = self.batchnorm1(h)
         
         # residual 
-        h2 = h
-        h = self.FFN1(h)
-        h = F.relu(h)
-        h = F.dropout(h, self.dropout, training=self.training)
-        h = self.FFN2(h)
+        # h2 = h
+        # h = self.FFN1(h)
+        # h = F.relu(h)
+        # h = F.dropout(h, self.dropout, training=self.training)
+        # h = self.FFN2(h)
+        
+        # if self.residual:      
+        #     h = h2 + h
 
-        if self.residual:      
-            h = h2 + h
-
-        h = self.batchnorm2(h)
+        # h = self.batchnorm2(h)
 
         return h
 
