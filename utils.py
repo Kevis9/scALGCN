@@ -19,7 +19,7 @@ def setup_seed(seed):
     torch.cuda.manual_seed(seed)     # 当前GPU
     # CUDA有些算法是non deterministic, 需要限制    
     os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8' # CUDA >= 10.2版本会提示设置这个环境变量
-    torch.use_deterministic_algorithms(True)
+    torch.use_deterministic_algorithms(False)
     
 def dense2sparse(data_path):
     '''
