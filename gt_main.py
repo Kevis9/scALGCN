@@ -99,7 +99,9 @@ def train(model, g_data, data_info, is_active_learning):
         node_x = g_data.ndata['x'].to(device)
         lap_pe = g_data.ndata['PE'].to(device)
 
-        out = model(g_data, node_x, h_lap_pos_enc=lap_pe)
+        out = model(g_data, node_x, lap_pe)
+        
+        # out = model(g_data, node_x, h_lap_pos_enc=lap_pe)
 
         loss = criterion(out[data_info['train_idx']], g_data.ndata['y_predict'][data_info['train_idx']])
         loss.backward()
