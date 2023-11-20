@@ -202,7 +202,7 @@ for proj in projects:
                     hidden_size=net_params['hidden_dim'],
                     out_dim=net_params['out_dim'], 
                     pos_enc_size=net_params['pos_enc_dim'],
-                    num_layers=net_params['n_layer'],
+                    num_layers=net_params['n_layers'],
                     drop_out=net_params['dropout'],
                     num_heads=net_params['n_heads']).to(device)
     
