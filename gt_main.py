@@ -57,7 +57,7 @@ net_params = {
     'n_heads': 1,
     'in_feat_dropout': 0.2,
     'dropout': 0.2,
-    'n_layers': 3,
+    'n_layers': 2,
     'layer_norm': False,
     'batch_norm': True,
     'residual': True,
@@ -101,7 +101,7 @@ def train(model, g_data, data_info, is_active_learning):
         out = model(g_data, node_x, h_lap_pos_enc=lap_pe)
 
         loss = criterion(out[data_info['train_idx']], g_data.ndata['y_predict'][data_info['train_idx']])
-        loss.backward(retain_graph=True)
+        loss.backward()
         optimizer.step()
 
         prob = F.softmax(out.detach(), dim=1).cpu().numpy()
@@ -198,8 +198,12 @@ for proj in projects:
     # ours    
     model = GTModel(input_dim=g_data.ndata['x'].shape[1], 
                     n_class=data_info['NCL'], 
+                    hidden_size=net_params['hidden_dim'],
                     out_dim=net_params['out_dim'], 
-                    pos_enc_size=net_params['pos_enc_dim']).to(device)
+                    pos_enc_size=net_params['pos_enc_dim'],
+                    num_layers=net_params['n_layer'],
+                    drop_out=net_params['dropout'],
+                    num_heads=net_params['n_heads']).to(device)
     
     train(model, g_data, data_info, is_active_learning=True)    
     test_acc = test(model, g_data, data_info)
