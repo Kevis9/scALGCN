@@ -114,7 +114,7 @@ class GTLayer(nn.Module):
         # h = F.relu(h)
         # h = F.dropout(h, self.dropout, training=self.training)
         # h = self.FFN2(h)
-        
+
         # if self.residual:      
         #     h = h2 + h
 
@@ -134,6 +134,7 @@ class GTModel(nn.Module):
             num_layers,
             drop_out,
             residual,
+            add_pos_enc,
             num_heads
     ):
         super().__init__()        
@@ -143,6 +144,7 @@ class GTModel(nn.Module):
         self.out_dim = out_dim
         self.drop_out = drop_out
         self.residual = residual
+        self.add_pos_enc = add_pos_enc
         self.pos_linear = nn.Linear(pos_enc_size, hidden_size)
         self.layers = nn.ModuleList(
             [GTLayer(hidden_size, hidden_size, num_heads, self.drop_out, residual=residual) for _ in range(num_layers - 1)]
@@ -165,7 +167,10 @@ class GTModel(nn.Module):
         N = g.num_nodes()
         A = dglsp.spmatrix(indices, shape=(N, N))        
         # A = g.edges()
-        h = self.h_embedding(X) + self.pos_linear(pos_enc)
+        h = self.h_embedding(X)            
+        if self.add_pos_enc:
+            h = h + self.pos_linear(pos_enc)
+        
         for layer in self.layers:
             h = layer(A, h)
 

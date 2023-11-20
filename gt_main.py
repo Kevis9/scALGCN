@@ -52,7 +52,7 @@ parameter_config = {
 # For GT hyper-parameters
 net_params = {
     'in_dim': 0, # not sure now
-    'hidden_dim': 128,
+    'hidden_dim': 256,
     'out_dim': 64,
     'n_classes': 0, # not sure now
     'n_heads': 1,    
@@ -61,6 +61,7 @@ net_params = {
     'layer_norm': False,
     'batch_norm': True,    
     'residual': False,
+    'add_pos_enc':False,
     'device': device,
     'lap_pos_enc': True,
     'wl_pos_enc': False,
@@ -206,7 +207,8 @@ for proj in projects:
                     num_layers=net_params['n_layers'],
                     drop_out=net_params['dropout'],
                     num_heads=net_params['n_heads'],
-                    residual=net_params['residual']).to(device)
+                    residual=net_params['residual'],
+                    add_pos_enc=net_params['add_pos_enc']).to(device)
     
     train(model, g_data, data_info, is_active_learning=False)    
     test_acc = test(model, g_data, data_info)
