@@ -4,6 +4,7 @@ import torch.nn.functional as F
 from torch_sparse import SparseTensor
 import dgl
 import dgl.nn as dglnn
+import dgl.sparse as dglsp
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -81,23 +82,39 @@ class SparseMHA(nn.Module):
 class GTLayer(nn.Module):
     """Graph Transformer Layer"""
 
-    def __init__(self, in_dim, out_dim, num_heads):
+    def __init__(self, in_dim, out_dim, num_heads, dropout):
         super().__init__()
+        self.dropout = dropout
         self.MHA = SparseMHA(in_dim=in_dim, out_dim=out_dim, num_heads=num_heads)
-        # self.batchnorm1 = nn.BatchNorm1d(hidden_size)
-        # self.batchnorm2 = nn.BatchNorm1d(hidden_size)
-        # self.FFN1 = nn.Linear(hidden_size, hidden_size * 2)
-        # self.FFN2 = nn.Linear(hidden_size * 2, hidden_size)
+        self.batchnorm1 = nn.BatchNorm1d(out_dim)
+        self.batchnorm2 = nn.BatchNorm1d(out_dim)
+        
+        self.O = nn.Linear(out_dim, out_dim)
+        self.FFN1 = nn.Linear(out_dim, out_dim * 2)
+        self.FFN2 = nn.Linear(out_dim * 2, out_dim)
 
     def forward(self, A, h):
+        # residual
         h1 = h
         h = self.MHA(A, h)
-        # h = self.batchnorm1(h + h1)
-        # h2 = h
-        # h = self.FFN2(F.relu(self.FFN1(h)))
-        # h = h2 + h
 
-        # return self.batchnorm2(h)
+        h = F.dropout(h, self.dropout, training=self.training)
+        
+        h = self.O(h)
+
+        h = self.batchnorm1(h + h1)
+        
+        # residual 
+        h2 = h
+        h = self.FFN1(h)
+        h = F.relu(h)
+        h = F.dropout(h, self.dropout, training=self.training)
+        h = self.FFN2(h)
+                        
+        h = h2 + h
+
+        h = self.batchnorm2(h)
+
         return h
 
 
@@ -122,14 +139,12 @@ class GTModel(nn.Module):
 
         self.pos_linear = nn.Linear(pos_enc_size, hidden_size)
         self.layers = nn.ModuleList(
-            [GTLayer(hidden_size, hidden_size, num_heads) for _ in range(num_layers - 1)]
+            [GTLayer(hidden_size, hidden_size, num_heads, self.drop_out) for _ in range(num_layers - 1)]
         )        
         self.layers.append(
-            GTLayer(hidden_size, out_dim, num_heads)
+            GTLayer(hidden_size, out_dim, num_heads, self.drop_out)
         )
-        # self.pooler = dglnn.SumPooling()
-        self.O = nn.Linear(out_dim, out_dim)                
-        self.batch_norm1 = nn.BatchNorm1d(out_dim)
+        # self.pooler = dglnn.SumPooling()                
         self.predictor = nn.Sequential(
             nn.Linear(out_dim, out_dim // 2),
             nn.ReLU(),
@@ -137,29 +152,16 @@ class GTModel(nn.Module):
             # nn.ReLU(),
             nn.Linear(out_dim // 2, n_class),
         )
-        # FFN
-        self.FFN_layer1 = nn.Linear(out_dim, out_dim*2)
-        self.FFN_layer2 = nn.Linear(out_dim*2, out_dim)
-        self.batch_norm2 = nn.BatchNorm1d(out_dim)
+                
 
     def forward(self, g, X, pos_enc):
         indices = torch.stack(g.edges())
         N = g.num_nodes()
-        # A = dglsp.spmatrix(indices, shape=(N, N))        
-        A = g.edges()
+        A = dglsp.spmatrix(indices, shape=(N, N))        
+        # A = g.edges()
         h = self.h_embedding(X) + self.pos_linear(pos_enc)
         for layer in self.layers:
             h = layer(A, h)
-
-        h = self.batchnorm(h)
-        
-        # FNN
-        h = self.FFN_layer1(h)
-        h = F.relu(h)
-        h = F.dropout(h, self.dropout, training=self.training)
-        h = self.FFN_layer2(h)
-
-        h = self.batch_norm2(h)        
 
         # print(h.shape)
         # h = self.pooler(g, h)
