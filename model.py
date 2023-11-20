@@ -81,9 +81,9 @@ class SparseMHA(nn.Module):
 class GTLayer(nn.Module):
     """Graph Transformer Layer"""
 
-    def __init__(self, hidden_size=80, num_heads=8):
+    def __init__(self, in_dim, out_dim, num_heads):
         super().__init__()
-        self.MHA = SparseMHA(hidden_size=hidden_size, num_heads=num_heads)
+        self.MHA = SparseMHA(in_dim=in_dim, out_dim=out_dim, num_heads=num_heads)
         # self.batchnorm1 = nn.BatchNorm1d(hidden_size)
         # self.batchnorm2 = nn.BatchNorm1d(hidden_size)
         # self.FFN1 = nn.Linear(hidden_size, hidden_size * 2)
