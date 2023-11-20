@@ -53,7 +53,7 @@ parameter_config = {
 net_params = {
     'in_dim': 0, # not sure now
     'hidden_dim': 128,
-    'out_dim': 64,
+    'out_dim': 128,
     'n_classes': 0, # not sure now
     'n_heads': 1,
     'in_feat_dropout': 0.2,

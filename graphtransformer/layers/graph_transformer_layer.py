@@ -56,12 +56,7 @@ class MultiHeadAttentionLayer(nn.Module):
         g.apply_edges(scaled_exp('score', np.sqrt(self.out_dim)))
 
         # Send weighted values to target nodes
-        eids = g.edges()
-        print("打印Q_h, K_h, V_h的shape, from propgate attetion")
-        print(g.ndata['Q_h'].shape)
-        print(g.ndata['K_h'].shape)
-        print(g.ndata['V_h'].shape)        
-        print(self.num_heads)
+        eids = g.edges()        
         
         g.send_and_recv(eids, fn.u_mul_e('V_h', 'score', 'V_h'), fn.sum('V_h', 'wV'))
         g.send_and_recv(eids, fn.copy_e('score', 'score'), fn.sum('score', 'z'))
@@ -74,13 +69,10 @@ class MultiHeadAttentionLayer(nn.Module):
         
         # Reshaping into [num_nodes, num_heads, feat_dim] to 
         # get projections for multi-head attention
+        # DGL has a bug: data scheme can not change:        
         g.ndata['Q_h'] = Q_h.view(-1, self.num_heads, self.out_dim)
         g.ndata['K_h'] = K_h.view(-1, self.num_heads, self.out_dim)
-        g.ndata['V_h'] = V_h.view(-1, self.num_heads, self.out_dim)
-        print("打印Q_h, K_h, V_h的shape, from forward函数")
-        print(g.ndata['Q_h'].shape)
-        print(g.ndata['K_h'].shape)
-        print(g.ndata['V_h'].shape)
+        g.ndata['V_h'] = V_h.view(-1, self.num_heads, self.out_dim)        
         
         self.propagate_attention(g)
         
