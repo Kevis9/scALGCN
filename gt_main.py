@@ -138,7 +138,7 @@ def train(model, g_data, data_info, select_mode):
         out = model(g_data, node_x, h_lap_pos_enc=lap_pe)
 
         loss = criterion(out[data_info['train_idx']], g_data.ndata['y_predict'][data_info['train_idx']])
-        loss.backward()
+        loss.backward(retain_graph=True)
         optimizer.step()
 
         prob = F.softmax(out.detach(), dim=1).cpu().numpy()
