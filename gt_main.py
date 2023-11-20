@@ -57,7 +57,7 @@ net_params = {
     'n_classes': 0, # not sure now
     'n_heads': 1,    
     'dropout': 0.2,
-    'n_layers': 2,
+    'n_layers': 3,
     'layer_norm': False,
     'batch_norm': True,    
     'residual': True,
