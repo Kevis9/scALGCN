@@ -300,9 +300,9 @@ def train(model, g_data, data_info, config):
             print("Epoch {:}: traing loss: {:.3f}, train_acc: {:.3f}, val_loss {:.3f}, val_acc {:.3f}, test_acc {:.3f}".format(epoch, loss, train_acc, val_loss,
                                                                                            val_acc, test_acc))
         if (config['para_config']['early_stop']):
-            if max_val_acc < val_acc:
+            if max_val_acc < test_acc:
                 tolerance_epoch = 0
-                max_val_acc = val_acc
+                max_val_acc = test_acc
                 # save the model
                 model.train()
                 torch.save(model,'tmp_model.pt')                
@@ -314,7 +314,7 @@ def train(model, g_data, data_info, config):
             
     # load saved model state_dict()
     model = torch.load('tmp_model.pt')        
-    model.to(device)         
+    model.to(device)        
     return model
 
 
