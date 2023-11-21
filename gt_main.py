@@ -46,8 +46,7 @@ config = {
         'layer_norm': False,
         'batch_norm': True,    
         'residual': True,
-        'add_pos_enc': True,
-        'device': device,                
+        'add_pos_enc': True,                     
     }
 }
 

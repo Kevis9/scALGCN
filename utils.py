@@ -304,7 +304,7 @@ def train(model, g_data, data_info, config):
                 tolerance_epoch = 0
                 max_val_acc = val_acc
                 # save the model
-                torch.save(model.state_dict(), './tmp_model')                
+                torch.save(model,'tmp_model')                
             else:                
                 tolerance_epoch += 1
                 if tolerance_epoch > config['para_config']['tolerance_epoch']:
@@ -312,8 +312,7 @@ def train(model, g_data, data_info, config):
                 break
             
     # load saved model state_dict()
-    model = GTModel(para_config=config['para_config'])
-    model.load_state_dict(torch.load('./tmp_model'))
+    model = torch.load('tmp_model')        
     model.to(device)
     model.eval()        
     return model

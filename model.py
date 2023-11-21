@@ -194,7 +194,7 @@ class GraphTransformerModel(nn.Module):
         self.residual = net_params['residual']
         self.dropout = dropout
         self.n_classes = n_classes
-        self.device = net_params['device']
+        self.device = device
         self.lap_pos_enc = net_params['lap_pos_enc']
         self.wl_pos_enc = net_params['wl_pos_enc']
         max_wl_role_index = 100
