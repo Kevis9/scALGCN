@@ -68,14 +68,14 @@ setup_seed(seed)
 
 for proj in projects:
     config['data_config']['root'] = 'experiment/' + proj + '/data'
-    root_data_path = data_config['root']
-    data_config_cp = data_config.copy()
-    for key in data_config:
+    root_data_path = config['data_config']['root']
+    data_config_cp = config['data_config'].copy()
+    for key in config['data_config']:
         if "path" in key:
-            data_config[key] = os.path.join(root_data_path, data_config[key])
+            config['data_config'][key] = os.path.join(root_data_path, config['data_config'][key])
     
     # load data
-    g_data, adata, data_info = load_data(data_config=data_config, parameter_config=config['para_config'])
+    g_data, adata, data_info = load_data(data_config=config['data_config'], parameter_config=config['para_config'])
     
     
     # 设置好NL的值
@@ -114,7 +114,7 @@ for proj in projects:
 
 
     query_num_arr.append(len(data_info['test_idx']))
-    data_config = data_config_cp
+    config['data_config'] = data_config_cp
 
     # save config
     json.dump(config, '{:}_acc_{:.3f}'.format(proj, test_acc))
