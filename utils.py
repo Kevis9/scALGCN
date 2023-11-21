@@ -205,9 +205,9 @@ def load_data(data_config, parameter_config):
     g_data.ndata['y_predict'] = torch.tensor(y_true, dtype=torch.long)
 
     data_info = {}
-    data_info['val_idx'] = adata.uns['val_idx']
-    data_info['test_idx'] = adata.uns['test_idx']
-    data_info['train_idx'] = adata.uns['train_idx']
+    data_info['val_idx'] = list(adata.uns['val_idx'])
+    data_info['test_idx'] = list(adata.uns['test_idx'])
+    data_info['train_idx'] = list(adata.uns['train_idx'])
     data_info['NCL'] = len(set(adata.obs['cell_type'][adata.uns['train_idx']]))
     data_info['label_encoder'] = label_encoder
     return g_data, adata, data_info
@@ -270,7 +270,7 @@ def train(model, g_data, data_info, config):
             finalweight = alpha * norm_entropy + beta * norm_density + gamma * norm_centrality
 
             # 把train, val, test的数据排除, 从剩余的label budget里面获取节点
-            finalweight[data_info['train_idx'] + data_info['train_idx'] + data_info['val_idx']] = -100
+            finalweight[data_info['train_idx'] + data_info['test_idx'] + data_info['val_idx']] = -100
             select_arr = np.argpartition(finalweight, -config['para_config']['k_select'])[-config['para_config']['k_select']:]
             for node_idx in select_arr:
                 data_info['train_idx'].append(node_idx)
@@ -279,8 +279,9 @@ def train(model, g_data, data_info, config):
                 if (config['para_config']['epoch_print_flag']):
                     print("Epoch {:}: pick up one node to the training set!".format(epoch))
 
-            # validation
+        # validation
         model.eval()
+        out = model(g_data, node_x, lap_pe)
         # 做一个detach
         out = out.detach()
         val_pred = torch.argmax(out[data_info['val_idx']], dim=1).cpu().numpy()
@@ -304,8 +305,8 @@ def train(model, g_data, data_info, config):
                 tolerance_epoch = 0
                 max_val_acc = test_acc
                 # save the model
-                model.train()
-                torch.save(model,'tmp_model.pt')                
+                torch.save(model.state_dict(),'{:}_model_acc_{:.3f}.pt'.format(config['data_config']['root'].split('/')[1], test_acc))                
+                torch.save(model.state_dict(), 'tmp_model.pt')
             else:                
                 tolerance_epoch += 1
                 if tolerance_epoch > config['para_config']['tolerance_epoch']:
@@ -313,13 +314,14 @@ def train(model, g_data, data_info, config):
                     break
             
     # load saved model state_dict()
-    model = torch.load('tmp_model.pt')        
+    model = GTModel(config['para_config'])
+    model.load_state_dict(torch.load('tmp_model.pt'))    
     model.to(device)        
     return model
 
 
 def test(model, g_data, data_info):
-    # model.eval()
+    model.eval()
     g_data.to(device)
     out = model(g_data.to(device), g_data.ndata["x"].to(device), g_data.ndata["PE"].to(device))
     test_pred = torch.argmax(out[data_info['test_idx']], dim=1).cpu().numpy()

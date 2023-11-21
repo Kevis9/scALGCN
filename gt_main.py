@@ -14,10 +14,10 @@ config = {
         'query_data_path': 'query_data.csv',
         'ref_label_path': 'ref_label.csv',
         'query_label_path': 'query_label.csv',
-        'anndata_path': 'anndata.h5ad',
+        'anndata_path': 'data.h5ad',
         'inter_graph_path': 'inter_graph.csv',
         'intra_graph_path': 'intra_graph.csv',
-        'data_mode': 'csv'
+        'data_mode': 'ann'
     },
     'para_config' :{
         'epochs': 200,        
@@ -29,14 +29,14 @@ config = {
         'initial_class_train_num': 10,
         'epoch_print_flag': True,
         'multi_class_num': 30, # NL = NC * multi_class_num
-        'is_active_learning': False,
+        'is_active_learning': True,
         'early_stop': True,
         'tolerance_epoch': 30, 
 
         # GT hyper-parameters
         'gt_lr': 1e-3,
         'in_dim': 0, # not sure now
-        'hidden_dim': 128,
+        'hidden_dim': 256,
         'out_dim': 128,
         'n_classes': 0, # not sure now
         'n_heads': 1,    
@@ -45,7 +45,7 @@ config = {
         'pos_enc_dim': 8,
         'layer_norm': False,
         'batch_norm': True,    
-        'residual': True,
+        'residual': False,
         'add_pos_enc': True,                     
     }
 }
@@ -84,6 +84,7 @@ for proj in projects:
     # set right parameters
     config['para_config']['n_classes'] = data_info['NCL']
     config['para_config']['in_dim'] = g_data.ndata['x'].shape[1]
+    
     
     # ours    
     model = GTModel(config['para_config']).to(device)
