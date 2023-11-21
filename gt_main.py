@@ -31,7 +31,7 @@ config = {
         'multi_class_num': 30, # NL = NC * multi_class_num
         'is_active_learning': False,
         'early_stop': False,
-        'tolerance_epoch': 10, 
+        'tolerance_epoch': 30, 
 
         # GT hyper-parameters
         'gt_lr': 1e-3,
@@ -117,7 +117,8 @@ for proj in projects:
     config['data_config'] = data_config_cp
 
     # save config
-    json.dump(config, '{:}_acc_{:.3f}'.format(proj, test_acc))
+    with open('{:}_acc_{:.3f}.json'.format(proj, test_acc), 'w') as f:
+        json.dump(config, f)
 
 results = dict(zip(projects, AL_acc))
 print(results)
