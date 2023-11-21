@@ -30,7 +30,7 @@ config = {
         'epoch_print_flag': True,
         'multi_class_num': 30, # NL = NC * multi_class_num
         'is_active_learning': False,
-        'early_stop': False,
+        'early_stop': True,
         'tolerance_epoch': 30, 
 
         # GT hyper-parameters
