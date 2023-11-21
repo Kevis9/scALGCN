@@ -66,7 +66,7 @@ class SparseMHA(nn.Module):
         k = self.k_proj(h).reshape(N, self.out_dim, self.num_heads)
         # [N, dh, nh]
         v = self.v_proj(h).reshape(N, self.out_dim, self.num_heads)
-        
+
         attn = dglsp.bsddmm(A, q, k.transpose(1, 0))  # (sparse) [N, N, nh]
         # Sparse softmax by default applies on the last sparse dimension.
         attn = attn.softmax()  # (sparse) [N, N, nh]
@@ -126,39 +126,36 @@ class GTLayer(nn.Module):
 class GTModel(nn.Module):
     def __init__(
             self,
-            input_dim,
-            out_dim,
-            n_class,
-            hidden_size,           
-            pos_enc_size,
-            num_layers,
-            drop_out,
-            residual,
-            add_pos_enc,
-            num_heads
+            para_config,            
     ):
         super().__init__()        
-        self.h_embedding = nn.Linear(input_dim, hidden_size)
-        self.hiddens_size = hidden_size        
-        self.n_class = n_class
-        self.out_dim = out_dim
-        self.drop_out = drop_out
-        self.residual = residual
-        self.add_pos_enc = add_pos_enc
-        self.pos_linear = nn.Linear(pos_enc_size, hidden_size)
+        self.n_classes = para_config['n_classes']
+        self.in_dim = para_config['in_dim']
+        self.out_dim = para_config['out_dim']
+        self.residual = para_config['residual']
+        self.add_pos_enc = para_config['add_pos_enc']
+        self.hiddens_dim = para_config['hidden_dim']        
+        self.pos_enc_dim = para_config['pos_enc_dim']
+        self.num_heads = para_config['n_heads']
+        self.dropout_rate = para_config['dropout_rate']
+        self.num_layers = para_config['n_layers']
+        
+        self.h_embedding = nn.Linear(self.in_dim, self.hiddens_dim)                        
+        self.pos_linear = nn.Linear(self.pos_enc_dim, self.hiddens_dim)
         self.layers = nn.ModuleList(
-            [GTLayer(hidden_size, hidden_size, num_heads, self.drop_out, residual=residual) for _ in range(num_layers - 1)]
+            [GTLayer(self.hiddens_dim, self.hiddens_dim, self.num_heads, self.dropout_rate, residual=self.residual) for _ in range(self.num_layers - 1)]            
         )        
+        
         self.layers.append(
-            GTLayer(hidden_size, out_dim, num_heads, self.drop_out, residual=residual)
+            GTLayer(self.hiddens_dim, self.out_dim, self.num_heads, self.dropout_rate, residual=self.residual)
         )
         # self.pooler = dglnn.SumPooling()                
         self.predictor = nn.Sequential(
-            nn.Linear(out_dim, out_dim // 2),
+            nn.Linear(self.out_dim, self.out_dim // 2),
             nn.ReLU(),
             # nn.Linear(hidden_size // 2, hidden_size // 4),
             # nn.ReLU(),
-            nn.Linear(out_dim // 2, n_class),
+            nn.Linear(self.out_dim // 2, self.n_classes),
         )
                 
 
