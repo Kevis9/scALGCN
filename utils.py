@@ -304,17 +304,17 @@ def train(model, g_data, data_info, config):
                 tolerance_epoch = 0
                 max_val_acc = val_acc
                 # save the model
+                model.train()
                 torch.save(model,'tmp_model.pt')                
             else:                
                 tolerance_epoch += 1
                 if tolerance_epoch > config['para_config']['tolerance_epoch']:
                     print("Early stop at epoch {:}, return the max_val_acc model.".format(epoch))
-                break
+                    break
             
     # load saved model state_dict()
     model = torch.load('tmp_model.pt')        
-    model.to(device)
-    model.eval()        
+    model.to(device)         
     return model
 
 
