@@ -312,7 +312,7 @@ def train(model, g_data, data_info, config):
                 break
             
     # load saved model state_dict()
-    model = GTModel()
+    model = GTModel(para_config=config['para_config'])
     model.load_state_dict(torch.load('./tmp_model'))
     return model
 
