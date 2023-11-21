@@ -15,6 +15,7 @@ from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.preprocessing import LabelEncoder
 import torch.nn.functional as F
 from sklearn.metrics import accuracy_score
+from model import GTModel
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -232,7 +233,7 @@ def train(model, g_data, data_info, config):
 
     max_val_acc = 0
     tolerance_epoch = 0
-    model_cp = model.clone()
+    
     
     for epoch in range(config['para_config']['epochs']):
         model.train()
@@ -302,15 +303,18 @@ def train(model, g_data, data_info, config):
             if max_val_acc < val_acc:
                 tolerance_epoch = 0
                 max_val_acc = val_acc
-                model_cp = model.clone()
+                # save the model
+                torch.save(model.state_dict(), './tmp_model')                
             else:                
                 tolerance_epoch += 1
                 if tolerance_epoch > config['para_config']['tolerance_epoch']:
                     print("Early stop at epoch {:}, return the max_val_acc model.".format(epoch))
                 break
             
-
-    return model_cp
+    # load saved model state_dict()
+    model = GTModel()
+    model.load_state_dict(torch.load('./tmp_model'))
+    return model
 
 
 def test(model, g_data, data_info):
