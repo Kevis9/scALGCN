@@ -305,7 +305,7 @@ def train(model, g_data, data_info, config):
                 tolerance_epoch = 0
                 max_val_acc = test_acc
                 # save the model
-                torch.save(model.state_dict(),'{:}_model_acc_{:.3f}.pt'.format(config['data_config']['root'].split('/')[1], test_acc))                
+                torch.save(model.state_dict(),'result/{:}_model_acc_{:.3f}.pt'.format(config['data_config']['root'].split('/')[1], test_acc))                
                 torch.save(model.state_dict(), 'tmp_model.pt')
             else:                
                 tolerance_epoch += 1

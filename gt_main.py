@@ -117,7 +117,7 @@ for proj in projects:
     config['data_config'] = data_config_cp
 
     # save config
-    with open('{:}_acc_{:.3f}.json'.format(proj, test_acc), 'w') as f:
+    with open('config/{:}_acc_{:.3f}.json'.format(proj, test_acc), 'w') as f:
         json.dump(config, f)
 
 results = dict(zip(projects, AL_acc))
