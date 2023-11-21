@@ -232,7 +232,7 @@ def train(model, g_data, data_info, config):
 
     max_val_acc = 0
     tolerance_epoch = 0
-    model_cp = model.copy()
+    model_cp = model.clone()
     
     for epoch in range(config['para_config']['epochs']):
         model.train()
@@ -302,7 +302,7 @@ def train(model, g_data, data_info, config):
             if max_val_acc < val_acc:
                 tolerance_epoch = 0
                 max_val_acc = val_acc
-                model_cp = model.copy()
+                model_cp = model.clone()
             else:                
                 tolerance_epoch += 1
                 if tolerance_epoch > config['para_config']['tolerance_epoch']:
