@@ -61,7 +61,7 @@ class ProGNN:
                                lr=args.gt_lr, weight_decay=args.wd)
         
         # 不需要转为numpy
-        adj = g_data.adjacency_matrix().to_dense().cpu()
+        adj = g_data.adjacency_matrix().to_dense().to(self.device)
         
         estimator = EstimateAdj(adj, symmetric=args.symmetric, device=self.device).to(self.device)
         self.estimator = estimator
@@ -74,8 +74,8 @@ class ProGNN:
 
         warnings.warn("If you find the nuclear proximal operator runs too slow, you can modify line 77 to use prox_operators.prox_nuclear_cuda instead of prox_operators.prox_nuclear to perform the proximal on GPU. See details in https://github.com/ChandlerBang/Pro-GNN/issues/1")
         self.model_optimizer_nuclear = PGD(estimator.parameters(),
-                  proxs=[prox_operators.prox_nuclear],
-                  lr=args.lr_adj, alphas=[args.beta])
+                  proxs=[prox_operators.prox_nuclear_cuda],
+                  lr=args.adj_lr, alphas=[args.beta])
 
         
         node_x = g_data.ndata['x'].to(self.device)
@@ -95,14 +95,11 @@ class ProGNN:
             # ======= graph active learning ======        
             # adj should be numpy
             adj = self.estimator.normalize()
-            graph = nx.Graph(adj.cpu().numpy())
+            graph = nx.Graph(adj.detach().cpu().numpy())
             norm_centrality = centralissimo(graph)
             
             # g_data should change                
-            row, col = adj.nonzero()
-            row = list(row)
-            col = list(col)
-            edge_index = (row, col)            
+            edge_index = adj.nonzero().T           
             lap_pe = g_data.ndata['PE'].to(self.device)
             
 
@@ -118,7 +115,7 @@ class ProGNN:
                                 epoch=epoch,
                                 out_prob=prob,
                                 norm_centrality=norm_centrality,
-                                config=self.config,
+                                args=self.args,
                                 data_info=self.data_info)
                 
                                         
@@ -131,7 +128,7 @@ class ProGNN:
         self.model.load_state_dict(self.weights)
 
     def train_gnn(self, edge_index, features, lap_pe, labels, epoch):
-        args = self.config
+        args = self.args
         estimator = self.estimator
         adj = estimator.normalize()
                 
@@ -163,17 +160,17 @@ class ProGNN:
             self.best_val_acc = acc_val
             self.best_graph = adj.detach()
             self.weights = deepcopy(self.model.state_dict())
-            if self.config['para_config']['debug']:
+            if self.args.debug:
                 print(f'saving current model and graph, best_val_acc: %s' % self.best_val_acc.item())
 
         if loss_val < self.best_val_loss:
             self.best_val_loss = loss_val
             self.best_graph = adj.detach()
             self.weights = deepcopy(self.model.state_dict())
-            if self.config['para_config']['debug']:
+            if self.args.debug:
                 print(f'saving current graph/gcn, best_val_loss: %s' % self.best_val_loss.item())
 
-        if self.config['para_config']['debug']:
+        if self.args.debug:
             if epoch % 10 == 0:
                 print('Epoch: {:04d}'.format(epoch+1),
                       'loss_train: {:.4f}'.format(loss_train.item()),
@@ -186,7 +183,7 @@ class ProGNN:
 
     def train_adj(self, epoch, features, adj, labels, idx_train, idx_val):
         estimator = self.estimator
-        args = self.config
+        args = self.args
         if args.debug:
             print("\n=== train_adj ===")
         t = time.time()
@@ -202,10 +199,7 @@ class ProGNN:
         else:
             loss_smooth_feat = 0 * loss_l1
         
-        row, col = adj.nonzero()
-        row = list(row)
-        col = list(col)
-        edge_index = (row, col)                            
+        edge_index = adj.nonzero().T                           
         output = self.model(edge_index, features)
         
         loss_gcn = F.nll_loss(output[idx_train], labels[idx_train])
@@ -242,11 +236,7 @@ class ProGNN:
         self.model.eval()
         normalized_adj = estimator.normalize()
         
-        row, col = normalized_adj.nonzero()
-        row = list(row)
-        col = list(col)
-        edge_index = (row, col)            
-                
+        edge_index = normalized_adj.nonzero().T           
         output = self.model(edge_index, features)
 
         loss_val = F.nll_loss(output[idx_val], labels[idx_val])
@@ -294,11 +284,7 @@ class ProGNN:
         if self.best_graph is None:
             adj = self.estimator.normalize()
         
-        row, col = adj.nonzero()
-        row = list(row)
-        col = list(col)
-        edge_index = (row, col)                    
-        
+        edge_index = adj.nonzero().T                 
         output = self.model(edge_index, features)
         
         loss_test = F.nll_loss(output[idx_test], labels[idx_test])

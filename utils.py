@@ -157,7 +157,7 @@ def get_anndata(args):
     h5ad_files = [file for file in files_in_directory if file.endswith('.h5ad')]
     if h5ad_files:
         '''ann data exists'''
-        adata = ad.read(os.path.join('data_dir', 'data.h5ad'))        
+        adata = ad.read(os.path.join(data_dir, 'data.h5ad'))        
         return adata
     else:
         ref_data = pd.read_csv(os.path.join(data_dir, 'ref_data.csv'), index_col=0)
@@ -354,13 +354,13 @@ def accuracy(output, labels):
     correct = correct.sum()
     return correct / len(labels)
 
-def active_learning(g_data, epoch, out_prob, norm_centrality, config, data_info):
-    gamma = np.random.beta(1, 1.005 - config['para_config']['basef'] ** epoch)
+def active_learning(g_data, epoch, out_prob, norm_centrality, args, data_info):
+    gamma = np.random.beta(1, 1.005 - args.basef ** epoch)
     alpha = beta = (1 - gamma) / 2
     prob = out_prob
-    if config['para_config']['is_active_learning'] and len(data_info['train_idx']) < config['para_config']['NL']:
+    if args.active_learning and len(data_info['train_idx']) < data_info['max_nodes_num']:
         entropy = scipy.stats.entropy(prob.T)
-        kmeans = KMeans(n_clusters=data_info['NCL'], random_state=0).fit(prob)
+        kmeans = KMeans(n_clusters=data_info['class_num'], random_state=0).fit(prob)
         ed_score = euclidean_distances(prob, kmeans.cluster_centers_)
         density = np.min(ed_score, axis=1)
         # entropy和density的norm: 计算样本中的百分位数（因为只需要比较样本之间的分数即可）
@@ -371,10 +371,10 @@ def active_learning(g_data, epoch, out_prob, norm_centrality, config, data_info)
 
         # 把train, val, test的数据排除, 从剩余的label budget里面获取节点
         finalweight[data_info['train_idx'] + data_info['test_idx'] + data_info['val_idx']] = -100
-        select_arr = np.argpartition(finalweight, -config['para_config']['k_select'])[-config['para_config']['k_select']:]
+        select_arr = np.argpartition(finalweight, -args.k_select)[-args.k_select:]
         for node_idx in select_arr:
             data_info['train_idx'].append(node_idx)
             # 注意y_predict是tensor
             g_data.ndata['y_predict'][node_idx] = g_data.ndata['y_true'][node_idx]
-            if (config['para_config']['debug']):
+            if (args.debug):
                 print("Epoch {:}: pick up one node to the training set!".format(epoch))

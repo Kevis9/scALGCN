@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser()
 
 # data config
 parser.add_argument('--data_dir', type=str, 
-                             default='experiment/baron_xin/data/data.h5ad', 
+                             default='experiment/seq_well_10x_v3/data', 
                              help='data directory')
 parser.add_argument('--epochs', type=int, 
                              default=200, 
@@ -30,18 +30,12 @@ parser.add_argument('--wd', type=float,
 parser.add_argument('--init_train_num', type=int, 
                              default=10, 
                              help='for active learning, we will pick some initial nodes for training')
-parser.add_argument('--init_train_num', type=int, 
-                             default=10, 
-                             help='for active learning, we will pick some initial nodes for training')
 parser.add_argument('--debug', action='store_true', 
                              default=True, 
                              help='debug mode')
 parser.add_argument('--max_per_class', type=int, 
                              default=30, 
                              help='max number of nodes for each class')
-parser.add_argument('--active_learning', action='store_true', 
-                             default=False, 
-                             help='active learning mode')
 parser.add_argument('--active_learning', action='store_true', 
                              default=False, 
                              help='active learning mode')
@@ -131,7 +125,7 @@ model = GTModel(args=args,
                 pos_enc=g_data.ndata['PE'].to(device)).to(device)
 
 # use Pro-GNN to train the GT
-prognn = ProGNN(model, device=device)
+prognn = ProGNN(model, data_info=data_info, args=args, device=device)
 prognn.fit(g_data=g_data)
 
 test_acc = prognn.test(g_data.ndata['x'].to(device), data_info['test_idx'], g_data.ndata['y_true'].to(device))

@@ -137,21 +137,21 @@ class GTModel(nn.Module):
         self.out_dim = args.out_dim
         self.residual = args.residual
         self.add_pos_enc = args.add_pos_enc
-        self.hiddens_dim = args.hiddem_dim
+        self.hidden_dim = args.hidden_dim
         self.pos_enc_dim = args.pos_enc_dim
         self.num_heads = args.n_heads
         self.dropout_rate = args.dropout_rate
         self.num_layers = args.n_layers
         self.pos_enc = pos_enc
         
-        self.h_embedding = nn.Linear(self.in_dim, self.hiddens_dim)                        
-        self.pos_linear = nn.Linear(self.pos_enc_dim, self.hiddens_dim)
+        self.h_embedding = nn.Linear(self.in_dim, self.hidden_dim)                        
+        self.pos_linear = nn.Linear(self.pos_enc_dim, self.hidden_dim)
         self.layers = nn.ModuleList(
-            [GTLayer(self.hiddens_dim, self.hiddens_dim, self.num_heads, self.dropout_rate, residual=self.residual) for _ in range(self.num_layers - 1)]            
+            [GTLayer(self.hidden_dim, self.hidden_dim, self.num_heads, self.dropout_rate, residual=self.residual) for _ in range(self.num_layers - 1)]            
         )        
         
         self.layers.append(
-            GTLayer(self.hiddens_dim, self.out_dim, self.num_heads, self.dropout_rate, residual=self.residual)
+            GTLayer(self.hidden_dim, self.out_dim, self.num_heads, self.dropout_rate, residual=self.residual)
         )
         # self.pooler = dglnn.SumPooling()                
         self.predictor = nn.Sequential(
@@ -164,7 +164,7 @@ class GTModel(nn.Module):
                 
 
     def forward(self, edge_index, features):
-        indices = torch.stack(edge_index)
+        indices = edge_index.to(device)
         N = features.shape[0] # N * feature_dim
         A = dglsp.spmatrix(indices, shape=(N, N))        
         # A = g.edges()
