@@ -150,22 +150,30 @@ def random_stratify_sample_with_train_idx(ref_labels, train_idx, train_class_num
     return new_train_idx
 
 
-def get_anndata(data_config, parameter_config):
-    if data_config['data_mode'] == 'csv':
-        ref_data = pd.read_csv(data_config['ref_data_path'], index_col=0)
-        ref_label = pd.read_csv(data_config['ref_label_path'])
-        query_data = pd.read_csv(data_config['query_data_path'], index_col=0)
-        query_label = pd.read_csv(data_config['query_label_path'])
+def get_anndata(args):
+    data_dir = args.data_dir
+    files_in_directory = os.listdir(data_dir)
+    # 判断是否存在以.h5ad为后缀的文件
+    h5ad_files = [file for file in files_in_directory if file.endswith('.h5ad')]
+    if h5ad_files:
+        '''ann data exists'''
+        adata = ad.read(os.path.join('data_dir', 'data.h5ad'))        
+        return adata
+    else:
+        ref_data = pd.read_csv(os.path.join(data_dir, 'ref_data.csv'), index_col=0)
+        ref_label = pd.read_csv(os.path.join(data_dir, 'ref_label.csv'))
+        query_data = pd.read_csv(os.path.join(data_dir, 'query_data.csv'), index_col=0)
+        query_label = pd.read_csv(os.path.join(data_dir, 'query_label.csv'))
 
         data = pd.concat([ref_data, query_data], axis=0)
         label = pd.concat([ref_label, query_label], axis=0)
-        edge_index = combine_inter_intra_graph(inter_graph_path=data_config['inter_graph_path'],
-                                               intra_graph_path=data_config['intra_graph_path'],
+        edge_index = combine_inter_intra_graph(inter_graph_path=os.path.join(data_dir, 'inter_graph.csv'),
+                                               intra_graph_path=os.path.join(data_dir, 'intra_graph.csv'),
                                                n_nodes_ref=len(ref_label),
                                                n_nodes_query=len(query_label))
 
         adata = capsule_pd_data_to_anndata(data, label, edge_index)
-
+        
         # 随机分层采样
         adata.uns['train_idx'], adata.uns['val_idx'] = random_stratify_sample(ref_label.to_numpy(), train_size=0.8)
         adata.uns['train_idx_for_no_al'] = adata.uns['train_idx']
@@ -175,21 +183,16 @@ def get_anndata(data_config, parameter_config):
         # 按照论文，train label一开始每个类别设置成4个, 剩余的training node作为label budget里面的一部分
         adata.uns['train_idx'] = random_stratify_sample_with_train_idx(ref_label.to_numpy(),
                                                                        train_idx=adata.uns['train_idx'],
-                                                                       train_class_num=parameter_config[
-                                                                           'initial_class_train_num'])
+                                                                       train_class_num=args.init_train_num)
 
-        adata.write(os.path.join(data_config['root'], 'data.h5ad'), compression="gzip")
-        return adata
-    elif data_config['data_mode'] == 'ann':
-        '''ann data已存在'''
-        adata = ad.read(data_config['anndata_path'])
+        adata.write(os.path.join(data_dir, 'data.h5ad'))
         return adata
 
 
 
-def load_data(data_config, parameter_config):
+def load_data(args):
     # 数据准备
-    adata = get_anndata(data_config=data_config, parameter_config=parameter_config)
+    adata = get_anndata(args=args)
     # g_data准备
     # 将所有的adata的数据转为tensor
     # g_data = torch_geometric.data.Data(x=torch.tensor(adata.X, dtype=torch.float),
@@ -208,7 +211,7 @@ def load_data(data_config, parameter_config):
     data_info['val_idx'] = list(adata.uns['val_idx'])
     data_info['test_idx'] = list(adata.uns['test_idx'])
     data_info['train_idx'] = list(adata.uns['train_idx'])
-    data_info['NCL'] = len(set(adata.obs['cell_type'][adata.uns['train_idx']]))
+    data_info['class_num'] = len(set(adata.obs['cell_type'][adata.uns['train_idx']]))
     data_info['label_encoder'] = label_encoder
     return g_data, adata, data_info
 
@@ -233,11 +236,8 @@ def train(model, g_data, data_info, config):
 
     max_val_acc = 0
     tolerance_epoch = 0
-    
-    
+        
     for epoch in range(config['para_config']['epochs']):
-        model.train()
-
         gamma = np.random.beta(1, 1.005 - config['para_config']['basef'] ** epoch)
         alpha = beta = (1 - gamma) / 2
         optimizer.zero_grad()
@@ -276,7 +276,7 @@ def train(model, g_data, data_info, config):
                 data_info['train_idx'].append(node_idx)
                 # 注意y_predict是tensor
                 g_data.ndata['y_predict'][node_idx] = g_data.ndata['y_true'][node_idx]
-                if (config['para_config']['epoch_print_flag']):
+                if (config['para_config']['debug']):
                     print("Epoch {:}: pick up one node to the training set!".format(epoch))
 
         # validation
@@ -329,3 +329,52 @@ def test(model, g_data, data_info):
     test_acc = accuracy_score(test_true, test_pred)
     print("test acc {:.3f}".format(test_acc))
     return test_acc
+
+def accuracy(output, labels):
+    """Return accuracy of output compared to labels.
+
+    Parameters
+    ----------
+    output : torch.Tensor
+        output from model
+    labels : torch.Tensor or numpy.array
+        node labels
+
+    Returns
+    -------
+    float
+        accuracy
+    """
+    if not hasattr(labels, '__len__'):
+        labels = [labels]
+    if type(labels) is not torch.Tensor:
+        labels = torch.LongTensor(labels)
+    preds = output.max(1)[1].type_as(labels)
+    correct = preds.eq(labels).double()
+    correct = correct.sum()
+    return correct / len(labels)
+
+def active_learning(g_data, epoch, out_prob, norm_centrality, config, data_info):
+    gamma = np.random.beta(1, 1.005 - config['para_config']['basef'] ** epoch)
+    alpha = beta = (1 - gamma) / 2
+    prob = out_prob
+    if config['para_config']['is_active_learning'] and len(data_info['train_idx']) < config['para_config']['NL']:
+        entropy = scipy.stats.entropy(prob.T)
+        kmeans = KMeans(n_clusters=data_info['NCL'], random_state=0).fit(prob)
+        ed_score = euclidean_distances(prob, kmeans.cluster_centers_)
+        density = np.min(ed_score, axis=1)
+        # entropy和density的norm: 计算样本中的百分位数（因为只需要比较样本之间的分数即可）
+        norm_entropy = np.array([perc_for_entropy(entropy, i) for i in range(len(entropy))])
+        norm_density = np.array([perc_for_density(density, i) for i in range(len(density))])
+        norm_centrality = norm_centrality.squeeze()
+        finalweight = alpha * norm_entropy + beta * norm_density + gamma * norm_centrality
+
+        # 把train, val, test的数据排除, 从剩余的label budget里面获取节点
+        finalweight[data_info['train_idx'] + data_info['test_idx'] + data_info['val_idx']] = -100
+        select_arr = np.argpartition(finalweight, -config['para_config']['k_select'])[-config['para_config']['k_select']:]
+        for node_idx in select_arr:
+            data_info['train_idx'].append(node_idx)
+            # 注意y_predict是tensor
+            g_data.ndata['y_predict'][node_idx] = g_data.ndata['y_true'][node_idx]
+            if (config['para_config']['debug']):
+                print("Epoch {:}: pick up one node to the training set!".format(epoch))

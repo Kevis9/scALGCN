@@ -131,7 +131,7 @@ def train(model, g_data, select_mode):
                 g_data.train_idx.append(node_idx)
                 # 注意y_predict是tensor
                 g_data.y_predict[node_idx] = g_data.y_true[node_idx]
-                if (parameter_config['epoch_print_flag']):
+                if (parameter_config['debug']):
                     print("Epoch {:}: pick up one node to the training set!".format(epoch))
 
             # validation

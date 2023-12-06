@@ -5,122 +5,143 @@ import numpy as np
 import torch
 from model import GTModel
 import json
+import argparse
+from prognn import ProGNN
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-config = {
-    'data_config' :{
-        'root': 'experiment/baron_xin/data',
-        'ref_data_path': 'ref_data.csv',
-        'query_data_path': 'query_data.csv',
-        'ref_label_path': 'ref_label.csv',
-        'query_label_path': 'query_label.csv',
-        'anndata_path': 'data.h5ad',
-        'inter_graph_path': 'inter_graph.csv',
-        'intra_graph_path': 'intra_graph.csv',
-        'data_mode': 'ann'
-    },
-    'para_config' :{
-        'epochs': 200,        
-        # For active learning
-        'basef': 0.8,
-        'k_select': 1,
-        'NL': 100,  # 有标签节点选取的阈值，这里的初始值不重要，最后 = NC * 20, 按照论文里面的设置
-        'wd': 5e-4,  # weight decay
-        'initial_class_train_num': 10,
-        'epoch_print_flag': True,
-        'multi_class_num': 30, # NL = NC * multi_class_num
-        'is_active_learning': True,
-        'early_stop': True,
-        'tolerance_epoch': 30, 
+parser = argparse.ArgumentParser()
 
-        # GT hyper-parameters
-        'gt_lr': 1e-3,
-        'in_dim': 0, # not sure now
-        'hidden_dim': 256,
-        'out_dim': 128,
-        'n_classes': 0, # not sure now
-        'n_heads': 1,    
-        'dropout_rate': 0.2,
-        'n_layers': 2,
-        'pos_enc_dim': 8,
-        'layer_norm': False,
-        'batch_norm': True,    
-        'residual': False,
-        'add_pos_enc': True,                     
-    }
-}
+# data config
+parser.add_argument('--data_dir', type=str, 
+                             default='experiment/baron_xin/data/data.h5ad', 
+                             help='data directory')
+parser.add_argument('--epochs', type=int, 
+                             default=200, 
+                             help='epochs for training')
+parser.add_argument('--basef', type=float, 
+                             default=0.8, 
+                             help='base factor for active learning')
+parser.add_argument('--k_select', type=int, 
+                             default=1, 
+                             help='num of nodes to select for every iteration')
+parser.add_argument('--wd', type=float, 
+                             default=200, 
+                             help='weight decay')
+parser.add_argument('--init_train_num', type=int, 
+                             default=10, 
+                             help='for active learning, we will pick some initial nodes for training')
+parser.add_argument('--init_train_num', type=int, 
+                             default=10, 
+                             help='for active learning, we will pick some initial nodes for training')
+parser.add_argument('--debug', action='store_true', 
+                             default=True, 
+                             help='debug mode')
+parser.add_argument('--max_per_class', type=int, 
+                             default=30, 
+                             help='max number of nodes for each class')
+parser.add_argument('--active_learning', action='store_true', 
+                             default=False, 
+                             help='active learning mode')
+parser.add_argument('--active_learning', action='store_true', 
+                             default=False, 
+                             help='active learning mode')
+parser.add_argument('--gt_lr', type=float,
+                             default=1e-3, 
+                             help='learning rate for graph transformer')
+parser.add_argument('--adj_lr', type=float,
+                             default=1e-2, 
+                             help='learning rate for training adj')
+parser.add_argument('--alpha', type=float, 
+                    default=5e-4, 
+                    help='weight of l1 norm')
+parser.add_argument('--beta', type=float, 
+                    default=1.5, 
+                    help='weight of nuclear norm')
+parser.add_argument('--gamma', type=float, 
+                    default=1, 
+                    help='weight of l2 norm')
+parser.add_argument('--lambda_', type=float, 
+                    default=0, 
+                    help='weight of feature smoothing')
+parser.add_argument('--phi', type=float, 
+                    default=0,
+                    help='weight of symmetric loss')
 
-projects = [
-    'seq_well_10x_v3'
-]
+parser.add_argument('--inner_steps', type=int, 
+                    default=2, 
+                    help='steps for inner optimization')
 
-AL_acc = []
-AL_ref_num = []
-gt_acc = []
-gt_ref_num = []
-query_num_arr = []
-scGCN_acc = []
-scGCN_ref_num = []
+parser.add_argument('--outer_steps', type=int, 
+                    default=1, 
+                    help='steps for outer optimization')
+
+parser.add_argument('--hidden_dim', type=int,
+                             default=256, 
+                             help='hidden dim for graph transformer')
+parser.add_argument('--out_dim', type=int,
+                             default=128, 
+                             help='output dim of GTModel, input dim for classifier')
+parser.add_argument('--n_heads', type=int,
+                             default=1, 
+                             help='num of heads for GTModel')
+parser.add_argument('--dropout_rate', type=float,
+                             default=0.2, 
+                             help='dropout rate for GTModel')
+parser.add_argument('--n_layers', type=int, 
+                             default=2, 
+                             help='num of layers for GTModel')
+parser.add_argument('--pos_enc_dim', type=int,
+                             default=8, 
+                             help='positional encoding dim')
+parser.add_argument('--layer_norm', action='store_true',
+                             default=False, 
+                             help='layer norm for GTModel')
+parser.add_argument('--batch_norm', action='store_true',
+                             default=True, 
+                             help='Batch norm for GTModel')
+parser.add_argument('--residual', action='store_true',
+                             default=False, 
+                             help='residual for GTModel')
+parser.add_argument('--add_pos_enc', action='store_true',
+                             default=True, 
+                             help='whether adding postional encoding to node feature')
+
+parser.add_argument('--symmetric', action='store_true', 
+                            default=True,
+                            help='whether use symmetric matrix')
+
+args = parser.parse_args()
 
 seed = 32
 setup_seed(seed)
 
-for proj in projects:
-    config['data_config']['root'] = 'experiment/' + proj + '/data'
-    root_data_path = config['data_config']['root']
-    data_config_cp = config['data_config'].copy()
-    for key in config['data_config']:
-        if "path" in key:
-            config['data_config'][key] = os.path.join(root_data_path, config['data_config'][key])
     
-    # load data
-    g_data, adata, data_info = load_data(data_config=config['data_config'], parameter_config=config['para_config'])
-    
-    
-    # 设置好NL的值
-    config['para_config']['NL'] = data_info['NCL'] * config['para_config']['multi_class_num']        
-    g_data.ndata['PE'] = dgl.laplacian_pe(g_data, k=config['para_config']['pos_enc_dim'], padding=True)
-
-    # set right parameters
-    config['para_config']['n_classes'] = data_info['NCL']
-    config['para_config']['in_dim'] = g_data.ndata['x'].shape[1]
-    
-    
-    # ours    
-    model = GTModel(config['para_config']).to(device)
-    
-    model = train(model, g_data, data_info, config)    
-    test_acc = test(model, g_data, data_info)
-    AL_acc.append(test_acc)
-    AL_ref_num.append(len(data_info['train_idx']))
-
-    # Graph Transformer
-    data_info['train_idx'] = adata.uns['train_idx_for_no_al']
-    # model = GTModel(input_dim=g_data.ndata['x'].shape[1],
-    #                 out_size=data_info['NCL'],
-    #                 hidden_size=parameter_config['hidden_size'],
-    #                 num_heads=parameter_config['num_heads'],
-    #                 num_layers=parameter_config['num_layers'],
-    #                 pos_enc_size=parameter_config['pos_enc_size']).to(device)
-    #
-    # net_params['in_dim'] = g_data.ndata['x'].shape[1]
-    # net_params['n_classes'] = data_info['NCL']
-    # model = GraphTransformerModel(net_params)
-
-    # train(model, g_data, data_info, is_active_learning=False)
-    # test_acc = test(model, g_data, data_info)
-    # gt_acc.append(test_acc )
-    # gt_ref_num.append(len(data_info['train_idx']))
+# load data
+g_data, adata, data_info = load_data(args=args)
 
 
-    query_num_arr.append(len(data_info['test_idx']))
-    config['data_config'] = data_config_cp
+max_nodes_num = data_info['class_num'] * args.max_per_class
 
-    # save config
-    with open('config/{:}_acc_{:.3f}.json'.format(proj, test_acc), 'w') as f:
-        json.dump(config, f)
+g_data.ndata['PE'] = dgl.laplacian_pe(g_data, k=args.pos_enc_dim, padding=True)
 
-results = dict(zip(projects, AL_acc))
-print(results)
     
-    
+model = GTModel(args=args,
+                in_dim=g_data.ndata['x'].shape[1],
+                class_num=data_info['class_num'],
+                pos_enc=g_data.ndata['PE'].to(device)).to(device)
+
+# use Pro-GNN to train the GT
+prognn = ProGNN(model, device=device)
+prognn.fit(g_data=g_data)
+
+test_acc = prognn.test(g_data.ndata['x'].to(device), data_info['test_idx'], g_data.ndata['y_true'].to(device))
+
+print(test_acc)
+
+
+# save config
+proj = args.data_dir.split('/')[1]
+with open('config/{:}_acc_{:.3f}.json'.format(proj, test_acc), 'w') as f:
+    json.dump(config, f)
+
+
