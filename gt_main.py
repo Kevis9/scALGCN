@@ -142,6 +142,7 @@ print(test_acc)
 # save config
 proj = args.data_dir.split('/')[1]
 with open('config/{:}_acc_{:.3f}.json'.format(proj, test_acc), 'w') as f:
-    json.dump(config, f)
+    json.dump(vars(args), f)
+    
 
 
