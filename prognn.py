@@ -92,13 +92,11 @@ class ProGNN:
                         train_idx, val_idx)
 
             # after updating S, need to calculate the norm centrailty again for selecting new nodes
-            # ======= graph active learning ======        
-            # adj should be numpy
-            adj = self.estimator.normalize()
-            graph = nx.Graph(adj.detach().cpu().numpy())
-            norm_centrality = centralissimo(graph)
-            
-            # g_data should change                
+            # ======= graph active learning ======                    
+            if args.active_learning:
+                adj = self.estimator.normalize()
+                graph = nx.Graph(adj.detach().cpu().numpy())
+                norm_centrality = centralissimo(graph)                                     
             edge_index = adj.nonzero().T           
             lap_pe = g_data.ndata['PE'].to(self.device)
             
@@ -110,14 +108,15 @@ class ProGNN:
                                labels=labels,
                                epoch=epoch)
                 
-                # will change outer data_info (the parameter is reference)
-                active_learning(g_data=g_data,
-                                epoch=epoch,
-                                out_prob=prob,
-                                norm_centrality=norm_centrality,
-                                args=self.args,
-                                data_info=self.data_info)
-                
+                if args.active_learning:
+                    # will change outer data_info (the parameter is reference)
+                    active_learning(g_data=g_data,
+                                    epoch=epoch,
+                                    out_prob=prob,
+                                    norm_centrality=norm_centrality,
+                                    args=self.args,
+                                    data_info=self.data_info)
+                    
                                         
 
         print("Optimization Finished!")
@@ -129,6 +128,9 @@ class ProGNN:
 
     def train_gnn(self, edge_index, features, lap_pe, labels, epoch):
         args = self.args
+
+        if args.debug:
+            print("\n=== train_gnn ===")        
         estimator = self.estimator
         adj = estimator.normalize()
                 
@@ -170,14 +172,13 @@ class ProGNN:
             if self.args.debug:
                 print(f'saving current graph/gcn, best_val_loss: %s' % self.best_val_loss.item())
 
-        if self.args.debug:
-            if epoch % 10 == 0:
-                print('Epoch: {:04d}'.format(epoch+1),
-                      'loss_train: {:.4f}'.format(loss_train.item()),
-                      'acc_train: {:.4f}'.format(acc_train.item()),
-                      'loss_val: {:.4f}'.format(loss_val.item()),
-                      'acc_val: {:.4f}'.format(acc_val.item()),
-                      'time: {:.4f}s'.format(time.time() - t))
+        if self.args.debug:            
+            print('Epoch: {:04d}'.format(epoch+1),
+                    'loss_train: {:.4f}'.format(loss_train.item()),
+                    'acc_train: {:.4f}'.format(acc_train.item()),
+                    'loss_val: {:.4f}'.format(loss_val.item()),
+                    'acc_val: {:.4f}'.format(acc_val.item()),
+                    'time: {:.4f}s'.format(time.time() - t))
 
         return prob
 
