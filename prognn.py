@@ -82,31 +82,31 @@ class ProGNN:
         labels = g_data.ndata['y_true'].to(self.device)
         train_idx = self.data_info['train_idx']
         val_idx = self.data_info['val_idx']
+        
+        criterion = torch.nn.CrossEntropyLoss()
         # Train model
         t_total = time.time()
         for epoch in range(args.epochs):
             
             # Update S
-            for i in range(int(args.outer_steps)):
-                self.train_adj(epoch, node_x, adj, labels,
-                        train_idx, val_idx)
+            # for i in range(int(args.outer_steps)):
+            #     self.train_adj(epoch, node_x, adj, labels,
+            #             train_idx, val_idx)
+            # adj = self.estimator.normalize()
 
             # after updating S, need to calculate the norm centrailty again for selecting new nodes
             # ======= graph active learning ======                    
             if args.active_learning:
-                adj = self.estimator.normalize()
                 graph = nx.Graph(adj.detach().cpu().numpy())
-                norm_centrality = centralissimo(graph)                                     
-            edge_index = adj.nonzero().T           
-            lap_pe = g_data.ndata['PE'].to(self.device)
+                norm_centrality = centralissimo(graph) 
             
-
             for i in range(int(args.inner_steps)):
-                prob = self.train_gnn(edge_index=edge_index, 
-                               features=node_x,
-                               lap_pe=lap_pe,
+                prob = self.train_gnn(adj=adj, 
+                               features=node_x,                               
                                labels=labels,
-                               epoch=epoch)
+                               epoch=epoch,
+                               criterion=criterion)
+                
                 
                 if args.active_learning:
                     # will change outer data_info (the parameter is reference)
@@ -126,36 +126,37 @@ class ProGNN:
         print("picking the best model according to validation performance")
         self.model.load_state_dict(self.weights)
 
-    def train_gnn(self, edge_index, features, lap_pe, labels, epoch):
+    def train_gnn(self, adj, features, labels, epoch, criterion):
         args = self.args
 
         if args.debug:
             print("\n=== train_gnn ===")        
-        estimator = self.estimator
-        adj = estimator.normalize()
+        # estimator = self.estimator
+        # adj = estimator.normalize()                
+        edge_index = adj.nonzero().T
                 
-        
         t = time.time()
         self.model.train()
         self.model_optimizer.zero_grad()
         # GTModel        
         output = self.model(edge_index, features)
-        prob = F.softmax(output.detach(), dim=1).cpu().numpy()
         
         train_idx = self.data_info['train_idx']
         val_idx = self.data_info['val_idx']
-        
-        loss_train = F.nll_loss(output[train_idx], labels[train_idx])
+                
+        loss_train = criterion(output[train_idx], labels[train_idx])
         acc_train = accuracy(output[train_idx], labels[train_idx])
         loss_train.backward()
         self.model_optimizer.step()
-
+        
+        prob = F.softmax(output.detach(), dim=1).cpu().numpy()                        
+                
         # Evaluate validation set performance separately,
         # deactivates dropout during validation run.
         self.model.eval()
         output = self.model(edge_index, features)
 
-        loss_val = F.nll_loss(output[val_idx], labels[val_idx])
+        loss_val = criterion(output[val_idx], labels[val_idx])
         acc_val = accuracy(output[val_idx], labels[val_idx])
 
         if acc_val > self.best_val_acc:
