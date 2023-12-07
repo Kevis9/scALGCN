@@ -89,10 +89,10 @@ class ProGNN:
         for epoch in range(args.epochs):
             
             # Update S
-            # for i in range(int(args.outer_steps)):
-            #     self.train_adj(epoch, node_x, adj, labels,
-            #             train_idx, val_idx)
-            # adj = self.estimator.normalize()
+            for i in range(int(args.outer_steps)):
+                self.train_adj(epoch, node_x, adj, labels,
+                        train_idx, val_idx)
+            adj = self.estimator.normalize()
 
             # after updating S, need to calculate the norm centrailty again for selecting new nodes
             # ======= graph active learning ======                    
@@ -202,9 +202,10 @@ class ProGNN:
             loss_smooth_feat = 0 * loss_l1
         
         edge_index = adj.nonzero().T                           
+        criterion = torch.nn.CrossEntropyLoss()
         output = self.model(edge_index, features)
         
-        loss_gcn = F.nll_loss(output[idx_train], labels[idx_train])
+        loss_gcn = criterion(output[idx_train], labels[idx_train])
         acc_train = accuracy(output[idx_train], labels[idx_train])
 
         loss_symmetric = torch.norm(estimator.estimated_adj \
@@ -241,7 +242,7 @@ class ProGNN:
         edge_index = normalized_adj.nonzero().T           
         output = self.model(edge_index, features)
 
-        loss_val = F.nll_loss(output[idx_val], labels[idx_val])
+        loss_val = criterion(output[idx_val], labels[idx_val])
         acc_val = accuracy(output[idx_val], labels[idx_val])
         print('Epoch: {:04d}'.format(epoch+1),
               'acc_train: {:.4f}'.format(acc_train.item()),
