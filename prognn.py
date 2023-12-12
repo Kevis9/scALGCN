@@ -89,10 +89,10 @@ class ProGNN:
         for epoch in range(args.epochs):
             
             # Update S
-            for i in range(int(args.outer_steps)):
-                self.train_adj(epoch, node_x, adj, labels,
-                        train_idx, val_idx)
-            adj = self.estimator.normalize()
+            # for i in range(int(args.outer_steps)):
+            #     self.train_adj(epoch, node_x, adj, labels,
+            #             train_idx, val_idx)
+            # adj = self.estimator.normalize()
 
             # after updating S, need to calculate the norm centrailty again for selecting new nodes
             # ======= graph active learning ======                    

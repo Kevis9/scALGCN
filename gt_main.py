@@ -16,7 +16,7 @@ parser.add_argument('--data_dir', type=str,
                              default='experiment/seq_well_10x_v3/data', 
                              help='data directory')
 parser.add_argument('--epochs', type=int, 
-                             default=10, 
+                             default=30, 
                              help='epochs for training')
 parser.add_argument('--basef', type=float, 
                              default=0.8, 
@@ -25,7 +25,7 @@ parser.add_argument('--k_select', type=int,
                              default=1, 
                              help='num of nodes to select for every iteration')
 parser.add_argument('--wd', type=float, 
-                             default=200, 
+                             default=0.0005, 
                              help='weight decay')
 parser.add_argument('--init_train_num', type=int, 
                              default=10, 
@@ -43,7 +43,7 @@ parser.add_argument('--gt_lr', type=float,
                              default=1e-3, 
                              help='learning rate for graph transformer')
 parser.add_argument('--adj_lr', type=float,
-                             default=1e-2, 
+                             default=1e-3, 
                              help='learning rate for training adj')
 parser.add_argument('--alpha', type=float, 
                     default=5e-4, 
@@ -52,7 +52,7 @@ parser.add_argument('--beta', type=float,
                     default=1.5, 
                     help='weight of nuclear norm')
 parser.add_argument('--gamma', type=float, 
-                    default=1, 
+                    default=0.5, 
                     help='weight of l2 norm')
 parser.add_argument('--lambda_', type=float, 
                     default=0, 
@@ -115,6 +115,7 @@ g_data, adata, data_info = load_data(args=args)
 
 
 max_nodes_num = data_info['class_num'] * args.max_per_class
+data_info['max_nodes_num'] = max_nodes_num
 
 g_data.ndata['PE'] = dgl.laplacian_pe(g_data, k=args.pos_enc_dim, padding=True)
 
