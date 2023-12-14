@@ -18,6 +18,7 @@ from tqdm import tqdm
 from graphtransformer.layers.graph_transformer_layer import GraphTransformerLayer
 from graphtransformer.layers.mlp_readout_layer import MLPReadout
 
+
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 class GCN(torch.nn.Module):
@@ -70,6 +71,13 @@ class SparseMHA(nn.Module):
         attn = dglsp.bsddmm(A, q, k.transpose(1, 0))  # (sparse) [N, N, nh]
         # Sparse softmax by default applies on the last sparse dimension.
         attn = attn.softmax()  # (sparse) [N, N, nh]
+        # attn = attn.to_dense().view(N, -1)        
+        # attn = F.softmax(attn, dim=1)
+        # # print(type(attn))
+        # attn = dglsp.spmatrix(attn.nonzero().t(), attn[attn.nonzero(as_tuple=True)].reshape(1, -1))
+        # print(attn.shape)
+        # print(attn)
+        # exit()
         out = dglsp.bspmm(attn, v)  # [N, dh, nh]
 
         # attn = (q.transpose(0, 2).transpose(1, 2) @ k.transpose(0, 2)) * A.to_dense().to(device) # [nh, N, N]

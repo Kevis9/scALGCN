@@ -52,7 +52,7 @@ parser.add_argument('--beta', type=float,
                     default=1.5, 
                     help='weight of nuclear norm')
 parser.add_argument('--gamma', type=float, 
-                    default=0.5, 
+                    default=1, 
                     help='weight of l2 norm')
 parser.add_argument('--lambda_', type=float, 
                     default=0, 
@@ -62,7 +62,7 @@ parser.add_argument('--phi', type=float,
                     help='weight of symmetric loss')
 
 parser.add_argument('--inner_steps', type=int, 
-                    default=1, 
+                    default=2, 
                     help='steps for inner optimization')
 
 parser.add_argument('--outer_steps', type=int, 
@@ -101,7 +101,7 @@ parser.add_argument('--add_pos_enc', action='store_true',
                              help='whether adding postional encoding to node feature')
 
 parser.add_argument('--symmetric', action='store_true', 
-                            default=True,
+                            default=False,
                             help='whether use symmetric matrix')
 
 args = parser.parse_args()
