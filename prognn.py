@@ -96,7 +96,7 @@ class ProGNN:
                 self.train_adj(epoch, node_x, labels,
                         train_idx, val_idx)
                             
-            adj = self.estimator.normalize()
+            adj = self.estimator.get_estimated_adj()
 
             # after updating S, need to calculate the norm centrailty again for selecting new nodes
             # ======= graph active learning ======                    
@@ -190,7 +190,8 @@ class ProGNN:
     def train_adj(self, epoch, features, labels, idx_train, idx_val):        
         estimator = self.estimator
         args = self.args
-        adj = estimator.normalize()        
+        adj = estimator.get_estimated_adj()
+        
         if args.debug:
             print("\n=== train_adj ===")
         t = time.time()
@@ -199,7 +200,7 @@ class ProGNN:
 
         loss_l1 = torch.norm(estimator.estimated_adj, 1)
         loss_fro = torch.norm(estimator.estimated_adj - adj, p='fro')
-        normalized_adj = estimator.normalize()
+        normalized_adj = estimator.get_estimated_adj()
 
         if args.lambda_:
             loss_smooth_feat = self.feature_smoothing(estimator.estimated_adj, features)
@@ -242,7 +243,7 @@ class ProGNN:
         # Evaluate validation set performance separately,
         # deactivates dropout during validation run.
         self.model.eval()
-        normalized_adj = estimator.normalize()
+        normalized_adj = estimator.get_estimated_adj()
         
         edge_index = normalized_adj.nonzero().T           
         output = self.model(edge_index, features)
@@ -291,7 +292,7 @@ class ProGNN:
         self.model.eval()
         adj = self.best_graph
         if self.best_graph is None:
-            adj = self.estimator.normalize()
+            adj = self.estimator.get_estimated_adj()
         
         edge_index = adj.nonzero().T                 
         output = self.model(edge_index, features)                
@@ -364,3 +365,8 @@ class EstimateAdj(nn.Module):
         mx = mx @ r_mat_inv
         return mx
 
+    def get_estimated_adj(self):
+        if self.symmetric:
+            adj = (self.estimated_adj + self.estimated_adj.t())/2
+        else:
+            adj = self.estimated_adj
