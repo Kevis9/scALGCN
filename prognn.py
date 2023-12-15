@@ -64,7 +64,7 @@ class ProGNN:
         adj = g_data.adjacency_matrix().to_dense().to(self.device)
         
         save_eidx = adj.nonzero().t().cpu().numpy()        
-        np.savetxt('new_eidx.csv', save_eidx, delimiter=',')        
+        # np.savetxt('new_eidx.csv', save_eidx, delimiter=',')        
         
         estimator = EstimateAdj(adj, symmetric=args.symmetric, device=self.device).to(self.device)
         self.estimator = estimator
@@ -91,21 +91,22 @@ class ProGNN:
         t_total = time.time()
         for epoch in range(args.epochs):
             
+            
             # Update S
             for i in range(int(args.outer_steps)):
-                self.train_adj(epoch, node_x, labels,
+                self.train_adj(epoch, node_x, adj, labels,
                         train_idx, val_idx)
-                            
-            adj = self.estimator.get_estimated_adj()
-
+                         
+            updated_adj = self.estimator.get_estimated_adj()
+            print(updated_adj)
             # after updating S, need to calculate the norm centrailty again for selecting new nodes
             # ======= graph active learning ======                    
             if args.active_learning:
-                graph = nx.Graph(adj.detach().cpu().numpy())
+                graph = nx.Graph(updated_adj.detach().cpu().numpy())
                 norm_centrality = centralissimo(graph) 
             
             for i in range(int(args.inner_steps)):
-                prob = self.train_gnn(adj=adj, 
+                prob = self.train_gnn(adj=updated_adj, 
                                features=node_x,                               
                                labels=labels,
                                epoch=epoch,
@@ -136,7 +137,9 @@ class ProGNN:
         if args.debug:
             print("\n=== train_gnn ===")        
         # estimator = self.estimator
-        # adj = estimator.normalize()                
+        # adj = estimator.normalize()  
+        adj = adj.detach().clone()
+        adj[adj < 1e-3] = 0              
         edge_index = adj.nonzero().T
                 
         t = time.time()
@@ -187,10 +190,10 @@ class ProGNN:
 
         return prob
 
-    def train_adj(self, epoch, features, labels, idx_train, idx_val):        
+    def train_adj(self, epoch, features, original_adj, labels, idx_train, idx_val):        
         estimator = self.estimator
         args = self.args
-        adj = estimator.get_estimated_adj()
+        # adj = estimator.get_estimated_adj()
         
         if args.debug:
             print("\n=== train_adj ===")
@@ -199,7 +202,7 @@ class ProGNN:
         self.model_optimizer_adj.zero_grad()
 
         loss_l1 = torch.norm(estimator.estimated_adj, 1)
-        loss_fro = torch.norm(estimator.estimated_adj - adj, p='fro')
+        loss_fro = torch.norm(estimator.estimated_adj - original_adj, p='fro')
         normalized_adj = estimator.get_estimated_adj()
 
         if args.lambda_:
@@ -207,7 +210,7 @@ class ProGNN:
         else:
             loss_smooth_feat = 0 * loss_l1
         
-        edge_index = adj.nonzero().T                           
+        edge_index = normalized_adj.nonzero().T                           
         criterion = torch.nn.CrossEntropyLoss()
         output = self.model(edge_index, features)
         
@@ -277,7 +280,7 @@ class ProGNN:
                       'loss_gcn: {:.4f}'.format(loss_gcn.item()),
                       'loss_feat: {:.4f}'.format(loss_smooth_feat.item()),
                       'loss_symmetric: {:.4f}'.format(loss_symmetric.item()),
-                      'delta_l1_norm: {:.4f}'.format(torch.norm(estimator.estimated_adj-adj, 1).item()),
+                      'delta_l1_norm: {:.4f}'.format(torch.norm(estimator.estimated_adj-original_adj, 1).item()),
                       'loss_l1: {:.4f}'.format(loss_l1.item()),
                       'loss_total: {:.4f}'.format(total_loss.item()),
                       'loss_nuclear: {:.4f}'.format(loss_nuclear.item()))
@@ -297,7 +300,7 @@ class ProGNN:
         edge_index = adj.nonzero().T                 
         output = self.model(edge_index, features)                
         save_eidx = edge_index.detach().cpu().numpy()
-        np.savetxt('new_eidx.csv', save_eidx, delimiter=',')
+        # np.savetxt('new_eidx.csv', save_eidx, delimiter=',')
 
         loss_test = criterion(output[idx_test], labels[idx_test])
         acc_test = accuracy(output[idx_test], labels[idx_test])
@@ -370,3 +373,5 @@ class EstimateAdj(nn.Module):
             adj = (self.estimated_adj + self.estimated_adj.t())/2
         else:
             adj = self.estimated_adj
+
+        return adj
