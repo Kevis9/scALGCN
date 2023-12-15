@@ -62,10 +62,9 @@ class ProGNN:
         
         # 不需要转为numpy
         adj = g_data.adjacency_matrix().to_dense().to(self.device)
-        
         save_eidx = adj.nonzero().t().cpu().numpy()        
-        # np.savetxt('new_eidx.csv', save_eidx, delimiter=',')        
-        
+        np.savetxt('old_graph.csv', save_eidx, delimiter=',')        
+                
         estimator = EstimateAdj(adj, symmetric=args.symmetric, device=self.device).to(self.device)
         self.estimator = estimator
         self.model_optimizer_adj = optim.SGD(estimator.parameters(),
@@ -97,8 +96,7 @@ class ProGNN:
                 self.train_adj(epoch, node_x, adj, labels,
                         train_idx, val_idx)
                          
-            updated_adj = self.estimator.get_estimated_adj()
-            print(updated_adj)
+            updated_adj = self.estimator.get_estimated_adj()            
             # after updating S, need to calculate the norm centrailty again for selecting new nodes
             # ======= graph active learning ======                    
             if args.active_learning:
@@ -300,7 +298,7 @@ class ProGNN:
         edge_index = adj.nonzero().T                 
         output = self.model(edge_index, features)                
         save_eidx = edge_index.detach().cpu().numpy()
-        # np.savetxt('new_eidx.csv', save_eidx, delimiter=',')
+        np.savetxt('new_graph.csv', save_eidx, delimiter=',')
 
         loss_test = criterion(output[idx_test], labels[idx_test])
         acc_test = accuracy(output[idx_test], labels[idx_test])
