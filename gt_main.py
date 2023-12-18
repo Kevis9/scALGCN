@@ -46,16 +46,16 @@ parser.add_argument('--adj_lr', type=float,
                              default=1e-3, 
                              help='learning rate for training adj')
 parser.add_argument('--alpha', type=float, 
-                    default=5e-4, 
+                    default=1, 
                     help='weight of l1 norm')
 parser.add_argument('--beta', type=float, 
-                    default=1.5, 
+                    default=1e-2, 
                     help='weight of nuclear norm')
 parser.add_argument('--gamma', type=float, 
                     default=1, 
                     help='weight of l2 norm')
 parser.add_argument('--lambda_', type=float, 
-                    default=0, 
+                    default=0.5, 
                     help='weight of feature smoothing')
 parser.add_argument('--phi', type=float, 
                     default=0,
@@ -101,8 +101,13 @@ parser.add_argument('--add_pos_enc', action='store_true',
                              help='whether adding postional encoding to node feature')
 
 parser.add_argument('--symmetric', action='store_true', 
-                            default=False,
+                            default=True,
                             help='whether use symmetric matrix')
+
+parser.add_argument('--adj_thresh', type=float,
+                            default=1e-3,
+                            help='threshold for adj to turn to 0')
+
 
 
 args = parser.parse_args()
