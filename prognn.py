@@ -138,7 +138,7 @@ class ProGNN:
         # adj = estimator.normalize()  
         adj = adj.detach().clone()
         # 尝试调整adj的阈值
-        adj[adj < 0.5] = 0              
+        adj[adj < self.args.adj_thresh] = 0              
         edge_index = adj.nonzero().T
                 
         t = time.time()
@@ -203,13 +203,14 @@ class ProGNN:
         loss_l1 = torch.norm(estimator.estimated_adj, 1)
         loss_fro = torch.norm(estimator.estimated_adj - original_adj, p='fro')
         normalized_adj = estimator.get_estimated_adj()
-
+        
         if args.lambda_:
             loss_smooth_feat = self.feature_smoothing(estimator.estimated_adj, features)
         else:
             loss_smooth_feat = 0 * loss_l1
-        
-        edge_index = normalized_adj.nonzero().T                           
+                
+        normalized_adj[normalized_adj < self.args.adj_thresh] = 0
+        edge_index = normalized_adj.nonzero().T                          
         criterion = torch.nn.CrossEntropyLoss()
         output = self.model(edge_index, features)
         
@@ -246,7 +247,7 @@ class ProGNN:
         # deactivates dropout during validation run.
         self.model.eval()
         normalized_adj = estimator.get_estimated_adj()
-        
+        normalized_adj[normalized_adj < self.args.adj_thresh] = 0        
         edge_index = normalized_adj.nonzero().T           
         output = self.model(edge_index, features)
 
