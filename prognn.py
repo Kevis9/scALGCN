@@ -137,7 +137,8 @@ class ProGNN:
         # estimator = self.estimator
         # adj = estimator.normalize()  
         adj = adj.detach().clone()
-        adj[adj < 1e-3] = 0              
+        # 尝试调整adj的阈值
+        adj[adj < 0.5] = 0              
         edge_index = adj.nonzero().T
                 
         t = time.time()

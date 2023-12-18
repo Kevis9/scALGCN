@@ -104,6 +104,7 @@ parser.add_argument('--symmetric', action='store_true',
                             default=False,
                             help='whether use symmetric matrix')
 
+
 args = parser.parse_args()
 
 seed = 32
