@@ -96,7 +96,7 @@ class ProGNN:
                 self.train_adj(epoch, node_x, adj, labels,
                         train_idx, val_idx)
                          
-            updated_adj = self.estimator.get_estimated_adj()            
+            updated_adj = self.estimator.normalize()            
             # after updating S, need to calculate the norm centrailty again for selecting new nodes
             # ======= graph active learning ======                    
             if args.active_learning:
@@ -202,7 +202,7 @@ class ProGNN:
 
         loss_l1 = torch.norm(estimator.estimated_adj, 1)
         loss_fro = torch.norm(estimator.estimated_adj - original_adj, p='fro')
-        normalized_adj = estimator.get_estimated_adj()
+        normalized_adj = estimator.normalize()
         
         if args.lambda_:
             loss_smooth_feat = self.feature_smoothing(estimator.estimated_adj, features)
@@ -246,7 +246,7 @@ class ProGNN:
         # Evaluate validation set performance separately,
         # deactivates dropout during validation run.
         self.model.eval()
-        normalized_adj = estimator.get_estimated_adj()
+        normalized_adj = estimator.normalize()
         normalized_adj[normalized_adj < self.args.adj_thresh] = 0        
         edge_index = normalized_adj.nonzero().T           
         output = self.model(edge_index, features)
@@ -295,7 +295,7 @@ class ProGNN:
         self.model.eval()
         adj = self.best_graph
         if self.best_graph is None:
-            adj = self.estimator.get_estimated_adj()
+            adj = self.estimator.normalize()
         
         edge_index = adj.nonzero().T                 
         output = self.model(edge_index, features)                
