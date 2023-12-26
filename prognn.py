@@ -96,7 +96,7 @@ class ProGNN:
                 self.train_adj(epoch, node_x, adj, labels,
                         train_idx, val_idx)
                          
-            updated_adj = self.estimator.normalize()            
+            updated_adj = self.estimator.get_estimated_adj()            
             # after updating S, need to calculate the norm centrailty again for selecting new nodes
             # ======= graph active learning ======                    
             if args.active_learning:
@@ -133,9 +133,7 @@ class ProGNN:
         args = self.args
 
         if args.debug:
-            print("\n=== train_gnn ===")        
-        # estimator = self.estimator
-        # adj = estimator.normalize()  
+            print("\n=== train_gnn ===")                
         adj = adj.detach().clone()
         # 尝试调整adj的阈值
         adj[adj < self.args.adj_thresh] = 0              
@@ -202,15 +200,15 @@ class ProGNN:
 
         loss_l1 = torch.norm(estimator.estimated_adj, 1)
         loss_fro = torch.norm(estimator.estimated_adj - original_adj, p='fro')
-        normalized_adj = estimator.normalize()
+        estimated_adj = estimator.get_estimated_adj()
         
         if args.lambda_:
             loss_smooth_feat = self.feature_smoothing(estimator.estimated_adj, features)
         else:
             loss_smooth_feat = 0 * loss_l1
                 
-        normalized_adj[normalized_adj < self.args.adj_thresh] = 0
-        edge_index = normalized_adj.nonzero().T                          
+        estimated_adj[estimated_adj < self.args.adj_thresh] = 0
+        edge_index = estimated_adj.nonzero().T                          
         criterion = torch.nn.CrossEntropyLoss()
         output = self.model(edge_index, features)
         
@@ -246,9 +244,9 @@ class ProGNN:
         # Evaluate validation set performance separately,
         # deactivates dropout during validation run.
         self.model.eval()
-        normalized_adj = estimator.normalize()
-        normalized_adj[normalized_adj < self.args.adj_thresh] = 0        
-        edge_index = normalized_adj.nonzero().T           
+        estimated_adj = estimator.get_estimated_adj()
+        estimated_adj[estimated_adj < self.args.adj_thresh] = 0
+        edge_index = estimated_adj.nonzero().T           
         output = self.model(edge_index, features)
 
         loss_val = criterion(output[idx_val], labels[idx_val])
@@ -295,8 +293,9 @@ class ProGNN:
         self.model.eval()
         adj = self.best_graph
         if self.best_graph is None:
-            adj = self.estimator.normalize()
+            adj = self.estimator.get_estimated_adj()
         
+        adj[adj < self.args.adj_thresh] = 0
         edge_index = adj.nonzero().T                 
         output = self.model(edge_index, features)                
         save_eidx = edge_index.detach().cpu().numpy()
@@ -373,5 +372,5 @@ class EstimateAdj(nn.Module):
             adj = (self.estimated_adj + self.estimated_adj.t())/2
         else:
             adj = self.estimated_adj
-
+        
         return adj
