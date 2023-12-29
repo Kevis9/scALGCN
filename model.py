@@ -1,6 +1,5 @@
 import torch
 import torch.nn.functional as F
-from torch_sparse import SparseTensor
 import dgl
 import dgl.nn as dglnn
 import dgl.sparse as dglsp
