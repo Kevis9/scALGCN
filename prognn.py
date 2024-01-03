@@ -85,7 +85,11 @@ class ProGNN:
         train_idx = self.data_info['train_idx']
         val_idx = self.data_info['val_idx']
         
-        criterion = torch.nn.CrossEntropyLoss()
+        if args.task == 'cell type':
+            criterion = torch.nn.CrossEntropyLoss()
+        else:
+            criterion = torch.nn.MSELoss()
+            
         # Train model
         t_total = time.time()
         for epoch in range(args.epochs):
@@ -208,8 +212,12 @@ class ProGNN:
             loss_smooth_feat = 0 * loss_l1
                 
         estimated_adj[estimated_adj < self.args.adj_thresh] = 0
-        edge_index = estimated_adj.nonzero().T                          
-        criterion = torch.nn.CrossEntropyLoss()
+        edge_index = estimated_adj.nonzero().T        
+        if args.task == 'cell type':
+            criterion = torch.nn.CrossEntropyLoss()
+        else:
+            criterion = torch.nn.MSELoss()
+            
         output = self.model(edge_index, features)
         
         loss_gcn = criterion(output[idx_train], labels[idx_train])
@@ -289,7 +297,11 @@ class ProGNN:
             Evaluate the performance of ProGNN on test set
         """
         print("\t=== testing ===")
-        criterion = torch.nn.CrossEntropyLoss()        
+        if self.args.task == 'cell type':
+            criterion = torch.nn.CrossEntropyLoss()        
+        else:
+            criterion = torch.nn.MSELoss()
+            
         self.model.eval()
         adj = self.best_graph
         if self.best_graph is None:
