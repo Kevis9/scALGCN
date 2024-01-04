@@ -109,8 +109,10 @@ parser.add_argument('--adj_thresh', type=float,
                             default=1e-3,
                             help='threshold for adj to turn to 0')
 
-parser.add_argument('--task', type=str, default='cell type',
-                    help='"cell state" for cell state prediction, "cell type" for cell type prediction')
+parser.add_argument('--task', type=str,
+                            default='cell type',
+                            help='"cell type" or "cell state"')
+
 
 args = parser.parse_args()
 
