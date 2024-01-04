@@ -267,14 +267,14 @@ class ProGNN:
 
         if acc_val > self.best_val_acc:
             self.best_val_acc = acc_val
-            self.best_graph = normalized_adj.detach()
+            self.best_graph = estimated_adj.detach()
             self.weights = deepcopy(self.model.state_dict())
             if args.debug:
                 print(f'\t=== saving current graph/gcn, best_val_acc: %s' % self.best_val_acc.item())
 
         if loss_val < self.best_val_loss:
             self.best_val_loss = loss_val
-            self.best_graph = normalized_adj.detach()
+            self.best_graph = estimated_adj.detach()
             self.weights = deepcopy(self.model.state_dict())
             if args.debug:
                 print(f'\t=== saving current graph/gcn, best_val_loss: %s' % self.best_val_loss.item())
