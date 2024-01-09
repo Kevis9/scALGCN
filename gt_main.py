@@ -113,7 +113,7 @@ parser.add_argument('--task', type=str,
                             default='cell state',
                             help='"cell type" or "cell state"')
 parser.add_argument('--adj_training', action='store_true',
-                    default=False,
+                    default=True,
                     help='whether update the adj')
 
 args = parser.parse_args()
