@@ -94,11 +94,11 @@ class ProGNN:
         t_total = time.time()
         for epoch in range(args.epochs):
             
-            
-            # Update S
-            for i in range(int(args.outer_steps)):
-                self.train_adj(epoch, node_x, adj, labels,
-                        train_idx, val_idx)
+            if args.adj_training:
+                # Update S
+                for i in range(int(args.outer_steps)):
+                    self.train_adj(epoch, node_x, adj, labels,
+                            train_idx, val_idx)
                          
             updated_adj = self.estimator.get_estimated_adj()            
             # after updating S, need to calculate the norm centrailty again for selecting new nodes
@@ -153,7 +153,9 @@ class ProGNN:
         val_idx = self.data_info['val_idx']
                 
         loss_train = criterion(output[train_idx], labels[train_idx])
-        acc_train = accuracy(output[train_idx], labels[train_idx])
+        if args.task == 'cell type':
+            acc_train = accuracy(output[train_idx], labels[train_idx])
+        
         loss_train.backward()
         self.model_optimizer.step()
         
@@ -165,29 +167,35 @@ class ProGNN:
         output = self.model(edge_index, features)
 
         loss_val = criterion(output[val_idx], labels[val_idx])
-        acc_val = accuracy(output[val_idx], labels[val_idx])
+        if args.task == 'cell type':
+            acc_val = accuracy(output[val_idx], labels[val_idx])
+            if acc_val > self.best_val_acc:
+                self.best_val_acc = acc_val
+                self.best_graph = adj.detach()
+                self.weights = deepcopy(self.model.state_dict())
+                if self.args.debug:
+                    print(f'saving current model and graph, best_val_acc: %s' % self.best_val_acc.item())
+        else:
+            if loss_val < self.best_val_loss:
+                self.best_val_loss = loss_val
+                self.best_graph = adj.detach()
+                self.weights = deepcopy(self.model.state_dict())
+                if self.args.debug:
+                    print(f'saving current graph/gcn, best_val_loss: %s' % self.best_val_loss.item())
 
-        if acc_val > self.best_val_acc:
-            self.best_val_acc = acc_val
-            self.best_graph = adj.detach()
-            self.weights = deepcopy(self.model.state_dict())
-            if self.args.debug:
-                print(f'saving current model and graph, best_val_acc: %s' % self.best_val_acc.item())
-
-        if loss_val < self.best_val_loss:
-            self.best_val_loss = loss_val
-            self.best_graph = adj.detach()
-            self.weights = deepcopy(self.model.state_dict())
-            if self.args.debug:
-                print(f'saving current graph/gcn, best_val_loss: %s' % self.best_val_loss.item())
-
-        if self.args.debug:            
-            print('Epoch: {:04d}'.format(epoch+1),
-                    'loss_train: {:.4f}'.format(loss_train.item()),
-                    'acc_train: {:.4f}'.format(acc_train.item()),
-                    'loss_val: {:.4f}'.format(loss_val.item()),
-                    'acc_val: {:.4f}'.format(acc_val.item()),
-                    'time: {:.4f}s'.format(time.time() - t))
+        if self.args.debug:  
+            if args.task == 'cell type':          
+                print('Epoch: {:04d}'.format(epoch+1),
+                        'loss_train: {:.4f}'.format(loss_train.item()),
+                        'acc_train: {:.4f}'.format(acc_train.item()),
+                        'loss_val: {:.4f}'.format(loss_val.item()),
+                        'acc_val: {:.4f}'.format(acc_val.item()),
+                        'time: {:.4f}s'.format(time.time() - t))
+            else:
+                print('Epoch: {:04d}'.format(epoch+1),
+                        'loss_train: {:.4f}'.format(loss_train.item()),
+                        'loss_val: {:.4f}'.format(loss_val.item()),
+                        'time: {:.4f}s'.format(time.time() - t))
 
         return prob
 
@@ -314,11 +322,18 @@ class ProGNN:
         np.savetxt('new_graph.csv', save_eidx, delimiter=',')
 
         loss_test = criterion(output[idx_test], labels[idx_test])
-        acc_test = accuracy(output[idx_test], labels[idx_test])
-        print("\tTest set results:",
-              "loss= {:.4f}".format(loss_test.item()),
-              "accuracy= {:.4f}".format(acc_test.item()))
-        return acc_test.item()
+        if self.args.task == 'cell type':
+            acc_test = accuracy(output[idx_test], labels[idx_test])
+            print("\tTest set results:",
+                "loss= {:.4f}".format(loss_test.item()),
+                "accuracy= {:.4f}".format(acc_test.item()))
+            return acc_test.item()
+        else:
+            print("\tTest set results:",
+                "loss= {:.4f}".format(loss_test.item())
+                )
+            return loss_test.item()
+        
 
     def feature_smoothing(self, adj, X):
         adj = (adj.t() + adj)/2

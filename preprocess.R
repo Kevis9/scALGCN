@@ -106,10 +106,13 @@ main <- function(ref_data_path, query_data_path, ref_label_path, ref_save_path, 
     # gene selection
     print(dim(ref_data))
     print(dim(ref_label))
-    sel.features <- select_feature(ref_data, ref_label)
-    sel.ref_data = ref_data[sel.features, ]
-    sel.query_data = query_data[sel.features, ]
+    # sel.features <- select_feature(ref_data, ref_label)
+    # sel.ref_data = ref_data[sel.features, ]
+    # sel.query_data = query_data[sel.features, ]
 
+    # 對於cancer SEA數據，不需要做基因篩選
+    sel.ref_data = ref_data
+    sel.query_data = query_data
     # Norm
     norm.ref_data = normalize_data(sel.ref_data)
     norm.query_data = normalize_data(sel.query_data)
