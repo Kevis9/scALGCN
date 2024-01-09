@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser()
 
 # data config
 parser.add_argument('--data_dir', type=str, 
-                             default='experiment/seq_well_10x_v3/data', 
+                             default='D:/YuAnHuang/kevislin/scALGCN/experiments/EXP0001/data', 
                              help='data directory')
 parser.add_argument('--epochs', type=int, 
                              default=30, 
@@ -46,7 +46,7 @@ parser.add_argument('--adj_lr', type=float,
                              default=1e-3, 
                              help='learning rate for training adj')
 parser.add_argument('--alpha', type=float, 
-                    default=1e-2, 
+                    default=1e-4, 
                     help='weight of l1 norm')
 parser.add_argument('--beta', type=float, 
                     default=1e-3, 
@@ -55,7 +55,7 @@ parser.add_argument('--gamma', type=float,
                     default=1, 
                     help='weight of GNN loss')
 parser.add_argument('--lambda_', type=float, 
-                    default=0.5, 
+                    default=1e-5, 
                     help='weight of feature smoothing')
 
 parser.add_argument('--phi', type=float, 
@@ -110,9 +110,11 @@ parser.add_argument('--adj_thresh', type=float,
                             help='threshold for adj to turn to 0')
 
 parser.add_argument('--task', type=str,
-                            default='cell type',
+                            default='cell state',
                             help='"cell type" or "cell state"')
-
+parser.add_argument('--adj_training', action='store_true',
+                    default=False,
+                    help='whether update the adj')
 
 args = parser.parse_args()
 
@@ -139,9 +141,12 @@ model = GTModel(args=args,
 prognn = ProGNN(model, data_info=data_info, args=args, device=device)
 prognn.fit(g_data=g_data)
 
-test_acc = prognn.test(g_data.ndata['x'].to(device), data_info['test_idx'], g_data.ndata['y_true'].to(device))
+test_res = prognn.test(g_data.ndata['x'].to(device), data_info['test_idx'], g_data.ndata['y_true'].to(device))
 
-print(test_acc)
+if args.task == 'cell type':
+    print("acc is {:.3f}".format(test_res))
+else:
+    print("loss is {:.3f}".format(test_res))
 
 
 # save config
