@@ -177,8 +177,7 @@ def get_anndata(args):
                                                n_nodes_query=len(query_label))
 
         adata = capsule_pd_data_to_anndata(data, label, edge_index)
-        
-        # 随机分层采样
+                
         if args.task == 'cell type':
             # if the task is cell type prediction, we can use random stratify sample
             adata.uns['train_idx'], adata.uns['val_idx'] = random_stratify_sample(ref_label.to_numpy(), train_size=0.8)
