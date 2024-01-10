@@ -141,17 +141,17 @@ model = GTModel(args=args,
 prognn = ProGNN(model, data_info=data_info, args=args, device=device)
 prognn.fit(g_data=g_data)
 
-test_acc = prognn.test(g_data.ndata['x'].to(device), data_info['test_idx'], g_data.ndata['y_true'].to(device))
+test_res = prognn.test(g_data.ndata['x'].to(device), data_info['test_idx'], g_data.ndata['y_true'].to(device))
 
 if args.task == 'cell type':
-    print("acc is {:.3f}".format(test_acc))
+    print("acc is {:.3f}".format(test_res))
 else:
-    print("test res is {:.3f}".format(test_acc))
+    print("test res is {:.3f}".format(test_res))
 
 
 # save config
 proj = args.data_dir.split('/')[1]
-with open('config/{:}_acc_{:.3f}.json'.format(proj, test_acc), 'w') as f:
+with open('config/{:}_acc_{:.3f}.json'.format(proj, test_res), 'w') as f:
     json.dump(vars(args), f)
     
 
