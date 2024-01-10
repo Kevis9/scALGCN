@@ -141,12 +141,12 @@ model = GTModel(args=args,
 prognn = ProGNN(model, data_info=data_info, args=args, device=device)
 prognn.fit(g_data=g_data)
 
-test_res = prognn.test(g_data.ndata['x'].to(device), data_info['test_idx'], g_data.ndata['y_true'].to(device))
+test_acc = prognn.test(g_data.ndata['x'].to(device), data_info['test_idx'], g_data.ndata['y_true'].to(device))
 
 if args.task == 'cell type':
-    print("acc is {:.3f}".format(test_res))
+    print("acc is {:.3f}".format(test_acc))
 else:
-    print("loss is {:.3f}".format(test_res))
+    print("test res is {:.3f}".format(test_acc))
 
 
 # save config

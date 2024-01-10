@@ -9,6 +9,7 @@ from pgd import PGD, prox_operators
 import warnings
 import networkx as nx
 from utils import centralissimo, accuracy, active_learning
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
 class ProGNN:
     """ ProGNN (Properties Graph Neural Network). See more details in Graph Structure Learning for Robust Graph Neural Networks, KDD 2020, https://arxiv.org/abs/2005.10203.
@@ -229,7 +230,9 @@ class ProGNN:
         output = self.model(edge_index, features)
         
         loss_gcn = criterion(output[idx_train], labels[idx_train])
-        acc_train = accuracy(output[idx_train], labels[idx_train])
+        
+        if args.task == 'cell type':        
+            acc_train = accuracy(output[idx_train], labels[idx_train])
 
         loss_symmetric = torch.norm(estimator.estimated_adj \
                         - estimator.estimated_adj.t(), p="fro")
@@ -266,26 +269,27 @@ class ProGNN:
         output = self.model(edge_index, features)
 
         loss_val = criterion(output[idx_val], labels[idx_val])
-        acc_val = accuracy(output[idx_val], labels[idx_val])
-        print('Epoch: {:04d}'.format(epoch+1),
-              'acc_train: {:.4f}'.format(acc_train.item()),
-              'loss_val: {:.4f}'.format(loss_val.item()),
-              'acc_val: {:.4f}'.format(acc_val.item()),
-              'time: {:.4f}s'.format(time.time() - t))
-
-        if acc_val > self.best_val_acc:
-            self.best_val_acc = acc_val
-            self.best_graph = estimated_adj.detach()
-            self.weights = deepcopy(self.model.state_dict())
-            if args.debug:
-                print(f'\t=== saving current graph/gcn, best_val_acc: %s' % self.best_val_acc.item())
-
-        if loss_val < self.best_val_loss:
-            self.best_val_loss = loss_val
-            self.best_graph = estimated_adj.detach()
-            self.weights = deepcopy(self.model.state_dict())
-            if args.debug:
-                print(f'\t=== saving current graph/gcn, best_val_loss: %s' % self.best_val_loss.item())
+        if args.task == 'cell type':
+            acc_val = accuracy(output[idx_val], labels[idx_val])                
+            print('Epoch: {:04d}'.format(epoch+1),
+                'acc_train: {:.4f}'.format(acc_train.item()),
+                'loss_val: {:.4f}'.format(loss_val.item()),
+                'acc_val: {:.4f}'.format(acc_val.item()),
+                'time: {:.4f}s'.format(time.time() - t))
+            
+            if acc_val > self.best_val_acc:
+                self.best_val_acc = acc_val
+                self.best_graph = estimated_adj.detach()
+                self.weights = deepcopy(self.model.state_dict())
+                if args.debug:
+                    print(f'\t=== saving current graph/gcn, best_val_acc: %s' % self.best_val_acc.item())
+        else:
+            if loss_val < self.best_val_loss:
+                self.best_val_loss = loss_val
+                self.best_graph = estimated_adj.detach()
+                self.weights = deepcopy(self.model.state_dict())
+                if args.debug:
+                    print(f'\t=== saving current graph/gcn, best_val_loss: %s' % self.best_val_loss.item())
 
         if args.debug:
             if epoch % 1 == 0:
@@ -332,6 +336,13 @@ class ProGNN:
             print("\tTest set results:",
                 "loss= {:.4f}".format(loss_test.item())
                 )
+            y_pred = output[idx_test].detach().cpu().numpy()
+            y_true = labels[idx_test].detach().cpu().numpy()
+            mse = mean_squared_error(y_pred, y_true)
+            mae = mean_absolute_error(y_pred, y_true)
+            r2 = r2_score(y_pred, y_true)
+            print("scALGT regression mse: {:.3f}, mae: {:.3f}, r2: {:.3f}".format(mse, mae, r2))
+            
             return loss_test.item()
         
 
