@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser()
 
 # data config
 parser.add_argument('--data_dir', type=str, 
-                             default='D:/YuAnHuang/kevislin/scALGCN/experiments/EXP0001/data', 
+                             default='D:/YuAnHuang/kevislin/scALGCN/experiments/EXP0047_EXP0071/data', 
                              help='data directory')
 parser.add_argument('--epochs', type=int, 
                              default=30, 
@@ -28,7 +28,7 @@ parser.add_argument('--wd', type=float,
                              default=0.0005, 
                              help='weight decay')
 parser.add_argument('--init_train_num', type=int, 
-                             default=10, 
+                             default=100, 
                              help='for active learning, we will pick some initial nodes for training')
 parser.add_argument('--debug', action='store_true', 
                              default=True, 
@@ -113,7 +113,7 @@ parser.add_argument('--task', type=str,
                             default='cell state',
                             help='"cell type" or "cell state"')
 parser.add_argument('--adj_training', action='store_true',
-                    default=True,
+                    default=False,
                     help='whether update the adj')
 
 args = parser.parse_args()

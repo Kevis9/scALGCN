@@ -1,15 +1,18 @@
 import pandas as pd
 import random
 import os
+import argparse
 root_path = 'D:\\YuAnHuang\\kevislin\\cancerSEA'
-save_path = 'D:\\YuAnHuang\\kevislin\\scALGCN\\experiments'
+old_save_path = 'D:\\YuAnHuang\\kevislin\\scALGCN\\experiments'
+parser = argparse.ArgumentParser()
 
-projs = ['EXP0001']
-ref_projs = ['EXP0047']
-query_projs = ['EXP0071']
+ref_projs = ['EXP0004', 'EXP0061','EXP0063', 'EXP0050', 'EXP0059']
+query_projs = ['EXP0004', 'EXP0061','EXP0063', 'EXP0050', 'EXP0059']
 
 for ref_proj in ref_projs:
     for query_proj in query_projs:
+        if ref_proj == query_proj:
+            continue
         ref_data = pd.read_csv(os.path.join(root_path, ref_proj + '_PCG_log2_afterQC.txt'), delimiter='\t', index_col=0)
         query_data = pd.read_csv(os.path.join(root_path, query_proj + '_PCG_log2_afterQC.txt'), delimiter='\t', index_col=0)
         ref_data = ref_data.copy()
@@ -36,7 +39,7 @@ for ref_proj in ref_projs:
         query_data = query_data.loc[:, genes]
 
         # save data and label
-        save_path = os.path.join(save_path, ref_proj+'_'+query_proj)
+        save_path = os.path.join(old_save_path, ref_proj+'_'+query_proj)
         if not os.path.exists(save_path):
             os.mkdir(save_path)
             os.mkdir(os.path.join(save_path, 'raw_data'))
@@ -47,6 +50,8 @@ for ref_proj in ref_projs:
 
         ref_label.to_csv(os.path.join(save_path, 'raw_data', 'ref_label.csv'), index=True)
         query_label.to_csv(os.path.join(save_path, 'raw_data', 'query_label.csv'), index=True)
+        ref_label.to_csv(os.path.join(save_path, 'data', 'ref_label.csv'), index=True)
+        query_label.to_csv(os.path.join(save_path, 'data', 'query_label.csv'), index=True)
 
         print(ref_data.shape)
         print(query_data.shape)

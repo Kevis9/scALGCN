@@ -23,9 +23,11 @@ class Regressor():
         self.X_test = self.data[self.test_idx, :]
         self.y_train = self.y[self.train_idx, :]
         self.y_test = self.y[self.test_idx, :]
+        
     
     def linear_regression(self):
         linear_reg = LinearRegression()        
+        
         linear_reg.fit(self.X_train, self.y_train)        
         y_pred = linear_reg.predict(self.X_test)        
         mse = mean_squared_error(y_pred, self.y_test)
@@ -35,7 +37,7 @@ class Regressor():
         return (mse, mae, r2)
     
     def random_forest(self):
-        random_forest_reg = RandomForestRegressor(n_estimators=100, random_state=32)
+        random_forest_reg = RandomForestRegressor(n_estimators=10, random_state=32)
         # 训练模型
         random_forest_reg.fit(self.X_train, self.y_train)
         y_pred = random_forest_reg.predict(self.X_test)

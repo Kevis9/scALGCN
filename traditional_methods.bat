@@ -21,12 +21,12 @@ setlocal enabledelayedexpansion
 @REM EXP0059_EXP0061,^
 @REM EXP0059_EXP0063,^
 @REM EXP0059_EXP0050
+
+
 set projects=EXP0004_EXP0063
 
-
 for %%i in (%projects%) do (
-
-    Rscript preprocess.R D:\YuAnHuang\kevislin\scALGCN\experiments\%%i
+    python methods_compare.py --data_dir=D:/YuAnHuang/kevislin/scALGCN/experiments/%%i/data
 )
 
 

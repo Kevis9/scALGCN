@@ -78,6 +78,7 @@ def combine_inter_intra_graph(inter_graph_path, intra_graph_path, n_nodes_ref, n
     row = inter_graph['V1'].tolist() + intra_graph['V1'].tolist()
     col = inter_graph['V2'].tolist() + intra_graph['V2'].tolist()
 
+    
     # 构建一个adj矩阵（保证是对称矩阵，是无向图)
     adj = np.identity(n_nodes_ref+n_nodes_query)
     adj[row, col] = 1
@@ -158,8 +159,7 @@ def get_anndata(args):
     h5ad_files = [file for file in files_in_directory if file.endswith('.h5ad')]
     if h5ad_files:
         '''ann data exists'''
-        adata = ad.read(os.path.join(data_dir, 'data.h5ad'))        
-        return adata
+        adata = ad.read(os.path.join(data_dir, 'data.h5ad'))  
     else:
         ref_data = pd.read_csv(os.path.join(data_dir, 'ref_data.csv'), index_col=0)
         query_data = pd.read_csv(os.path.join(data_dir, 'query_data.csv'), index_col=0)
@@ -177,33 +177,35 @@ def get_anndata(args):
                                                n_nodes_query=len(query_label))
 
         adata = capsule_pd_data_to_anndata(data, label, edge_index)
-                
-        if args.task == 'cell type':
-            # if the task is cell type prediction, we can use random stratify sample
-            adata.uns['train_idx'], adata.uns['val_idx'] = random_stratify_sample(ref_label.to_numpy(), train_size=0.8)
-        else:
-            idxs = [i for i in range(ref_label.shape[0])]
-            random.shuffle(idxs)
-            train_size = 0.8
-            adata.uns['train_idx'] = idxs[:int(train_size * len(idxs))]
-            adata.uns['val_idx'] = idxs[int(train_size * len(idxs)):]
-        
-        adata.uns['train_idx_for_no_al'] = adata.uns['train_idx']
-        # test_idx即query data的idx
         adata.uns['test_idx'] = [len(ref_label) + i for i in range(len(query_label))]
-
-        if args.task == 'cell type':
-            # 按照论文，train label一开始每个类别设置成4个, 剩余的training node作为label budget里面的一部分
-            adata.uns['train_idx'] = random_stratify_sample_with_train_idx(ref_label.to_numpy(),
-                                                                       train_idx=adata.uns['train_idx'],
-                                                                       train_class_num=args.init_train_num)
-        else:
-            train_idxs = adata.uns['train_idx'].copy()
-            random.shuffle(train_idxs)
-            adata.uns['train_idx'] = train_idxs[:args.init_train_num]
-            
-        adata.write(os.path.join(data_dir, 'data.h5ad'))
-        return adata
+        adata.uns['original_train_idx'] = [i for i in range(len(ref_label))]
+    
+    # for train_idx, val_idx and test_idx in anndata
+    if args.task == 'cell type':
+        ref_label = adata.uns['cell_type'][adata.uns['original_train_idx'], :]
+        # if the task is cell type prediction, we can use random stratify sample
+        adata.uns['train_idx'], adata.uns['val_idx'] = random_stratify_sample(ref_label.to_numpy(), train_size=0.8)
+        adata.uns['train_idx_for_no_al'] = adata.uns['train_idx'].copy()
+        
+        # 按照论文，train label一开始每个类别设置成4个, 剩余的training node作为label budget里面的一部分
+        adata.uns['train_idx'] = random_stratify_sample_with_train_idx(ref_label.to_numpy(),
+                                                                    train_idx=adata.uns['train_idx'],
+                                                                    train_class_num=args.init_train_num)        
+    else:
+        ref_label = adata.uns['cell_type'][adata.uns['original_train_idx'], :]
+        idxs = [i for i in range(ref_label.shape[0])]
+        random.shuffle(idxs)
+        train_size = 0.8
+        train_num = ref_label.shape[0]
+        adata.uns['train_idx'] = idxs[:int(train_size * train_num)]
+        adata.uns['val_idx'] = idxs[int(train_size * train_num):]
+        adata.uns['train_idx_for_no_al'] = adata.uns['train_idx'].copy()
+        
+        train_idxs = adata.uns['train_idx'].copy()
+        random.shuffle(train_idxs)
+        adata.uns['train_idx'] = train_idxs[:args.init_train_num]
+    adata.write(os.path.join(data_dir, 'data.h5ad'))
+    return adata
 
 
 
