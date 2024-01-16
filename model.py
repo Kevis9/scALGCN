@@ -116,7 +116,7 @@ class GTModel(nn.Module):
             args,
             in_dim,            
             class_num,          
-            pos_enc,              
+            pos_enc                      
     ):
         super().__init__()        
         self.n_classes = class_num
@@ -128,9 +128,11 @@ class GTModel(nn.Module):
         self.pos_enc_dim = args.pos_enc_dim
         self.num_heads = args.n_heads
         self.dropout_rate = args.dropout_rate
-        self.num_layers = args.n_layers
+        self.num_layers = args.n_layers        
         self.pos_enc = pos_enc
-        
+        self.task = args.task
+        self.state_embeddings = None
+
         self.h_embedding = nn.Linear(self.in_dim, self.hidden_dim)                        
         self.pos_linear = nn.Linear(self.pos_enc_dim, self.hidden_dim)
         self.layers = nn.ModuleList(
@@ -148,7 +150,26 @@ class GTModel(nn.Module):
             # nn.ReLU(),
             nn.Linear(self.out_dim // 2, self.n_classes),
         )
-                
+    
+    def get_embeddings(self, g_data):
+        self.eval()        
+        adj = g_data.adjacency_matrix().to_dense().to(device)
+        edge_index = adj.nonzero().T                
+        indices = edge_index.to(device)
+        features = g_data.ndata['x']
+        N = features.shape[0] # N * feature_dim
+        A = dglsp.spmatrix(indices, shape=(N, N))        
+        # A = g.edges()
+        h = self.h_embedding(features)            
+        if self.add_pos_enc:
+            h = h + self.pos_linear(self.pos_enc)
+        
+        for layer in self.layers:
+            h = layer(A, h)
+        return h
+    
+    def set_state_embeddings(self, embeddings):
+        self.state_embeddings = embeddings        
 
     def forward(self, edge_index, features):
         indices = edge_index.to(device)
@@ -161,8 +182,13 @@ class GTModel(nn.Module):
         
         for layer in self.layers:
             h = layer(A, h)
-
+        
+        if self.task == 'cell type':
+            h = h + self.state_embeddings
+            h = self.predictor(h)
+        else:
+            h = self.predictor(h)
         # print(h.shape)
         # h = self.pooler(g, h)
         # exit()
-        return self.predictor(h)
+        return h
