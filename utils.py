@@ -69,10 +69,12 @@ def combine_inter_intra_graph(inter_graph_path, intra_graph_path, n_nodes_ref, n
     inter_graph = pd.read_csv(inter_graph_path, index_col=0)
     intra_graph = pd.read_csv(intra_graph_path, index_col=0)
 
-    # 先对cell2的数目做一个映射
+    
+    # 先对query的数目做一个映射, 变成 ref_num + idx
     inter_graph['V2'] += n_nodes_ref
     intra_graph['V1'] += n_nodes_ref
     intra_graph['V2'] += n_nodes_ref
+    
 
     # 获取row和col
     row = inter_graph['V1'].tolist() + intra_graph['V1'].tolist()

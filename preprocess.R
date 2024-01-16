@@ -1,5 +1,5 @@
-library(batchelor)
-library(Seurat)
+suppressWarnings(library(batchelor))
+suppressWarnings(library(Seurat))
 
 read_data <- function(path) {
     # return matrix
@@ -49,7 +49,7 @@ GenerateGraph <- function(Dat1,Dat2,Lab1,K,check.unknown){
     object2 <- CreateSeuratObject(counts=Dat2,project = "2",assay = "Data2",
                                   min.cells = 0,min.features =0,names.field = 1,
                                   names.delim = "_")
-
+    
     objects <- list(object1,object2)
     objects1 <- lapply(objects,function(obj){
         obj <- NormalizeData(obj,verbose=F)
@@ -79,6 +79,7 @@ GenerateGraph <- function(Dat1,Dat2,Lab1,K,check.unknown){
     }
     #'  Intra-data graph
     d2.list <- list(objects1[[2]],objects1[[2]])
+    
     d2.nn <- FindIntegrationAnchors(object.list =d2.list,k.anchor=K,verbose=F)
     d2.arc=d2.nn@anchors
     d2.arc1=cbind(d2.arc[d2.arc[,4]==1,1],d2.arc[d2.arc[,4]==1,2],d2.arc[d2.arc[,4]==1,3])

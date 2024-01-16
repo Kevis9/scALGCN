@@ -25,7 +25,6 @@ set projects=EXP0004_EXP0063
 
 
 for %%i in (%projects%) do (
-
     Rscript preprocess.R D:\YuAnHuang\kevislin\scALGCN\experiments\%%i
 )
 
