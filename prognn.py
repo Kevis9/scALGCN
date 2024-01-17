@@ -259,7 +259,7 @@ class ProGNN:
 
         estimator.estimated_adj.data.copy_(torch.clamp(
                   estimator.estimated_adj.data, min=0, max=1))
-
+        
         # Evaluate validation set performance separately,
         # deactivates dropout during validation run.
         self.model.eval()

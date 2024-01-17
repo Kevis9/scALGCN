@@ -141,6 +141,27 @@ model = GTModel(args=args,
 prognn = ProGNN(model, data_info=data_info, args=args, device=device)
 prognn.fit(g_data=g_data)
 
+'''
+ ========= For cell type prediction ========= 
+'''
+args.task = 'cell type'
+args.data_dir = 'xxx'
+g_data, adata, data_info = load_data(args=args)
+max_nodes_num = data_info['class_num'] * args.max_per_class
+data_info['max_nodes_num'] = max_nodes_num
+g_data.ndata['PE'] = dgl.laplacian_pe(g_data, k=args.pos_enc_dim, padding=True)
+
+type_model = GTModel(args=args,
+                in_dim=g_data.ndata['x'].shape[1],
+                class_num=data_info['class_num'],
+                pos_enc=g_data.ndata['PE'].to(device)).to(device)
+
+state_embeddings = model.get_embeddings(g_data=g_data)
+type_model.set_state_embeddings(state_embeddings)
+prognn = ProGNN(type_model, data_info=data_info, args=args, device=device)
+prognn.fit(g_data=g_data)
+
+
 test_res = prognn.test(g_data.ndata['x'].to(device), data_info['test_idx'], g_data.ndata['y_true'].to(device))
 
 if args.task == 'cell type':
