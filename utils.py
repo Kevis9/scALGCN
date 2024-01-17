@@ -186,11 +186,11 @@ def get_anndata(args):
     if args.task == 'cell type':
         ref_label = adata.uns['cell_type'][adata.uns['original_train_idx'], :]
         # if the task is cell type prediction, we can use random stratify sample
-        adata.uns['train_idx'], adata.uns['val_idx'] = random_stratify_sample(ref_label.to_numpy(), train_size=0.8)
+        adata.uns['train_idx'], adata.uns['val_idx'] = random_stratify_sample(ref_label, train_size=0.8)
         adata.uns['train_idx_for_no_al'] = adata.uns['train_idx'].copy()
         
         # 按照论文，train label一开始每个类别设置成4个, 剩余的training node作为label budget里面的一部分
-        adata.uns['train_idx'] = random_stratify_sample_with_train_idx(ref_label.to_numpy(),
+        adata.uns['train_idx'] = random_stratify_sample_with_train_idx(ref_label,
                                                                     train_idx=adata.uns['train_idx'],
                                                                     train_class_num=args.init_train_num)        
     else:
@@ -239,7 +239,7 @@ def load_data(args):
     data_info['test_idx'] = list(adata.uns['test_idx'])
     data_info['train_idx'] = list(adata.uns['train_idx'])
     if args.task == 'cell type':
-        data_info['class_num'] = len(set(adata.uns['cell_type'][adata.uns['train_idx']]))
+        data_info['class_num'] = len(np.unique(adata.uns['cell_type'][adata.uns['train_idx']]))
     else:                
         data_info['class_num'] = adata.uns['cell_type'].shape[1]
     data_info['label_encoder'] = label_encoder

@@ -145,7 +145,7 @@ prognn.fit(g_data=g_data)
  ========= For cell type prediction ========= 
 '''
 args.task = 'cell type'
-args.data_dir = 'xxx'
+args.data_dir = 'experiment/seq_well_10x_v3/data'
 g_data, adata, data_info = load_data(args=args)
 max_nodes_num = data_info['class_num'] * args.max_per_class
 data_info['max_nodes_num'] = max_nodes_num
