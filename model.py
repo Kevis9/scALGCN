@@ -154,9 +154,11 @@ class GTModel(nn.Module):
     def get_embeddings(self, g_data):
         self.eval()        
         adj = g_data.adjacency_matrix().to_dense().to(device)
+        
         edge_index = adj.nonzero().T                
-        indices = edge_index.to(device)
-        features = g_data.ndata['x']
+        indices = edge_index.to(device)        
+        features = g_data.ndata['auxilary_data']        
+        
         N = features.shape[0] # N * feature_dim
         A = dglsp.spmatrix(indices, shape=(N, N))        
         # A = g.edges()

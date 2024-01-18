@@ -40,7 +40,7 @@ class ProGNN:
         self.model = model.to(device)
         self.data_info = data_info        
 
-    def fit(self, g_data):
+    def fit(self, g_data, auxilary=True):
         """Train Pro-GNN.
 
         Parameters
@@ -80,14 +80,22 @@ class ProGNN:
                   proxs=[prox_operators.prox_nuclear_cuda],
                   lr=args.adj_lr, alphas=[args.beta])
 
-        
+
         node_x = g_data.ndata['x'].to(self.device)
         labels = g_data.ndata['y_true'].to(self.device)
-        train_idx = self.data_info['train_idx']
-        val_idx = self.data_info['val_idx']
+
+        if auxilary:
+            train_idx = self.data_info['train_idx']
+            val_idx = self.data_info['val_idx']
+        else:
+            train_idx = self.data_info['auxilary_train_idx']
+            val_idx = self.data_info['auxilary_val_idx']
         
         if args.task == 'cell type':
-            criterion = torch.nn.CrossEntropyLoss()
+            if auxilary:
+                criterion = torch.nn.MSELoss()
+            else:
+                criterion = torch.nn.CrossEntropyLoss()
         else:
             criterion = torch.nn.MSELoss()
             
@@ -152,6 +160,7 @@ class ProGNN:
         
         train_idx = self.data_info['train_idx']
         val_idx = self.data_info['val_idx']
+        
                 
         loss_train = criterion(output[train_idx], labels[train_idx])
         if args.task == 'cell type':

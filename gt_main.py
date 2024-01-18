@@ -116,6 +116,7 @@ parser.add_argument('--adj_training', action='store_true',
                     default=False,
                     help='whether update the adj')
 
+
 args = parser.parse_args()
 
 seed = 32
@@ -123,41 +124,38 @@ setup_seed(seed)
 
     
 # load data
-g_data, adata, data_info = load_data(args=args)
+g_data, auxilary_g_data, adata, data_info = load_data(args=args, auxilary=True)
 
 
 max_nodes_num = data_info['class_num'] * args.max_per_class
 data_info['max_nodes_num'] = max_nodes_num
 
 g_data.ndata['PE'] = dgl.laplacian_pe(g_data, k=args.pos_enc_dim, padding=True)
+auxilary_g_data.ndata['PE'] = dgl.laplacian_pe(auxilary_g_data, k=args.pos_enc_dim, padding=True)
 
-    
-model = GTModel(args=args,
-                in_dim=g_data.ndata['x'].shape[1],
-                class_num=data_info['class_num'],
-                pos_enc=g_data.ndata['PE'].to(device)).to(device)
+
+auxilary_model = GTModel(args=args,
+                in_dim=auxilary_g_data.ndata['x'].shape[1],
+                class_num=data_info['auxilary_class_num'],
+                pos_enc=auxilary_g_data.ndata['PE'].to(device)).to(device)
 
 # use Pro-GNN to train the GT
-prognn = ProGNN(model, data_info=data_info, args=args, device=device)
-prognn.fit(g_data=g_data)
+auxilary_model_prognn = ProGNN(auxilary_model, data_info=data_info, args=args, device=device)
+auxilary_model_prognn.fit(g_data=auxilary_g_data)
+
+
 
 '''
  ========= For cell type prediction ========= 
 '''
-args.task = 'cell type'
-args.data_dir = 'experiment/seq_well_10x_v3/data'
-g_data, adata, data_info = load_data(args=args)
-max_nodes_num = data_info['class_num'] * args.max_per_class
-data_info['max_nodes_num'] = max_nodes_num
-g_data.ndata['PE'] = dgl.laplacian_pe(g_data, k=args.pos_enc_dim, padding=True)
-
 type_model = GTModel(args=args,
                 in_dim=g_data.ndata['x'].shape[1],
                 class_num=data_info['class_num'],
                 pos_enc=g_data.ndata['PE'].to(device)).to(device)
 
-state_embeddings = model.get_embeddings(g_data=g_data)
-type_model.set_state_embeddings(state_embeddings)
+auxilary_embeddings = auxilary_model.get_embeddings(g_data=g_data)
+type_model.set_state_embeddings(auxilary_embeddings)
+
 prognn = ProGNN(type_model, data_info=data_info, args=args, device=device)
 prognn.fit(g_data=g_data)
 

@@ -41,7 +41,7 @@ normalize_data <- function(data) {
 
 }
 
-GenerateGraph <- function(Dat1,Dat2,Lab1,K,check.unknown){
+GenerateGraph <- function(Dat1,Dat2,Dat3,Lab1,K){
     object1 <- CreateSeuratObject(counts=Dat1,project = "1",assay = "Data1",
                                   min.cells = 0,min.features = 0,
                                   names.field = 1,names.delim = "_")
@@ -49,42 +49,46 @@ GenerateGraph <- function(Dat1,Dat2,Lab1,K,check.unknown){
     object2 <- CreateSeuratObject(counts=Dat2,project = "2",assay = "Data2",
                                   min.cells = 0,min.features =0,names.field = 1,
                                   names.delim = "_")
+
+    object3 <- CreateSeuratObject(counts=Dat3,project = "3",assay = "Data3",
+                                  min.cells = 0,min.features =0,names.field = 1,
+                                  names.delim = "_")
     
-    objects <- list(object1,object2)
+    objects <- list(object1,object2, object3)
+    
     objects1 <- lapply(objects,function(obj){
         obj <- NormalizeData(obj,verbose=F)
 
-	obj <- FindVariableFeatures(obj,
-                                selection.method = "vst",
-                                nfeatures = 2000,verbose=F)
-	obj <- ScaleData(obj,features=rownames(obj),verbose=FALSE)
-# 	这句RunPCA可要可不要，反正不会用到
-    obj <- RunPCA(obj, features=rownames(obj), verbose = FALSE)
-        return(obj)})
-    #'  Inter-data graph
+        obj <- FindVariableFeatures(obj,
+                                    selection.method = "vst",
+                                    nfeatures = 2000,verbose=F)
+        obj <- ScaleData(obj,features=rownames(obj),verbose=FALSE)        
+        obj <- RunPCA(obj, features=rownames(obj), verbose = FALSE)
+            return(obj)
+    })
+    
+    # Inter-data graph
     # 这个函数默认使用cca
     object.nn <- FindIntegrationAnchors(object.list = objects1,k.anchor=K,verbose=F)
     arc=object.nn@anchors
     d1.arc1=cbind(arc[arc[,4]==1,1],arc[arc[,4]==1,2],arc[arc[,4]==1,3])
     grp1=d1.arc1[d1.arc1[,3]>0,1:2]-1
-
-    if (check.unknown){
-        obj <- objects1[[2]]
-        obj <- RunPCA(obj, features = VariableFeatures(object = obj),npcs=30,verbose=F)
-        obj <- FindNeighbors(obj,verbose=F)
-        obj <- FindClusters(obj, resolution = 0.5,verbose=F)
-        hc <- Idents(obj); inter.graph=grp1+1
-        scores <- metrics(lab1=Lab1,inter_graph=inter.graph,clusters=hc)
-        saveRDS(scores,file='./input/statistical_scores.RDS')
-    }
-    #'  Intra-data graph
-    d2.list <- list(objects1[[2]],objects1[[2]])
     
+    # Intra-data graph
+    d2.list <- list(objects1[[2]],objects1[[2]])    
     d2.nn <- FindIntegrationAnchors(object.list =d2.list,k.anchor=K,verbose=F)
     d2.arc=d2.nn@anchors
     d2.arc1=cbind(d2.arc[d2.arc[,4]==1,1],d2.arc[d2.arc[,4]==1,2],d2.arc[d2.arc[,4]==1,3])
     d2.grp=d2.arc1[d2.arc1[,3]>0,1:2]-1
-    final <- list(inteG=grp1,intraG=d2.grp)
+
+    # auxilary data graph
+    d3.list <- list(objects1[[3]],objects1[[3]])
+    d3.nn <- FindIntegrationAnchors(object.list =d3.list,k.anchor=K,verbose=F)
+    d3.arc=d3.nn@anchors
+    d3.arc1=cbind(d3.arc[d3.arc[,4]==1,1],d3.arc[d3.arc[,4]==1,2],d3.arc[d3.arc[,4]==1,3])
+    d3.grp=d3.arc1[d3.arc1[,3]>0,1:2]-1
+
+    final <- list(inteG=grp1,intraG=d2.grp, auxilaryG=d3.grp)
 
     # 尝试构造一下reference内部的图
 #     d3.list <- list(objects1[[1]],objects1[[1]])
@@ -98,26 +102,44 @@ GenerateGraph <- function(Dat1,Dat2,Lab1,K,check.unknown){
 }
 
 
-main <- function(ref_data_path, query_data_path, ref_label_path, ref_save_path, query_save_path){
+main <- function(ref_data_path, 
+                query_data_path,
+                auxilary_data_path,
+                ref_label_path,             
+                ref_save_path,                 
+                query_save_path,
+                auxilary_save_path){
 
     ref_data = t(read_data(ref_data_path)) # gene x cell
     ref_label = read_label(ref_label_path)
     query_data = t(read_data(query_data_path)) # gene x cell
-
+    auxilary_data = t(read_data(auxilary_data_path))   # gene * cell
+    
+    # gene intersection
+    inter_genes = intersect(intersect(rownames(ref_data), rownames(query_data)), rownames(auxilary_data))
+    ref_data = ref_data[inter_genes, ]
+    query_data = query_data[inter_genes, ]
+    auxilary_data = auxilary_data[inter_genes, ]
+    
+    
     # gene selection
     print(dim(ref_data))
     print(dim(ref_label))
-    # sel.features <- select_feature(ref_data, ref_label)
-    # sel.ref_data = ref_data[sel.features, ]
-    # sel.query_data = query_data[sel.features, ]
-
+    sel.features <- select_feature(ref_data, ref_label)
+    sel.ref_data = ref_data[sel.features, ]
+    sel.query_data = query_data[sel.features, ]
+    sel.auxilary_data = auxilary_data[sel.features, ]
+    
     # 對於cancer SEA數據，不需要做基因篩選
-    sel.ref_data = ref_data
-    sel.query_data = query_data
+    # sel.ref_data = ref_data
+    # sel.query_data = query_data
+    
+    
     # Norm
     norm.ref_data = normalize_data(sel.ref_data)
     norm.query_data = normalize_data(sel.query_data)
-
+    norm.auxilary_data = normalize_data(sel.auxilary_data)
+    
     # Mnn correct
 #     out = mnnCorrect(norm.ref_data, norm.query_data, cos.norm.in = FALSE, cos.norm.out=FALSE)
 #     out = mnnCorrect(norm.ref_data, norm.query_data)
@@ -131,15 +153,19 @@ main <- function(ref_data_path, query_data_path, ref_label_path, ref_save_path, 
 
     new.ref_data = t(norm.ref_data)
     new.query_data = t(norm.query_data)
+    new.auxilary_data = t(norm.auxilary_data)
+    
 
-    graphs <- suppressWarnings(GenerateGraph(Dat1=sel.ref_data,Dat2=sel.query_data,
-                                                 Lab1=ref_label,K=10,
-                                                 check.unknown=FALSE))
+    graphs <- suppressWarnings(GenerateGraph(Dat1=sel.ref_data,Dat2=sel.query_data,Dat3=sel.auxilary_data
+                                                 Lab1=ref_label,K=5 #这里修改了K值 2024.1.18
+                                                 ))
 
     write.csv(graphs[[1]],file=paste(paste(base_path, 'data' , 'inter_graph.csv', sep='/')), quote=F,row.names=T)
     write.csv(graphs[[2]],file=paste(paste(base_path, 'data' , 'intra_graph.csv', sep='/')),quote=F,row.names=T)
+    write.csv(graphs[[3]],file=paste(paste(base_path, 'data' , 'auxilary_graph.csv', sep='/')),quote=F,row.names=T)
     write.csv(new.ref_data, file=ref_save_path, row.names=TRUE)
     write.csv(new.query_data, file=query_save_path, row.names=TRUE)
+    write.csv(new.auxilary_data, file=query_save_path, row.names=TRUE)
 
 }
 
@@ -149,9 +175,12 @@ base_path = args[[1]]
 ref_data_path = paste(base_path, 'raw_data' , 'ref_data.csv', sep='/')
 query_data_path = paste(base_path, 'raw_data', 'query_data.csv', sep='/')
 ref_label_path = paste(base_path, 'raw_data','ref_label.csv', sep='/')
+auxilary_data_path = paste(base_path, 'raw_data','auxilary_data.csv', sep='/')
+
 
 ref_save_path = paste(base_path, 'data', 'ref_data.csv',sep='/')
 query_save_path = paste(base_path, 'data', 'query_data.csv', sep='/')
+auxilary_save_path = paste(base_path, 'data', 'auxilary_data.csv', sep='/')
 
 print("Path is")
 print(base_path)
