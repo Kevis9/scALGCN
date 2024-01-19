@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser()
 
 # data config
 parser.add_argument('--data_dir', type=str, 
-                             default='D:/YuAnHuang/kevislin/scALGCN/experiments/EXP0047_EXP0071/data', 
+                             default='D:/YuAnHuang/kevislin/scALGCN/experiments/seq_well_10x_v3_EXP0001/data', 
                              help='data directory')
 parser.add_argument('--epochs', type=int, 
                              default=30, 
@@ -110,7 +110,7 @@ parser.add_argument('--adj_thresh', type=float,
                             help='threshold for adj to turn to 0')
 
 parser.add_argument('--task', type=str,
-                            default='cell state',
+                            default='cell type',
                             help='"cell type" or "cell state"')
 parser.add_argument('--adj_training', action='store_true',
                     default=False,

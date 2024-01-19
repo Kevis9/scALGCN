@@ -20,9 +20,11 @@ for proj in projs:
     cell_state = cell_state.drop(columns=['ExpID', 'cancer', 'sample'])
         
     id_name_map = pd.read_csv('ensemble_id_gene_name.csv')
-    id_name_map = map(zip(id_name_map['id'].tolist(), id_name_map['name'].tolist()))
+    id_name_map = dict(zip(id_name_map['ID'].tolist(), id_name_map['name'].tolist()))
+    idx = pcg_data.columns.isin(id_name_map.keys()).tolist()
+    pcg_data = pcg_data.iloc[:, idx]
     
-    pcg_data.columns.map(id_name_map)    
+    pcg_data.columns = pcg_data.columns.map(lambda x: id_name_map[x])    
     
     print(pcg_data.columns)
     
@@ -33,5 +35,5 @@ for proj in projs:
     if not os.path.exists(save_path):
         os.mkdir(save_path)
     
-    pcg_data.to_csv('auxilary_data.csv')
-    cell_state.to_csv('auxilary_label.csv')
+    pcg_data.to_csv(os.path.join(save_path, 'auxilary_data.csv'))
+    cell_state.to_csv(os.path.join(save_path, 'auxilary_label.csv'))

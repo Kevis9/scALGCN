@@ -156,7 +156,7 @@ main <- function(ref_data_path,
     new.auxilary_data = t(norm.auxilary_data)
     
 
-    graphs <- suppressWarnings(GenerateGraph(Dat1=sel.ref_data,Dat2=sel.query_data,Dat3=sel.auxilary_data
+    graphs <- suppressWarnings(GenerateGraph(Dat1=sel.ref_data,Dat2=sel.query_data,Dat3=sel.auxilary_data,
                                                  Lab1=ref_label,K=5 #这里修改了K值 2024.1.18
                                                  ))
 
@@ -165,7 +165,7 @@ main <- function(ref_data_path,
     write.csv(graphs[[3]],file=paste(paste(base_path, 'data' , 'auxilary_graph.csv', sep='/')),quote=F,row.names=T)
     write.csv(new.ref_data, file=ref_save_path, row.names=TRUE)
     write.csv(new.query_data, file=query_save_path, row.names=TRUE)
-    write.csv(new.auxilary_data, file=query_save_path, row.names=TRUE)
+    write.csv(new.auxilary_data, file=auxilary_save_path, row.names=TRUE)
 
 }
 
@@ -184,4 +184,4 @@ auxilary_save_path = paste(base_path, 'data', 'auxilary_data.csv', sep='/')
 
 print("Path is")
 print(base_path)
-main(ref_data_path, query_data_path, ref_label_path, ref_save_path, query_save_path)
+main(ref_data_path, query_data_path, auxilary_data_path, ref_label_path, ref_save_path, query_save_path, auxilary_save_path)

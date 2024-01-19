@@ -138,6 +138,7 @@ def random_stratify_sample(ref_labels, train_size):
     # 对每个类都进行随机采样，分成train, val
     # 这地方要保证train的数据是从0开始计数的,
     # print(ref_labels.squeeze())
+    
     label_set = set(list(ref_labels.squeeze()))
     train_idx = []
     val_idx = []
@@ -212,6 +213,7 @@ def get_anndata(args):
     # for train_idx, val_idx and test_idx in anndata
     if args.task == 'cell type':
         ref_label = adata.uns['cell_type'][adata.uns['original_train_idx'], :]
+        
         # if the task is cell type prediction, we can use random stratify sample
         adata.uns['train_idx'], adata.uns['val_idx'] = random_stratify_sample(ref_label, train_size=0.8)
         adata.uns['train_idx_for_no_al'] = adata.uns['train_idx'].copy()
