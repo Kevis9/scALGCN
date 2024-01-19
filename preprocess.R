@@ -69,7 +69,8 @@ GenerateGraph <- function(Dat1,Dat2,Dat3,Lab1,K){
     
     # Inter-data graph
     # 这个函数默认使用cca
-    object.nn <- FindIntegrationAnchors(object.list = objects1,k.anchor=K,verbose=F)
+    d1.list <- list(objects1[[1]],objects1[[2]])   
+    object.nn <- FindIntegrationAnchors(object.list = d1.list, k.anchor=K,verbose=F)
     arc=object.nn@anchors
     d1.arc1=cbind(arc[arc[,4]==1,1],arc[arc[,4]==1,2],arc[arc[,4]==1,3])
     grp1=d1.arc1[d1.arc1[,3]>0,1:2]-1
