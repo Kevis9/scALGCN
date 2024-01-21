@@ -307,7 +307,7 @@ def load_data(args, auxilary=False):
 
 def get_auxilary_g_data(adata):
     src, dst = adata.uns['auxilary_edge_index'][0], adata.uns['auxilary_edge_index'][1]
-    g_data = dgl.graph((src, dst), num_nodes=len(adata.uns['auxilary_data'].shape[0]))
+    g_data = dgl.graph((src, dst), num_nodes=adata.uns['auxilary_data'].shape[0])
     g_data.ndata['x'] = torch.tensor(adata.uns['auxilary_data'], dtype=torch.float)
     g_data.ndata['y_true'] = torch.tensor(adata.uns['auxilary_label'], dtype=torch.float)
     return g_data

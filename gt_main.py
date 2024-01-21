@@ -115,6 +115,9 @@ parser.add_argument('--task', type=str,
 parser.add_argument('--adj_training', action='store_true',
                     default=False,
                     help='whether update the adj')
+parser.add_argument('--auxilary', action='store_true',
+                    default=False,
+                    help='for GTModel, whether use auxilary model')
 
 
 args = parser.parse_args()
@@ -148,12 +151,14 @@ auxilary_model_prognn.fit(g_data=auxilary_g_data)
 '''
  ========= For cell type prediction ========= 
 '''
+args.auxilary = True
 type_model = GTModel(args=args,
                 in_dim=g_data.ndata['x'].shape[1],
                 class_num=data_info['class_num'],
                 pos_enc=g_data.ndata['PE'].to(device)).to(device)
 
-auxilary_embeddings = auxilary_model.get_embeddings(g_data=g_data)
+auxilary_embeddings = auxilary_model.get_embeddings(g_data=g_data, args=args)
+
 type_model.set_state_embeddings(auxilary_embeddings)
 
 prognn = ProGNN(type_model, data_info=data_info, args=args, device=device)

@@ -132,7 +132,7 @@ class GTModel(nn.Module):
         self.pos_enc = pos_enc
         self.task = args.task
         self.state_embeddings = None
-
+        self.auxilary = args.auxilary
         self.h_embedding = nn.Linear(self.in_dim, self.hidden_dim)                        
         self.pos_linear = nn.Linear(self.pos_enc_dim, self.hidden_dim)
         self.layers = nn.ModuleList(
@@ -151,27 +151,27 @@ class GTModel(nn.Module):
             nn.Linear(self.out_dim // 2, self.n_classes),
         )
     
-    def get_embeddings(self, g_data):
+    def get_embeddings(self, g_data, args):
         self.eval()        
         adj = g_data.adjacency_matrix().to_dense().to(device)
         
         edge_index = adj.nonzero().T                
         indices = edge_index.to(device)        
-        features = g_data.ndata['auxilary_data']        
-        
+        features = g_data.ndata['x'].to(device)     
+        pos_enc = g_data.ndata['PE'].to(device)
         N = features.shape[0] # N * feature_dim
         A = dglsp.spmatrix(indices, shape=(N, N))        
         # A = g.edges()
         h = self.h_embedding(features)            
-        if self.add_pos_enc:
-            h = h + self.pos_linear(self.pos_enc)
+        if args.add_pos_enc:
+            h = h + self.pos_linear(pos_enc)
         
         for layer in self.layers:
             h = layer(A, h)
         return h
     
     def set_state_embeddings(self, embeddings):
-        self.state_embeddings = embeddings        
+        self.state_embeddings = embeddings.detach()     
 
     def forward(self, edge_index, features):
         indices = edge_index.to(device)
@@ -185,7 +185,7 @@ class GTModel(nn.Module):
         for layer in self.layers:
             h = layer(A, h)
         
-        if self.task == 'cell type':
+        if self.auxilary:
             h = h + self.state_embeddings
             h = self.predictor(h)
         else:

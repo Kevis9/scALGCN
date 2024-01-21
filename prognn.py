@@ -38,9 +38,10 @@ class ProGNN:
         self.weights = None
         self.estimator = None
         self.model = model.to(device)
-        self.data_info = data_info        
+        self.data_info = data_info       
+         
 
-    def fit(self, g_data, auxilary=True):
+    def fit(self, g_data):
         """Train Pro-GNN.
 
         Parameters
@@ -84,7 +85,7 @@ class ProGNN:
         node_x = g_data.ndata['x'].to(self.device)
         labels = g_data.ndata['y_true'].to(self.device)
 
-        if auxilary:
+        if args.auxilary:
             train_idx = self.data_info['train_idx']
             val_idx = self.data_info['val_idx']
         else:
@@ -92,10 +93,10 @@ class ProGNN:
             val_idx = self.data_info['auxilary_val_idx']
         
         if args.task == 'cell type':
-            if auxilary:
-                criterion = torch.nn.MSELoss()
-            else:
+            if args.auxilary:
                 criterion = torch.nn.CrossEntropyLoss()
+            else:
+                criterion = torch.nn.MSELoss()
         else:
             criterion = torch.nn.MSELoss()
             
@@ -163,7 +164,7 @@ class ProGNN:
         
                 
         loss_train = criterion(output[train_idx], labels[train_idx])
-        if args.task == 'cell type':
+        if args.task == 'cell type' and args.auxilary:
             acc_train = accuracy(output[train_idx], labels[train_idx])
         
         loss_train.backward()
@@ -177,7 +178,7 @@ class ProGNN:
         output = self.model(edge_index, features)
 
         loss_val = criterion(output[val_idx], labels[val_idx])
-        if args.task == 'cell type':
+        if args.task == 'cell type' and args.auxilary:
             acc_val = accuracy(output[val_idx], labels[val_idx])
             if acc_val > self.best_val_acc:
                 self.best_val_acc = acc_val
@@ -194,7 +195,7 @@ class ProGNN:
                     print(f'saving current graph/gcn, best_val_loss: %s' % self.best_val_loss.item())
 
         if self.args.debug:  
-            if args.task == 'cell type':          
+            if args.task == 'cell type' and args.auxilary:          
                 print('Epoch: {:04d}'.format(epoch+1),
                         'loss_train: {:.4f}'.format(loss_train.item()),
                         'acc_train: {:.4f}'.format(acc_train.item()),
@@ -232,7 +233,10 @@ class ProGNN:
         estimated_adj[estimated_adj < self.args.adj_thresh] = 0
         edge_index = estimated_adj.nonzero().T        
         if args.task == 'cell type':
-            criterion = torch.nn.CrossEntropyLoss()
+            if args.auxilary:
+                criterion = torch.nn.CrossEntropyLoss()
+            else:
+                criterion = torch.nn.MSELoss()
         else:
             criterion = torch.nn.MSELoss()
             
@@ -240,7 +244,7 @@ class ProGNN:
         
         loss_gcn = criterion(output[idx_train], labels[idx_train])
         
-        if args.task == 'cell type':        
+        if args.task == 'cell type' and args.auxilary:        
             acc_train = accuracy(output[idx_train], labels[idx_train])
 
         loss_symmetric = torch.norm(estimator.estimated_adj \
@@ -278,7 +282,7 @@ class ProGNN:
         output = self.model(edge_index, features)
 
         loss_val = criterion(output[idx_val], labels[idx_val])
-        if args.task == 'cell type':
+        if args.task == 'cell type' and args.auxilary:
             acc_val = accuracy(output[idx_val], labels[idx_val])                
             print('Epoch: {:04d}'.format(epoch+1),
                 'acc_train: {:.4f}'.format(acc_train.item()),
@@ -319,7 +323,10 @@ class ProGNN:
         """
         print("\t=== testing ===")
         if self.args.task == 'cell type':
-            criterion = torch.nn.CrossEntropyLoss()        
+            if self.args.auxilary:
+                criterion = torch.nn.CrossEntropyLoss()
+            else:
+                criterion = torch.nn.MSELoss()
         else:
             criterion = torch.nn.MSELoss()
             
@@ -335,7 +342,7 @@ class ProGNN:
         np.savetxt('new_graph.csv', save_eidx, delimiter=',')
 
         loss_test = criterion(output[idx_test], labels[idx_test])
-        if self.args.task == 'cell type':
+        if self.args.task == 'cell type' and self.args.auxilary:
             acc_test = accuracy(output[idx_test], labels[idx_test])
             print("\tTest set results:",
                 "loss= {:.4f}".format(loss_test.item()),
