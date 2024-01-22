@@ -3,11 +3,11 @@ suppressWarnings(library(Seurat))
 suppressWarnings(library(SeuratDisk))
 suppressWarnings(library(SeuratData))
 
-readH5AD <- function(file_path) {
-    Covert(path, 'h5seurat', overwrite=True)
-    file_name = strsplit(path, "/")
-    file_name = file_name[length(file_name)]    
-    data = LoadH5Seurat(paste(file_name, '.h5seurat'))
+readH5AD <- function(dir_name, file_name) {
+    file_path = paste(dir_name, '/', file_name, '.h5ad', sep='')
+    Convert(file_path, 'h5seurat', overwrite=True)
+    new_file_path = paste(dir_name, '/', file_name, '.h5seurat', sep='')    
+    data = LoadH5Seurat(new_file_path)
     return (data)
     
 }
@@ -114,16 +114,16 @@ main <- function(ref_data_path,
                 query_save_path,
                 auxilary_save_path){
     
-    ref_data_h5 = readH5AD(ref_data_path)
-    query_data_h5 = readH5AD(query_data_path)
-    auxilary_data_h5 = readH5AD(auxilary_data_path)    
-
+    ref_data_h5 = readH5AD(ref_data_path, 'ref_data')
+    query_data_h5 = readH5AD(query_data_path, 'query_data')
+    auxilary_data_h5 = readH5AD(auxilary_data_path, 'auxilary_data')    
+    
     # use as() function to get dense matrix
     ref_data = as(ref_data_h5@assays$RNA@counts, 'matrix')
     query_data = as(query_data_h5@assays$RNA@counts, 'matrix')
     auxilary_data = as(auxilary_data_h5@assays$RNA@counts, 'matrix')
     
-    ref_label = ref_data_h5@meta.data$cell_type
+    ref_label = ref_data_h5@misc$cell_type
                 
     # gene intersection
     inter_genes = intersect(intersect(rownames(ref_data), rownames(query_data)), rownames(auxilary_data))
@@ -172,9 +172,9 @@ main <- function(ref_data_path,
 
 args = commandArgs(trailingOnly = TRUE)
 base_path = args[[1]]
-ref_data_path = paste(base_path, 'raw_data' , 'ref_data.h5ad', sep='/')
-query_data_path = paste(base_path, 'raw_data', 'query_data.h5ad', sep='/')
-auxilary_data_path = paste(base_path, 'raw_data','auxilary_data.h5ad', sep='/')
+ref_data_path = paste(base_path, 'raw_data', sep='/')
+query_data_path = paste(base_path, 'raw_data', sep='/')
+auxilary_data_path = paste(base_path, 'raw_data', sep='/')
 
 
 ref_save_path = paste(base_path, 'data', 'ref_data.h5Seurat',sep='/')

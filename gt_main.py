@@ -124,7 +124,7 @@ setup_seed(seed)
 
     
 # load data
-g_data, auxilary_g_data, adata, data_info = load_data(args=args, auxilary=True)
+g_data, auxilary_g_data, adata, data_info = load_data(args=args, use_auxilary=True)
 
 
 max_nodes_num = data_info['class_num'] * args.max_per_class
