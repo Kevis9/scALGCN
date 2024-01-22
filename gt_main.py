@@ -109,13 +109,10 @@ parser.add_argument('--adj_thresh', type=float,
                             default=1e-3,
                             help='threshold for adj to turn to 0')
 
-parser.add_argument('--task', type=str,
-                            default='cell type',
-                            help='"cell type" or "cell state"')
 parser.add_argument('--adj_training', action='store_true',
                     default=False,
                     help='whether update the adj')
-parser.add_argument('--auxilary', action='store_true',
+parser.add_argument('--is_auxilary', action='store_true',
                     default=False,
                     help='for GTModel, whether use auxilary model')
 
@@ -151,7 +148,7 @@ auxilary_model_prognn.fit(g_data=auxilary_g_data)
 '''
  ========= For cell type prediction ========= 
 '''
-args.auxilary = True
+args.is_auxilary = True
 type_model = GTModel(args=args,
                 in_dim=g_data.ndata['x'].shape[1],
                 class_num=data_info['class_num'],
@@ -167,10 +164,8 @@ prognn.fit(g_data=g_data)
 
 test_res = prognn.test(g_data.ndata['x'].to(device), data_info['test_idx'], g_data.ndata['y_true'].to(device))
 
-if args.task == 'cell type':
-    print("acc is {:.3f}".format(test_res))
-else:
-    print("test res is {:.3f}".format(test_res))
+
+print("acc is {:.3f}".format(test_res))
 
 
 # save config

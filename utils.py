@@ -7,6 +7,7 @@ import dgl
 import scipy.sparse as sp
 import pandas as pd
 import numpy as np
+from scipy.sparse import csr_matrix
 import anndata as ad
 import networkx as nx
 from scipy.io import mmread
@@ -174,136 +175,110 @@ def random_stratify_sample_with_train_idx(ref_labels, train_idx, train_class_num
 
 
 def get_anndata(args):
-    data_dir = args.data_dir
-    files_in_directory = os.listdir(data_dir)
-    # 判断是否存在以.h5ad为后缀的文件
-    h5ad_files = [file for file in files_in_directory if file.endswith('.h5ad')]
-    if h5ad_files:
+    data_dir = args.data_dir    
+    # 判断是否存在一个叫做all_data.h5ad的文件        
+    h5ad_file = os.path.join(data_dir, 'all_data.h5ad')    
+    if os.path.isfile(h5ad_file):
         '''ann data exists'''
-        adata = ad.read(os.path.join(data_dir, 'data.h5ad'))  
+        adata = ad.read(os.path.join(data_dir, 'all_data.h5ad'))  
     else:
-        ref_data = pd.read_csv(os.path.join(data_dir, 'ref_data.csv'), index_col=0)
-        query_data = pd.read_csv(os.path.join(data_dir, 'query_data.csv'), index_col=0)                        
-        auxilary_data = pd.read_csv(os.path.join(data_dir, 'auxilary_data.csv'), index_col=0)                
-        auxilary_label = pd.read_csv(os.path.join(data_dir, 'auxilary_label.csv'), index_col=0)            
+        ref_data_h5 = ad.read(os.path.join(data_dir, 'ref_data.h5ad'))
+        query_data_h5 = ad.read(os.path.join(data_dir, 'query_data.h5ad'))
+        auxilary_data_h5 = ad.read(os.path.join(data_dir, 'auxilary_data.h5ad'))
         
-        if args.task == 'cell type':
-            ref_label = pd.read_csv(os.path.join(data_dir, 'ref_label.csv'))        
-            query_label = pd.read_csv(os.path.join(data_dir, 'query_label.csv'))                        
-        else:
-            ref_label = pd.read_csv(os.path.join(data_dir, 'ref_label.csv'), index_col=0)        
-            query_label = pd.read_csv(os.path.join(data_dir, 'query_label.csv'),index_col=0)
-        data = pd.concat([ref_data, query_data], axis=0)
-        label = pd.concat([ref_label, query_label], axis=0)
+        ref_data = ref_data_h5.X.todense()
+        query_data = query_data_h5.X.todense()
+        
+        data = np.concatenate([ref_data, query_data], axis=0)
+        label = np.concatenate([ref_data_h5.obs['cell_type'].to_numpy(), query_data_h5.obs['cell_type'].to_numpy()], axis=0)                
         edge_index = combine_inter_intra_graph(inter_graph_path=os.path.join(data_dir, 'inter_graph.csv'),
                                                intra_graph_path=os.path.join(data_dir, 'intra_graph.csv'),
-                                               n_nodes_ref=len(ref_label),
-                                               n_nodes_query=len(query_label))
-        auxilary_edge_index = get_auxilary_graph(auxilary_graph_path=os.path.join(data_dir, 'auxilary_graph.csv'), n_nodes=auxilary_data.shape[0])
+                                               n_nodes_ref=ref_data.shape[0],
+                                               n_nodes_query=query_data.shape[0])
         
-        
-        adata = capsule_pd_data_to_anndata(data, label, edge_index)
-        adata.uns['auxilary_data'] = auxilary_data.to_numpy()
-        adata.uns['auxilary_label'] = auxilary_label.to_numpy()
-        adata.uns['auxilary_edge_index'] = auxilary_edge_index        
-        
-        adata.uns['test_idx'] = [len(ref_label) + i for i in range(len(query_label))]
-        adata.uns['original_train_idx'] = [i for i in range(len(ref_label))]
-    
-    # for train_idx, val_idx and test_idx in anndata
-    if args.task == 'cell type':
-        ref_label = adata.uns['cell_type'][adata.uns['original_train_idx'], :]
-        
-        # if the task is cell type prediction, we can use random stratify sample
-        adata.uns['train_idx'], adata.uns['val_idx'] = random_stratify_sample(ref_label, train_size=0.8)
-        adata.uns['train_idx_for_no_al'] = adata.uns['train_idx'].copy()
-        
-        # 按照论文，train label一开始每个类别设置成4个, 剩余的training node作为label budget里面的一部分
-        adata.uns['train_idx'] = random_stratify_sample_with_train_idx(ref_label,
-                                                                    train_idx=adata.uns['train_idx'],
-                                                                    train_class_num=args.init_train_num)        
-        
-        auxilary_label = adata.uns['auxilary_label']
-        idxs = [i for i in range(auxilary_label.shape[0])]
-        random.shuffle(idxs)
-        train_size = 0.8
-        train_num = auxilary_label.shape[0]
-        adata.uns['auxilary_train_idx'] = idxs[:int(train_size * train_num)]
-        adata.uns['auxilary_val_idx'] = idxs[int(train_size * train_num):]
-        adata.uns['auxilary_train_idx_for_no_al'] = adata.uns['auxilary_train_idx'].copy()
-                
-        train_idxs = adata.uns['auxilary_train_idx'].copy()
-        random.shuffle(train_idxs)
-        adata.uns['auxilary_train_idx'] = train_idxs[:args.init_train_num]
-        
-        
-    else:
-        ref_label = adata.uns['cell_type'][adata.uns['original_train_idx'], :]
-        idxs = [i for i in range(ref_label.shape[0])]
-        random.shuffle(idxs)
-        train_size = 0.8
-        train_num = ref_label.shape[0]
-        adata.uns['train_idx'] = idxs[:int(train_size * train_num)]
-        adata.uns['val_idx'] = idxs[int(train_size * train_num):]
-        adata.uns['train_idx_for_no_al'] = adata.uns['train_idx'].copy()
-        
-        train_idxs = adata.uns['train_idx'].copy()
-        random.shuffle(train_idxs)
-        adata.uns['train_idx'] = train_idxs[:args.init_train_num]
-    adata.write(os.path.join(data_dir, 'data.h5ad'))
-    return adata
+        auxilary_edge_index = get_auxilary_graph(auxilary_graph_path=os.path.join(data_dir, 'auxilary_graph.csv'), n_nodes=auxilary_data.shape[0])        
 
+        adata = ad.AnnData(csr_matrix(data, dtype=float), dtype=float)
+        adata.obs_names = ref_data_h5.obs_names + query_data_h5.obs_names
+        adata.var_names = ref_data_h5.var_names
+        adata.obs['cell_type'] = label        
+        adata.uns['edge_index'] = edge_index
+        # take auxilary data all into all_data        
+        adata.uns['auxilary_data'] = auxilary_data_h5.X
+        adata.uns['auxilary_label'] = auxilary_data_h5.obsm
+        adata.uns['auxilary_edge_index'] = auxilary_edge_index                                        
+        adata.write(os.path.join(data_dir, 'all_data.h5ad'))
+    
+    return adata, ref_data_h5.n_obs, query_data_h5.n_obs   
 
 
 def load_data(args, auxilary=False):
     # 数据准备
-    adata = get_anndata(args=args)
-    # g_data准备
-    # 将所有的adata的数据转为tensor
-    # g_data = torch_geometric.data.Data(x=torch.tensor(adata.X, dtype=torch.float),
-    #                                    edge_index=torch.tensor(adata.uns['edge_index'], dtype=torch.long))
+    adata, n_ref, n_query = get_anndata(args=args)
+    
+    # take ref_query data into dgl data
     src, dst = adata.uns['edge_index'][0], adata.uns['edge_index'][1]
-    g_data = dgl.graph((src, dst), num_nodes=len(adata.obs_names))
-        
-    y_true = adata.uns['cell_type']
+    g_data = dgl.graph((src, dst), num_nodes=adata.n_obs)                
+    y_true = adata.obs['cell_type'].to_numpy()    
+    
     label_encoder = LabelEncoder()
+    y_true = label_encoder.fit_transform(y_true)        
 
-    if args.task == 'cell type':
-        y_true = label_encoder.fit_transform(y_true)    
+    g_data.ndata['x'] = torch.tensor(adata.X.toarray(), dtype=torch.float)    
+          
+    g_data.ndata['y_true'] = torch.tensor(y_true, dtype=torch.long)
+    g_data.ndata['y_predict'] = torch.tensor(y_true, dtype=torch.long)
     
-    g_data.ndata['x'] = torch.tensor(adata.X, dtype=torch.float)
+    # get data info
+    data_info = get_data_info(args=args, adata=adata)
+    data_info['label_encoder'] = label_encoder
     
-    if args.task == 'cell type':
-        g_data.ndata['y_true'] = torch.tensor(y_true, dtype=torch.long)
-        g_data.ndata['y_predict'] = torch.tensor(y_true, dtype=torch.long)
-    else:
-        g_data.ndata['y_true'] = torch.tensor(y_true, dtype=torch.float)
-        g_data.ndata['y_predict'] = torch.tensor(y_true, dtype=torch.float)
-
-    data_info = {}    
-    data_info['val_idx'] = list(adata.uns['val_idx'])
-    data_info['auxilary_val_idx'] = list(adata.uns['auxilary_val_idx'])
-    data_info['test_idx'] = list(adata.uns['test_idx'])    
-
-    if args.active_learning:
-        data_info['train_idx'] = list(adata.uns['train_idx'])
-        data_info['auxilary_train_idx'] = list(adata.uns['auxilary_train_idx'])
-    else:
-        data_info['train_idx'] = list(adata.uns['train_idx_for_no_al'])
-        data_info['auxilary_train_idx'] = list(adata.uns['auxilary_train_idx_for_no_al'])
-    
-    if args.task == 'cell type':
-        data_info['class_num'] = len(np.unique(adata.uns['cell_type'][adata.uns['train_idx']]))
-        data_info['auxilary_class_num'] = adata.uns['auxilary_label'].shape[1]        
-        data_info['label_encoder'] = label_encoder
-    else:                
-        data_info['class_num'] = adata.uns['cell_type'].shape[1]
-        
     if auxilary:
         auxilary_g_data = get_auxilary_g_data(adata=adata)
         return g_data, auxilary_g_data, adata, data_info
     else:
         return g_data, adata, data_info
+
+def get_data_info(args, adata, n_ref, n_query):
+    '''
+        get train_idx, val_idx, test_idx etc. information about the data        
+    '''
+    data_info = {}
+    
+    ref_label = adata.obs['cell_type'].to_numpy()[:n_ref]        
+    # if the task is cell type prediction, we can use random stratify sample
+    train_idx, val_idx = random_stratify_sample(ref_label, train_size=0.8)
+                            
+    # 按照论文，train label一开始每个类别设置成4个, 剩余的training node作为label budget里面的一部分
+    train_idx_for_active_learning = random_stratify_sample_with_train_idx(ref_label,
+                                                                train_idx=train_idx,
+                                                                train_class_num=args.init_train_num)        
+    
+    auxilary_label = adata.uns['auxilary_label']
+    idxs = [i for i in range(auxilary_label.shape[0])]
+    random.shuffle(idxs)
+    auxilary_train_size = 0.8
+    auxilary_train_num = auxilary_label.shape[0]
+    auxilary_train_idx = idxs[:int(auxilary_train_size * auxilary_train_num)]        
+    auxilary_val_idx = idxs[int(auxilary_train_size * auxilary_train_num):]                
+    auxilary_train_idxs = auxilary_train_idx.copy()
+    random.shuffle(auxilary_train_idxs)
+    auxilary_train_idx_for_active_learning = auxilary_train_idxs[:args.init_train_num]
+    
+    data_info['val_idx'] = val_idx
+    data_info['auxilary_val_idx'] = auxilary_val_idx
+    data_info['test_idx'] = [i + n_ref for i in range(n_query)]
+    if args.active_learning:
+        data_info['train_idx'] = train_idx_for_active_learning
+        data_info['auxilary_train_idx'] = auxilary_train_idx_for_active_learning
+    else:
+        data_info['train_idx'] = train_idx
+        data_info['auxilary_train_idx'] = auxilary_train_idx
+
+    data_info['class_num'] = len(np.unique(adata.obs['cell_type'].to_numpy()))
+    data_info['auxilary_class_num'] = adata.uns['auxilary_label'].shape[1]
+    
+    return data_info            
 
 def get_auxilary_g_data(adata):
     src, dst = adata.uns['auxilary_edge_index'][0], adata.uns['auxilary_edge_index'][1]
@@ -311,7 +286,6 @@ def get_auxilary_g_data(adata):
     g_data.ndata['x'] = torch.tensor(adata.uns['auxilary_data'], dtype=torch.float)
     g_data.ndata['y_true'] = torch.tensor(adata.uns['auxilary_label'], dtype=torch.float)
     return g_data
-
 
 
 def train(model, g_data, data_info, config):

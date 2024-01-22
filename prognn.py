@@ -85,20 +85,18 @@ class ProGNN:
         node_x = g_data.ndata['x'].to(self.device)
         labels = g_data.ndata['y_true'].to(self.device)
 
-        if args.auxilary:
+        if args.is_auxilary:
+            train_idx = self.data_info['auxilary_train_idx']
+            val_idx = self.data_info['auxilary_val_idx']            
+        else:
             train_idx = self.data_info['train_idx']
             val_idx = self.data_info['val_idx']
-        else:
-            train_idx = self.data_info['auxilary_train_idx']
-            val_idx = self.data_info['auxilary_val_idx']
         
-        if args.task == 'cell type':
-            if args.auxilary:
-                criterion = torch.nn.CrossEntropyLoss()
-            else:
-                criterion = torch.nn.MSELoss()
-        else:
+        
+        if args.is_auxilary:
             criterion = torch.nn.MSELoss()
+        else:            
+            criterion = torch.nn.CrossEntropyLoss()
             
         # Train model
         t_total = time.time()
@@ -164,7 +162,8 @@ class ProGNN:
         
                 
         loss_train = criterion(output[train_idx], labels[train_idx])
-        if args.task == 'cell type' and args.auxilary:
+        if not args.is_auxilary:
+            # main model
             acc_train = accuracy(output[train_idx], labels[train_idx])
         
         loss_train.backward()
@@ -178,7 +177,14 @@ class ProGNN:
         output = self.model(edge_index, features)
 
         loss_val = criterion(output[val_idx], labels[val_idx])
-        if args.task == 'cell type' and args.auxilary:
+        if args.is_auxilary:
+            if loss_val < self.best_val_loss:
+                self.best_val_loss = loss_val
+                self.best_graph = adj.detach()
+                self.weights = deepcopy(self.model.state_dict())
+                if self.args.debug:
+                    print(f'saving current graph/gcn, best_val_loss: %s' % self.best_val_loss.item())
+        else:            
             acc_val = accuracy(output[val_idx], labels[val_idx])
             if acc_val > self.best_val_acc:
                 self.best_val_acc = acc_val
@@ -186,27 +192,20 @@ class ProGNN:
                 self.weights = deepcopy(self.model.state_dict())
                 if self.args.debug:
                     print(f'saving current model and graph, best_val_acc: %s' % self.best_val_acc.item())
-        else:
-            if loss_val < self.best_val_loss:
-                self.best_val_loss = loss_val
-                self.best_graph = adj.detach()
-                self.weights = deepcopy(self.model.state_dict())
-                if self.args.debug:
-                    print(f'saving current graph/gcn, best_val_loss: %s' % self.best_val_loss.item())
-
         if self.args.debug:  
-            if args.task == 'cell type' and args.auxilary:          
+            if args.is_auxilary:          
+                print('Epoch: {:04d}'.format(epoch+1),
+                        'loss_train: {:.4f}'.format(loss_train.item()),
+                        'loss_val: {:.4f}'.format(loss_val.item()),
+                        'time: {:.4f}s'.format(time.time() - t))
+            else:
                 print('Epoch: {:04d}'.format(epoch+1),
                         'loss_train: {:.4f}'.format(loss_train.item()),
                         'acc_train: {:.4f}'.format(acc_train.item()),
                         'loss_val: {:.4f}'.format(loss_val.item()),
                         'acc_val: {:.4f}'.format(acc_val.item()),
                         'time: {:.4f}s'.format(time.time() - t))
-            else:
-                print('Epoch: {:04d}'.format(epoch+1),
-                        'loss_train: {:.4f}'.format(loss_train.item()),
-                        'loss_val: {:.4f}'.format(loss_val.item()),
-                        'time: {:.4f}s'.format(time.time() - t))
+                
 
         return prob
 
@@ -232,19 +231,19 @@ class ProGNN:
                 
         estimated_adj[estimated_adj < self.args.adj_thresh] = 0
         edge_index = estimated_adj.nonzero().T        
-        if args.task == 'cell type':
-            if args.auxilary:
-                criterion = torch.nn.CrossEntropyLoss()
-            else:
-                criterion = torch.nn.MSELoss()
-        else:
+        
+        if args.is_auxilary:
             criterion = torch.nn.MSELoss()
+            
+        else:
+            criterion = torch.nn.CrossEntropyLoss()    
             
         output = self.model(edge_index, features)
         
         loss_gcn = criterion(output[idx_train], labels[idx_train])
         
-        if args.task == 'cell type' and args.auxilary:        
+        if not args.is_auxilary:
+            # if is main model
             acc_train = accuracy(output[idx_train], labels[idx_train])
 
         loss_symmetric = torch.norm(estimator.estimated_adj \
@@ -282,7 +281,14 @@ class ProGNN:
         output = self.model(edge_index, features)
 
         loss_val = criterion(output[idx_val], labels[idx_val])
-        if args.task == 'cell type' and args.auxilary:
+        if args.is_auxilary:
+            if loss_val < self.best_val_loss:
+                self.best_val_loss = loss_val
+                self.best_graph = estimated_adj.detach()
+                self.weights = deepcopy(self.model.state_dict())
+                if args.debug:
+                    print(f'\t=== saving current graph/gcn, best_val_loss: %s' % self.best_val_loss.item())
+        else:
             acc_val = accuracy(output[idx_val], labels[idx_val])                
             print('Epoch: {:04d}'.format(epoch+1),
                 'acc_train: {:.4f}'.format(acc_train.item()),
@@ -295,14 +301,7 @@ class ProGNN:
                 self.best_graph = estimated_adj.detach()
                 self.weights = deepcopy(self.model.state_dict())
                 if args.debug:
-                    print(f'\t=== saving current graph/gcn, best_val_acc: %s' % self.best_val_acc.item())
-        else:
-            if loss_val < self.best_val_loss:
-                self.best_val_loss = loss_val
-                self.best_graph = estimated_adj.detach()
-                self.weights = deepcopy(self.model.state_dict())
-                if args.debug:
-                    print(f'\t=== saving current graph/gcn, best_val_loss: %s' % self.best_val_loss.item())
+                    print(f'\t=== saving current graph/gcn, best_val_acc: %s' % self.best_val_acc.item())            
 
         if args.debug:
             if epoch % 1 == 0:
@@ -322,13 +321,11 @@ class ProGNN:
             Evaluate the performance of ProGNN on test set
         """
         print("\t=== testing ===")
-        if self.args.task == 'cell type':
-            if self.args.auxilary:
-                criterion = torch.nn.CrossEntropyLoss()
-            else:
-                criterion = torch.nn.MSELoss()
+        
+        if self.args.is_auxilary:
+            criterion = torch.nn.MSELoss()        
         else:
-            criterion = torch.nn.MSELoss()
+            criterion = torch.nn.CrossEntropyLoss()            
             
         self.model.eval()
         adj = self.best_graph
@@ -342,13 +339,7 @@ class ProGNN:
         np.savetxt('new_graph.csv', save_eidx, delimiter=',')
 
         loss_test = criterion(output[idx_test], labels[idx_test])
-        if self.args.task == 'cell type' and self.args.auxilary:
-            acc_test = accuracy(output[idx_test], labels[idx_test])
-            print("\tTest set results:",
-                "loss= {:.4f}".format(loss_test.item()),
-                "accuracy= {:.4f}".format(acc_test.item()))
-            return acc_test.item()
-        else:
+        if self.args.is_auxilary:
             print("\tTest set results:",
                 "loss= {:.4f}".format(loss_test.item())
                 )
@@ -357,9 +348,14 @@ class ProGNN:
             mse = mean_squared_error(y_pred, y_true)
             mae = mean_absolute_error(y_pred, y_true)
             r2 = r2_score(y_pred, y_true)
-            print("scALGT regression mse: {:.3f}, mae: {:.3f}, r2: {:.3f}".format(mse, mae, r2))
-            
+            print("scALGT regression mse: {:.3f}, mae: {:.3f}, r2: {:.3f}".format(mse, mae, r2))            
             return loss_test.item()
+        else:            
+            acc_test = accuracy(output[idx_test], labels[idx_test])
+            print("\tTest set results:",
+                "loss= {:.4f}".format(loss_test.item()),
+                "accuracy= {:.4f}".format(acc_test.item()))
+            return acc_test.item()
         
 
     def feature_smoothing(self, adj, X):

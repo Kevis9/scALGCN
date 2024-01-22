@@ -1,6 +1,6 @@
 from utils import load_data
 import argparse
-from regression_methods import Regressor
+from other_methods.regression_methods import Regressor
 import os
 import pandas as pd
 

@@ -132,7 +132,7 @@ class GTModel(nn.Module):
         self.pos_enc = pos_enc
         self.task = args.task
         self.state_embeddings = None
-        self.auxilary = args.auxilary
+        self.is_auxilary = args.is_auxilary
         self.h_embedding = nn.Linear(self.in_dim, self.hidden_dim)                        
         self.pos_linear = nn.Linear(self.pos_enc_dim, self.hidden_dim)
         self.layers = nn.ModuleList(
