@@ -1,2 +1,5 @@
-/experiment
+/experiments
 *.csv
+*.pt
+*.h5ad
+*.h5seurat
