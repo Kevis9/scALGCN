@@ -2,10 +2,11 @@ suppressPackageStartupMessages(library(batchelor))
 suppressPackageStartupMessages(library(Seurat))
 suppressPackageStartupMessages(library(SeuratDisk))
 suppressPackageStartupMessages(library(SeuratData))
+suppressPackageStartupMessages(library(Matrix))
 
 readH5AD <- function(dir_name, file_name) {
     file_path = paste(dir_name, '/', file_name, '.h5ad', sep='')
-    Convert(file_path, 'h5seurat', overwrite=True)
+    Convert(file_path, 'h5seurat', overwrite=T)
     new_file_path = paste(dir_name, '/', file_name, '.h5seurat', sep='')    
     data = LoadH5Seurat(new_file_path)
     return (data)
@@ -124,7 +125,7 @@ main <- function(ref_data_dir,
     query_data = as(query_data_h5@assays$RNA@counts, 'matrix')
     auxilary_data = as(auxilary_data_h5@assays$RNA@counts, 'matrix')
     
-    ref_label = read_label(ref_data_dir, '')
+    ref_label = read_label(ref_data_dir, 'ref_label_middle')
                 
     # gene intersection
     inter_genes = intersect(intersect(rownames(ref_data), rownames(query_data)), rownames(auxilary_data))
@@ -152,9 +153,9 @@ main <- function(ref_data_dir,
                                                  Lab1=ref_label,K=5 #这里修改了K值 2024.1.18
                                                  ))
 
-    ref_data_h5@assays$RNA@counts = Matrix(new.ref_data, sparse = TRUE)
-    query_data_h5@assays$RNA@counts = Matrix(new.query_data, sparse = TRUE)
-    auxilary_data_h5@assays$RNA@counts = Matrix(new.auxilary_data, sparse = TRUE)
+    ref_data_h5@assays$RNA@counts = Matrix(norm.ref_data, sparse = TRUE)
+    query_data_h5@assays$RNA@counts = Matrix(norm.query_data, sparse = TRUE)
+    auxilary_data_h5@assays$RNA@counts = Matrix(norm.auxilary_data, sparse = TRUE)
     
                                           
     write.csv(graphs[[1]],file=paste(paste(base_path, 'data' , 'inter_graph.csv', sep='/')), quote=F,row.names=T)
