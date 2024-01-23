@@ -20,6 +20,12 @@ read_data <- function(path, data_name) {
     return (data)
 }
 
+read_gene <- function(path, file_name) {
+    path = paste(path, '/', file_name, '.csv', sep='')
+    gene = as.matrix(read.csv(path))
+    return (gene)
+    
+}
 read_label <- function(path, label_name) {
     #return matrix
     path = paste(path, '/', label_name, '.csv', sep='')
@@ -118,10 +124,17 @@ main <- function(ref_data_dir,
                 query_save_path,
                 auxilary_save_path){
     
-    ref_data = read_data(ref_data_dir, 'ref_data_middle')    
+    ref_data = read_data(ref_data_dir, 'ref_data_middle')
     query_data = read_data(query_data_dir, 'query_data_middle')
     auxilary_data = read_data(auxilary_data_dir, 'auxilary_data_middle')    
-        
+    
+    ref_gene = read_gene(ref_data_dir, 'ref_gene_middle')
+    query_gene = read_gene(query_data_dir, 'query_gene_middle')
+    auxilary_gene = read_gene(auxilary_data_dir, 'auxilary_gene_middle')
+
+    rownames(ref_data) = ref_gene
+    rownames(query_data) = query_gene
+    rownames(auxilary_data) = auxilary_gene
     
     ref_label = read_label(ref_data_dir, 'ref_label_middle')
                 
@@ -146,7 +159,15 @@ main <- function(ref_data_dir,
     norm.query_data = normalize_data(sel.query_data)
     norm.auxilary_data = normalize_data(sel.auxilary_data)
     
+    # colnames can be anything
+    colnames(norm.ref_data) = paste("cell_", 1:ncol(norm.ref_data), sep = "")
+    colnames(norm.query_data) = paste("cell_", 1:ncol(norm.query_data), sep = "")
+    colnames(norm.auxilary_data) = paste("cell_", 1:ncol(norm.auxilary_data), sep = "")
+    
 
+    # save selected genes
+    write.csv(sel.features, file=paste(paste(base_path, 'data' , 'selected_genes_middle.csv', sep='/')))
+    
     graphs <- suppressWarnings(GenerateGraph(Dat1=norm.ref_data,Dat2=norm.query_data,Dat3=norm.auxilary_data,
                                                  Lab1=ref_label,K=5 #这里修改了K值 2024.1.18
                                                  ))
