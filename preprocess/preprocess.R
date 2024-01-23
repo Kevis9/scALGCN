@@ -1,7 +1,7 @@
-suppressWarnings(library(batchelor))
-suppressWarnings(library(Seurat))
-suppressWarnings(library(SeuratDisk))
-suppressWarnings(library(SeuratData))
+suppressPackageStartupMessages(library(batchelor))
+suppressPackageStartupMessages(library(Seurat))
+suppressPackageStartupMessages(library(SeuratDisk))
+suppressPackageStartupMessages(library(SeuratData))
 
 readH5AD <- function(dir_name, file_name) {
     file_path = paste(dir_name, '/', file_name, '.h5ad', sep='')
@@ -17,8 +17,9 @@ read_data <- function(path) {
     return (data)
 }
 
-read_label <- function(path) {
+read_label <- function(path, label_name) {
     #return matrix
+    path = paste(path, '/', label_name, '.csv', sep='')
     label = as.matrix(read.csv(path))
     return (label)
 }
@@ -107,23 +108,23 @@ GenerateGraph <- function(Dat1,Dat2,Dat3,Lab1,K){
 }
 
 
-main <- function(ref_data_path, 
-                query_data_path,
-                auxilary_data_path,                
+main <- function(ref_data_dir, 
+                query_data_dir,
+                auxilary_data_dir,                
                 ref_save_path,                 
                 query_save_path,
                 auxilary_save_path){
     
-    ref_data_h5 = readH5AD(ref_data_path, 'ref_data')
-    query_data_h5 = readH5AD(query_data_path, 'query_data')
-    auxilary_data_h5 = readH5AD(auxilary_data_path, 'auxilary_data')    
+    ref_data_h5 = readH5AD(ref_data_dir, 'ref_data_middle')
+    query_data_h5 = readH5AD(query_data_dir, 'query_data_middle')
+    auxilary_data_h5 = readH5AD(auxilary_data_dir, 'auxilary_data_middle')    
     
     # use as() function to get dense matrix
     ref_data = as(ref_data_h5@assays$RNA@counts, 'matrix')
     query_data = as(query_data_h5@assays$RNA@counts, 'matrix')
     auxilary_data = as(auxilary_data_h5@assays$RNA@counts, 'matrix')
     
-    ref_label = ref_data_h5@misc$cell_type
+    ref_label = read_label(ref_data_dir, '')
                 
     # gene intersection
     inter_genes = intersect(intersect(rownames(ref_data), rownames(query_data)), rownames(auxilary_data))
@@ -163,24 +164,24 @@ main <- function(ref_data_path,
     SaveH5Seurat(ref_data_h5, filename = ref_save_path)
     SaveH5Seurat(query_data_h5, filename = query_save_path)
     SaveH5Seurat(auxilary_data_h5, filename = auxilary_save_path)
-    Convert(ref_save_path, dest = "h5ad")
-    Convert(query_save_path, dest = "h5ad")
-    Convert(auxilary_save_path, dest = "h5ad")
+    Convert(ref_save_path, dest = "h5ad", overwrite=T)
+    Convert(query_save_path, dest = "h5ad", overwrite=T)
+    Convert(auxilary_save_path, dest = "h5ad", overwrite=T)
 
 }
 
 
 args = commandArgs(trailingOnly = TRUE)
 base_path = args[[1]]
-ref_data_path = paste(base_path, 'raw_data', sep='/')
-query_data_path = paste(base_path, 'raw_data', sep='/')
-auxilary_data_path = paste(base_path, 'raw_data', sep='/')
+ref_data_dir = paste(base_path, 'raw_data', sep='/')
+query_data_dir = paste(base_path, 'raw_data', sep='/')
+auxilary_data_dir = paste(base_path, 'raw_data', sep='/')
 
 
-ref_save_path = paste(base_path, 'data', 'ref_data.h5Seurat',sep='/')
-query_save_path = paste(base_path, 'data', 'query_data.h5Seurat', sep='/')
-auxilary_save_path = paste(base_path, 'data', 'auxilary_data.h5Seurat', sep='/')
+ref_save_path = paste(base_path, 'data', 'afterNorm_ref_data_middle.h5Seurat',sep='/')
+query_save_path = paste(base_path, 'data', 'afterNorm_query_data_middle.h5Seurat', sep='/')
+auxilary_save_path = paste(base_path, 'data', 'afterNorm_auxilary_data_middle.h5Seurat', sep='/')
 
 print("Path is")
 print(base_path)
-main(ref_data_path, query_data_path, auxilary_data_path, ref_save_path, query_save_path, auxilary_save_path)
+main(ref_data_dir, query_data_dir, auxilary_data_dir, ref_save_path, query_save_path, auxilary_save_path)

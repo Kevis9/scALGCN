@@ -42,7 +42,7 @@ def capsule_pd_data_to_anndata(data, label, edge_index):
     adata = ad.AnnData(data.to_numpy(), dtype=float)
     adata.obs_names = data.index.tolist()
     adata.var_names = data.columns.tolist()        
-    adata.uns['cell_type'] = label.to_numpy()
+    adata.obs['cell_type'] = label.to_numpy().reshape(-1)
     adata.uns['edge_index'] = edge_index
     return adata
 
@@ -190,7 +190,7 @@ def get_anndata(args):
         query_data = query_data_h5.X.todense()
         
         data = np.concatenate([ref_data, query_data], axis=0)
-        label = np.concatenate([ref_data_h5.uns['cell_type'].to_numpy(), query_data_h5.uns['cell_type'].to_numpy()], axis=0)                
+        label = np.concatenate([ref_data_h5.obs['cell_type'].to_numpy(), query_data_h5.obs['cell_type'].to_numpy()], axis=0)                
         edge_index = combine_inter_intra_graph(inter_graph_path=os.path.join(data_dir, 'inter_graph.csv'),
                                                intra_graph_path=os.path.join(data_dir, 'intra_graph.csv'),
                                                n_nodes_ref=ref_data.shape[0],
@@ -201,11 +201,11 @@ def get_anndata(args):
         adata = ad.AnnData(csr_matrix(data, dtype=float), dtype=float)
         adata.obs_names = ref_data_h5.obs_names + query_data_h5.obs_names
         adata.var_names = ref_data_h5.var_names
-        adata.uns['cell_type'] = label        
+        adata.obs['cell_type'] = label        
         adata.uns['edge_index'] = edge_index
         # take auxilary data all into all_data        
         adata.uns['auxilary_data'] = auxilary_data_h5.X
-        adata.uns['auxilary_label'] = auxilary_data_h5.uns['label']
+        adata.uns['auxilary_label'] = auxilary_data_h5.obsm['label']
         adata.uns['auxilary_edge_index'] = auxilary_edge_index                                        
         adata.write(os.path.join(data_dir, 'all_data.h5ad'))
     
@@ -219,7 +219,7 @@ def load_data(args, use_auxilary=True):
     # take ref_query data into dgl data
     src, dst = adata.uns['edge_index'][0], adata.uns['edge_index'][1]
     g_data = dgl.graph((src, dst), num_nodes=adata.n_obs)                
-    y_true = adata.uns['cell_type'].to_numpy()    
+    y_true = adata.obs['cell_type'].to_numpy()    
     
     label_encoder = LabelEncoder()
     y_true = label_encoder.fit_transform(y_true)        
@@ -245,7 +245,7 @@ def get_data_info(args, adata, n_ref, n_query):
     '''
     data_info = {}
     
-    ref_label = adata.uns['cell_type'].to_numpy()[:n_ref]        
+    ref_label = adata.obs['cell_type'].to_numpy()[:n_ref]        
     # if the task is cell type prediction, we can use random stratify sample
     train_idx, val_idx = random_stratify_sample(ref_label, train_size=0.8)
                             
@@ -275,7 +275,7 @@ def get_data_info(args, adata, n_ref, n_query):
         data_info['train_idx'] = train_idx
         data_info['auxilary_train_idx'] = auxilary_train_idx
 
-    data_info['class_num'] = len(np.unique(adata.uns['cell_type'].to_numpy()))
+    data_info['class_num'] = len(np.unique(adata.obs['cell_type'].to_numpy()))
     data_info['auxilary_class_num'] = adata.uns['auxilary_label'].shape[1]
     
     return data_info            

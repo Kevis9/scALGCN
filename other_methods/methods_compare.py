@@ -23,7 +23,7 @@ _, adata, data_info = load_data(args)
 
 data_info['train_idx'] = adata.uns['original_train_idx']
 
-model = Regressor(adata.X, data_info['train_idx'], data_info['test_idx'], adata.uns['cell_type'])
+model = Regressor(adata.X, data_info['train_idx'], data_info['test_idx'], adata.obsm['label'])
 
 if not os.path.isfile('traditional_mse_res.csv'):
     mse_df = pd.DataFrame(columns=['linear', 'lasso', 'random_forest', 'svr'])

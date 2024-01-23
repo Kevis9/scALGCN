@@ -32,7 +32,7 @@ cell_types = meta_data['Cell_Type'].tolist()
 adata = ad.AnnData(csr_data, dtype=float)
 adata.obs_names = cell_names
 adata.var_names = gene_names.iloc[:, 0].tolist()
-adata.uns['cell_type'] = cell_types
+adata.obs['cell_type'] = cell_types
 
 adata.write(os.path.join(dir_name, 'data.h5ad'))
 
