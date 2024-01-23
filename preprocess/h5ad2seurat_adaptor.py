@@ -2,12 +2,10 @@ import pandas as pd
 import anndata as ad
 import argparse
 import os
+from scipy.sparse import csr_matrix, mmwrite
+
 '''
-    Now the ref_data.h5ad contains X and obs['cell_type']
-    In order to make SeuratDisk run successfully,
-    we need to creat files as follow:
-    1. h5ad file just containing X and obs_names and var_names (ref, query and auxilary)
-    2. ref_label to csv file
+    extract sparse matrxi from data.h5ad and make them appliacable for R    
 '''
 
 parser = argparse.ArgumentParser()
@@ -22,23 +20,13 @@ auxilary_data_h5 = ad.read(os.path.join(dir_name, 'raw_data', 'auxilary_data.h5a
 ref_label = pd.DataFrame(ref_data_h5.obs['cell_type'], columns=['cell_type'])
 ref_label.to_csv(os.path.join(dir_name, 'raw_data', 'ref_label_middle.csv'), index=False)
 
-new_ref_data = ad.AnnData(ref_data_h5.X)
-new_ref_data.obs_names = ref_data_h5.obs_names
-new_ref_data.var_names = ref_data_h5.var_names
+ref_data = ref_data_h5.X
+query_data = query_data_h5.X
+auxilary_data = auxilary_data_h5.X
 
-new_query_data = ad.AnnData(query_data_h5.X)
-new_query_data.obs_names = query_data_h5.obs_names
-new_query_data.var_names = query_data_h5.var_names
-
-new_auxilary_data = ad.AnnData(auxilary_data_h5.X)
-new_auxilary_data.obs_names = auxilary_data_h5.obs_names
-new_auxilary_data.var_names = auxilary_data_h5.var_names
-
-new_ref_data.write(os.path.join(dir_name, 'raw_data', 'ref_data_middle.h5ad'))
-new_query_data.write(os.path.join(dir_name, 'raw_data', 'query_data_middle.h5ad'))
-new_auxilary_data.write(os.path.join(dir_name, 'raw_data', 'auxilary_data_middle.h5ad'))
-
-
+mmwrite(os.path.join(dir_name, 'raw_data', 'ref_data_middle.mtx'), ref_data)
+mmwrite(os.path.join(dir_name, 'raw_data', 'query_data_middle.mtx'), query_data)
+mmwrite(os.path.join(dir_name, 'raw_data', 'auxilary_data_middle.mtx'), auxilary_data)
 
 
 

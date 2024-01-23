@@ -5,12 +5,6 @@ from scipy.sparse import csr_matrix
 import os
 proj = 'cel_seq_10x_v3'
 
-counts = csr_matrix(np.random.poisson(1, size=(100, 2000)), dtype=np.float32)
-adata = ad.AnnData(counts)
-# adata.obs_names = [f"Cell_{i:d}" for i in range(adata.n_obs)]
-# adata.var_names = [f"Gene_{i:d}" for i in range(adata.n_vars)]
-adata.write('test_data.h5ad')
-exit()
 
 path = os.path.join('experiments', proj, 'raw_data')
 ref_data = pd.read_csv(os.path.join(path, 'ref_data.csv'), index_col=0)

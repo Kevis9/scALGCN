@@ -28,15 +28,7 @@ for %%i in (%projects%) do (
     python preprocess\h5ad2seurat_adaptor.py --dir_name=E:\YuAnHuang\kevislin\second_proj\scALGCN\experiments\%%i
     Rscript preprocess\preprocess.R E:\YuAnHuang\kevislin\second_proj\scALGCN\experiments\%%i
     python preprocess\seurat2h5ad_adaptor.py --dir_name=E:\YuAnHuang\kevislin\second_proj\scALGCN\experiments\%%i    
-    @REM delete middle files
-    set "directory=E:\YuAnHuang\kevislin\second_proj\scALGCN\experiments\%%i"
-    set "pattern=middle"
-
-    for /r "%directory%" %%f in (*%pattern%*) do (
-        echo Deleting: %%f
-        @REM del "%%f"
-    )
-    
+        
     @REM copy D:\YuAnHuang\kevislin\scALGCN\experiments\%%i\raw_data\ref_label.csv D:\YuAnHuang\kevislin\scALGCN\experiments\%%i\data\ref_label.csv   
     @REM copy D:\YuAnHuang\kevislin\scALGCN\experiments\%%i\raw_data\query_label.csv D:\YuAnHuang\kevislin\scALGCN\experiments\%%i\data\query_label.csv
     @REM copy D:\YuAnHuang\kevislin\scALGCN\experiments\%%i\raw_data\auxilary_label.csv D:\YuAnHuang\kevislin\scALGCN\experiments\%%i\data\auxilary_label.csv

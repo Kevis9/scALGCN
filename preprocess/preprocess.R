@@ -12,9 +12,11 @@ readH5AD <- function(dir_name, file_name) {
     return (data)
     
 }
-read_data <- function(path) {
+read_data <- function(path, data_name) {
     # return matrix        
-    data = as.matrix(read.csv(path, row.names=1))
+    path = paste(path, '/', data_name, '.mtx', sep='')    
+    data = as(readMM(path), 'matrix') # cell * gene
+    data = t(data) # gene * cell    
     return (data)
 }
 
@@ -116,14 +118,10 @@ main <- function(ref_data_dir,
                 query_save_path,
                 auxilary_save_path){
     
-    ref_data_h5 = readH5AD(ref_data_dir, 'ref_data_middle')
-    query_data_h5 = readH5AD(query_data_dir, 'query_data_middle')
-    auxilary_data_h5 = readH5AD(auxilary_data_dir, 'auxilary_data_middle')    
-    
-    # use as() function to get dense matrix
-    ref_data = as(ref_data_h5@assays$RNA@counts, 'matrix')
-    query_data = as(query_data_h5@assays$RNA@counts, 'matrix')
-    auxilary_data = as(auxilary_data_h5@assays$RNA@counts, 'matrix')
+    ref_data = read_data(ref_data_dir, 'ref_data_middle')    
+    query_data = read_data(query_data_dir, 'query_data_middle')
+    auxilary_data = read_data(auxilary_data_dir, 'auxilary_data_middle')    
+        
     
     ref_label = read_label(ref_data_dir, 'ref_label_middle')
                 
@@ -153,22 +151,18 @@ main <- function(ref_data_dir,
                                                  Lab1=ref_label,K=5 #这里修改了K值 2024.1.18
                                                  ))
 
-    ref_data_h5@assays$RNA@counts = Matrix(norm.ref_data, sparse = TRUE)
-    query_data_h5@assays$RNA@counts = Matrix(norm.query_data, sparse = TRUE)
-    auxilary_data_h5@assays$RNA@counts = Matrix(norm.auxilary_data, sparse = TRUE)
-    
-                                          
+
     write.csv(graphs[[1]],file=paste(paste(base_path, 'data' , 'inter_graph.csv', sep='/')), quote=F,row.names=T)
     write.csv(graphs[[2]],file=paste(paste(base_path, 'data' , 'intra_graph.csv', sep='/')),quote=F,row.names=T)
     write.csv(graphs[[3]],file=paste(paste(base_path, 'data' , 'auxilary_graph.csv', sep='/')),quote=F,row.names=T)
+    # save sparse matrix
+    s.norm.ref_data <- Matrix(norm.ref_data, sparse = TRUE)
+    s.norm.query_data <- Matrix(norm.query_data, sparse = TRUE)
+    s.norm.auxilary_data <- Matrix(norm.auxilary_data, sparse = TRUE)
     
-    SaveH5Seurat(ref_data_h5, filename = ref_save_path)
-    SaveH5Seurat(query_data_h5, filename = query_save_path)
-    SaveH5Seurat(auxilary_data_h5, filename = auxilary_save_path)
-    Convert(ref_save_path, dest = "h5ad", overwrite=T)
-    Convert(query_save_path, dest = "h5ad", overwrite=T)
-    Convert(auxilary_save_path, dest = "h5ad", overwrite=T)
-
+    writeMM(s.norm.ref_data, ref_save_path)
+    writeMM(s.norm.query_data, query_save_path)
+    writeMM(s.norm.auxilary_data, auxilary_save_path)    
 }
 
 
@@ -179,9 +173,9 @@ query_data_dir = paste(base_path, 'raw_data', sep='/')
 auxilary_data_dir = paste(base_path, 'raw_data', sep='/')
 
 
-ref_save_path = paste(base_path, 'data', 'afterNorm_ref_data_middle.h5Seurat',sep='/')
-query_save_path = paste(base_path, 'data', 'afterNorm_query_data_middle.h5Seurat', sep='/')
-auxilary_save_path = paste(base_path, 'data', 'afterNorm_auxilary_data_middle.h5Seurat', sep='/')
+ref_save_path = paste(base_path, 'data', 'afterNorm_ref_data_middle.mtx',sep='/')
+query_save_path = paste(base_path, 'data', 'afterNorm_query_data_middle.mtx', sep='/')
+auxilary_save_path = paste(base_path, 'data', 'afterNorm_auxilary_data_middle.mtx', sep='/')
 
 print("Path is")
 print(base_path)
