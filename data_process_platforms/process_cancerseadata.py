@@ -1,14 +1,18 @@
 import pandas as pd
 import random
 import os
+import anndata as ad
+from scipy.sparse import csr_matrix
 root_path = 'D:\\YuAnHuang\\kevislin\\cancerSEA'
-save_path = 'D:\\YuAnHuang\\kevislin\\cancerSEA\\processed_data'
+save_path = 'D:\\YuAnHuang\\kevislin\\scALGCN\\experiments\\Wu2021_500_Wu2021_5000'
+
 '''
 pipeline:
     1. modify the expression data to cell * gene (index and columns only contains cell names and gene names)
-    2. change gene IDs to gene names    
+    2. change gene IDs to gene names
 '''
-projs = ['EXP0001']
+
+projs = ['EXP0013']
 for proj in projs:
     pcg_data = pd.read_csv(os.path.join(root_path, proj + '_PCG_log2_afterQC.txt'), delimiter='\t', index_col=0)
     pcg_data = pcg_data.copy()
@@ -25,15 +29,10 @@ for proj in projs:
     pcg_data = pcg_data.iloc[:, idx]
     
     pcg_data.columns = pcg_data.columns.map(lambda x: id_name_map[x])    
-    
-    print(pcg_data.columns)
-    
-    # save data and label
-    if not os.path.exists(save_path):
-        os.mkdir(save_path)    
-    save_path = os.path.join(save_path, proj)
-    if not os.path.exists(save_path):
-        os.mkdir(save_path)
-    
-    pcg_data.to_csv(os.path.join(save_path, 'auxilary_data.csv'))
-    cell_state.to_csv(os.path.join(save_path, 'auxilary_label.csv'))
+
+    adata = ad.AnnData(csr_matrix(pcg_data.to_numpy()))
+    adata.obs_names = pcg_data.index.tolist()
+    adata.var_names = pcg_data.columns.tolist()
+    adata.obsm['label'] = cell_state.to_numpy()
+    print(adata)
+    adata.write(os.path.join(save_path, 'auxilart_data.h5ad'))
