@@ -21,18 +21,15 @@ setlocal enabledelayedexpansion
 @REM EXP0059_EXP0061,^
 @REM EXP0059_EXP0063,^
 @REM EXP0059_EXP0050
-set projects=cel_seq_10x_v3
+set projects=wu2021_5000_wu2021_5000_exp0047
+
 
 
 for %%i in (%projects%) do (
-    python preprocess\h5ad2seurat_adaptor.py --dir_name=E:\YuAnHuang\kevislin\second_proj\scALGCN\experiments\%%i
-    Rscript preprocess\preprocess.R E:\YuAnHuang\kevislin\second_proj\scALGCN\experiments\%%i
-    python preprocess\seurat2h5ad_adaptor.py --dir_name=E:\YuAnHuang\kevislin\second_proj\scALGCN\experiments\%%i    
-        
-    @REM copy D:\YuAnHuang\kevislin\scALGCN\experiments\%%i\raw_data\ref_label.csv D:\YuAnHuang\kevislin\scALGCN\experiments\%%i\data\ref_label.csv   
-    @REM copy D:\YuAnHuang\kevislin\scALGCN\experiments\%%i\raw_data\query_label.csv D:\YuAnHuang\kevislin\scALGCN\experiments\%%i\data\query_label.csv
-    @REM copy D:\YuAnHuang\kevislin\scALGCN\experiments\%%i\raw_data\auxilary_label.csv D:\YuAnHuang\kevislin\scALGCN\experiments\%%i\data\auxilary_label.csv
-
+    python preprocess\h5ad2seurat_adaptor.py --dir_name=D:\YuAnHuang\kevislin\scALGCN\experiments\%%i
+    Rscript preprocess\preprocess.R D:\YuAnHuang\kevislin\scALGCN\experiments\%%i
+    python preprocess\seurat2h5ad_adaptor.py --dir_name=D:\YuAnHuang\kevislin\scALGCN\experiments\%%i    
+    
 )
 
 

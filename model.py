@@ -130,7 +130,7 @@ class GTModel(nn.Module):
         self.dropout_rate = args.dropout_rate
         self.num_layers = args.n_layers        
         self.pos_enc = pos_enc
-        self.task = args.task
+        # self.task = args.task
         self.state_embeddings = None
         self.is_auxilary = args.is_auxilary
         self.h_embedding = nn.Linear(self.in_dim, self.hidden_dim)                        
@@ -157,8 +157,9 @@ class GTModel(nn.Module):
         
         edge_index = adj.nonzero().T                
         indices = edge_index.to(device)        
-        features = g_data.ndata['x'].to(device)     
-        pos_enc = g_data.ndata['PE'].to(device)
+        features = g_data.ndata['x'].to(device)    
+        if args.add_pos_enc: 
+            pos_enc = g_data.ndata['PE'].to(device)
         N = features.shape[0] # N * feature_dim
         A = dglsp.spmatrix(indices, shape=(N, N))        
         # A = g.edges()
@@ -185,7 +186,7 @@ class GTModel(nn.Module):
         for layer in self.layers:
             h = layer(A, h)
         
-        if self.auxilary:
+        if not self.is_auxilary:
             h = h + self.state_embeddings
             h = self.predictor(h)
         else:

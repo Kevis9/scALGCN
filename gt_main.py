@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser()
 
 # data config
 parser.add_argument('--data_dir', type=str, 
-                             default='D:/YuAnHuang/kevislin/scALGCN/experiments/seq_well_10x_v3_EXP0001/data', 
+                             default='D:/YuAnHuang/kevislin/scALGCN/experiments/wu2021_5000_wu2021_5000_exp0013/data', 
                              help='data directory')
 parser.add_argument('--epochs', type=int, 
                              default=30, 
@@ -98,7 +98,7 @@ parser.add_argument('--residual', action='store_true',
                              default=False, 
                              help='residual for GTModel')
 parser.add_argument('--add_pos_enc', action='store_true',
-                             default=True, 
+                             default=False, 
                              help='whether adding postional encoding to node feature')
 
 parser.add_argument('--symmetric', action='store_true', 
@@ -113,7 +113,7 @@ parser.add_argument('--adj_training', action='store_true',
                     default=False,
                     help='whether update the adj')
 parser.add_argument('--is_auxilary', action='store_true',
-                    default=False,
+                    default=True,
                     help='for GTModel, whether use auxilary model')
 
 
@@ -130,14 +130,15 @@ g_data, auxilary_g_data, adata, data_info = load_data(args=args, use_auxilary=Tr
 max_nodes_num = data_info['class_num'] * args.max_per_class
 data_info['max_nodes_num'] = max_nodes_num
 
-g_data.ndata['PE'] = dgl.laplacian_pe(g_data, k=args.pos_enc_dim, padding=True)
-auxilary_g_data.ndata['PE'] = dgl.laplacian_pe(auxilary_g_data, k=args.pos_enc_dim, padding=True)
+if args.add_pos_enc:
+    g_data.ndata['PE'] = dgl.lap_pe(g_data, k=args.pos_enc_dim, padding=True)
+    auxilary_g_data.ndata['PE'] = dgl.lap_pe(auxilary_g_data, k=args.pos_enc_dim, padding=True)
 
 
 auxilary_model = GTModel(args=args,
                 in_dim=auxilary_g_data.ndata['x'].shape[1],
                 class_num=data_info['auxilary_class_num'],
-                pos_enc=auxilary_g_data.ndata['PE'].to(device)).to(device)
+                pos_enc=auxilary_g_data.ndata['PE'].to(device) if args.add_pos_enc else None).to(device)
 
 # use Pro-GNN to train the GT
 auxilary_model_prognn = ProGNN(auxilary_model, data_info=data_info, args=args, device=device)
@@ -148,11 +149,11 @@ auxilary_model_prognn.fit(g_data=auxilary_g_data)
 '''
  ========= For cell type prediction ========= 
 '''
-args.is_auxilary = True
+args.is_auxilary = False
 type_model = GTModel(args=args,
                 in_dim=g_data.ndata['x'].shape[1],
                 class_num=data_info['class_num'],
-                pos_enc=g_data.ndata['PE'].to(device)).to(device)
+                pos_enc=g_data.ndata['PE'].to(device) if args.add_pos_enc else None).to(device)
 
 auxilary_embeddings = auxilary_model.get_embeddings(g_data=g_data, args=args)
 

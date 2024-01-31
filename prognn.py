@@ -143,7 +143,7 @@ class ProGNN:
 
     def train_gnn(self, adj, features, labels, epoch, criterion):
         args = self.args
-
+        labels = labels.to(self.device)
         if args.debug:
             print("\n=== train_gnn ===")                
         adj = adj.detach().clone()
@@ -157,9 +157,12 @@ class ProGNN:
         # GTModel        
         output = self.model(edge_index, features)
         
-        train_idx = self.data_info['train_idx']
-        val_idx = self.data_info['val_idx']
-        
+        if args.is_auxilary:
+            train_idx = self.data_info['auxilary_train_idx']
+            val_idx = self.data_info['auxilary_val_idx']
+        else:
+            train_idx = self.data_info['train_idx']
+            val_idx = self.data_info['val_idx']
                 
         loss_train = criterion(output[train_idx], labels[train_idx])
         if not args.is_auxilary:
@@ -268,7 +271,7 @@ class ProGNN:
                     + args.alpha * loss_l1 \
                     + args.beta * loss_nuclear \
                     + args.phi * loss_symmetric
-
+        
         estimator.estimated_adj.data.copy_(torch.clamp(
                   estimator.estimated_adj.data, min=0, max=1))
         
