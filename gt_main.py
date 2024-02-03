@@ -174,5 +174,9 @@ proj = args.data_dir.split('/')[1]
 with open('config/{:}_acc_{:.3f}.json'.format(proj, test_res), 'w') as f:
     json.dump(vars(args), f)
     
+with open("result/acc.csv", 'a') as f:
+    f.write('{:.3f}\n'.format(test_res))
 
+    
+    
 
