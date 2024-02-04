@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser()
 
 # data config
 parser.add_argument('--data_dir', type=str, 
-                             default='D:/YuAnHuang/kevislin/scALGCN/experiments/wu2021_5000_wu2021_5000_exp0013/data', 
+                             default='D:/YuAnHuang/kevislin/scALGCN/experiments/wu2021_5000_wu2021_5000_exp0047/data', 
                              help='data directory')
 parser.add_argument('--epochs', type=int, 
                              default=30, 
