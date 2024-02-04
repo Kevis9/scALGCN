@@ -241,7 +241,7 @@ def load_data(args, use_auxilary=True):
         auxilary_g_data = get_auxilary_g_data(adata=adata)
         return g_data, auxilary_g_data, adata, data_info
     else:
-        return g_data, adata, data_info
+        return g_data, None, adata, data_info
 
 def get_data_info(args, adata, n_ref, n_query):
     '''

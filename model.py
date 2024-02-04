@@ -131,8 +131,8 @@ class GTModel(nn.Module):
         self.num_layers = args.n_layers        
         self.pos_enc = pos_enc
         # self.task = args.task
-        self.state_embeddings = None
-        self.is_auxilary = args.is_auxilary
+        self.state_embeddings = None        
+        self.use_auxilary = args.use_auxilary
         self.h_embedding = nn.Linear(self.in_dim, self.hidden_dim)                        
         self.pos_linear = nn.Linear(self.pos_enc_dim, self.hidden_dim)
         self.layers = nn.ModuleList(
@@ -186,7 +186,7 @@ class GTModel(nn.Module):
         for layer in self.layers:
             h = layer(A, h)
         
-        if not self.is_auxilary:
+        if not self.is_auxilary and self.use_auxilary:
             h = h + self.state_embeddings
             h = self.predictor(h)
         else:

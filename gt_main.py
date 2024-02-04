@@ -36,9 +36,7 @@ parser.add_argument('--debug', action='store_true',
 parser.add_argument('--max_per_class', type=int, 
                              default=30, 
                              help='max number of nodes for each class')
-parser.add_argument('--active_learning', action='store_true', 
-                             default=False, 
-                             help='active learning mode')
+
 parser.add_argument('--gt_lr', type=float,
                              default=1e-3, 
                              help='learning rate for graph transformer')
@@ -97,9 +95,6 @@ parser.add_argument('--batch_norm', action='store_true',
 parser.add_argument('--residual', action='store_true',
                              default=False, 
                              help='residual for GTModel')
-parser.add_argument('--add_pos_enc', action='store_true',
-                             default=False, 
-                             help='whether adding postional encoding to node feature')
 
 parser.add_argument('--symmetric', action='store_true', 
                             default=True,
@@ -112,9 +107,23 @@ parser.add_argument('--adj_thresh', type=float,
 parser.add_argument('--adj_training', action='store_true',
                     default=False,
                     help='whether update the adj')
+
+parser.add_argument('--add_pos_enc', action='store_true',
+                             default=False, 
+                             help='whether adding postional encoding to node feature')
+
+parser.add_argument('--active_learning', action='store_true', 
+                             default=False, 
+                             help='active learning mode')
+
 parser.add_argument('--is_auxilary', action='store_true',
                     default=True,
+                    help='is auxilari model?')
+
+parser.add_argument('--use_auxilary', action='store_true',
+                    default=True,
                     help='for GTModel, whether use auxilary model')
+
 
 
 args = parser.parse_args()
@@ -124,9 +133,7 @@ setup_seed(seed)
 
     
 # load data
-g_data, auxilary_g_data, adata, data_info = load_data(args=args, use_auxilary=True)
-
-
+g_data, auxilary_g_data, adata, data_info = load_data(args=args, use_auxilary=args.use_auxilary)
 max_nodes_num = data_info['class_num'] * args.max_per_class
 data_info['max_nodes_num'] = max_nodes_num
 
@@ -134,15 +141,15 @@ if args.add_pos_enc:
     g_data.ndata['PE'] = dgl.lap_pe(g_data, k=args.pos_enc_dim, padding=True)
     auxilary_g_data.ndata['PE'] = dgl.lap_pe(auxilary_g_data, k=args.pos_enc_dim, padding=True)
 
+if args.use_auxilary:
+    auxilary_model = GTModel(args=args,
+                    in_dim=auxilary_g_data.ndata['x'].shape[1],
+                    class_num=data_info['auxilary_class_num'],
+                    pos_enc=auxilary_g_data.ndata['PE'].to(device) if args.add_pos_enc else None).to(device)
 
-auxilary_model = GTModel(args=args,
-                in_dim=auxilary_g_data.ndata['x'].shape[1],
-                class_num=data_info['auxilary_class_num'],
-                pos_enc=auxilary_g_data.ndata['PE'].to(device) if args.add_pos_enc else None).to(device)
-
-# use Pro-GNN to train the GT
-auxilary_model_prognn = ProGNN(auxilary_model, data_info=data_info, args=args, device=device)
-auxilary_model_prognn.fit(g_data=auxilary_g_data)
+    # use Pro-GNN to train the GT
+    auxilary_model_prognn = ProGNN(auxilary_model, data_info=data_info, args=args, device=device)
+    auxilary_model_prognn.fit(g_data=auxilary_g_data)
 
 
 
@@ -155,13 +162,12 @@ type_model = GTModel(args=args,
                 class_num=data_info['class_num'],
                 pos_enc=g_data.ndata['PE'].to(device) if args.add_pos_enc else None).to(device)
 
-auxilary_embeddings = auxilary_model.get_embeddings(g_data=g_data, args=args)
-
-type_model.set_state_embeddings(auxilary_embeddings)
+if args.use_auxilary:
+    auxilary_embeddings = auxilary_model.get_embeddings(g_data=g_data, args=args)
+    type_model.set_state_embeddings(auxilary_embeddings)
 
 prognn = ProGNN(type_model, data_info=data_info, args=args, device=device)
 prognn.fit(g_data=g_data)
-
 
 test_res = prognn.test(g_data.ndata['x'].to(device), data_info['test_idx'], g_data.ndata['y_true'].to(device))
 
