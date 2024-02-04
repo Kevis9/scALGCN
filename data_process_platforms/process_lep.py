@@ -26,21 +26,21 @@ def random_stratify(cell_types, adata, size, selected_idx=[]):
 parser = argparse.ArgumentParser()
 
 parser.add_argument('--dir_name', type=str, 
-                    default='D:/YuAnHuang/kevislin/cancerCellType/Nets')
+                    default='D:/YuAnHuang/kevislin/cancerCellType/lep')
 parser.add_argument('--save_path', type=str, 
-                    default='D:/YuAnHuang/kevislin/scALGCN/experiments/nets5000_nets5000')
+                    default='D:/YuAnHuang/kevislin/scALGCN/experiments/lep5000_lep5000')
 
 args = parser.parse_args()
 dir_name = args.dir_name
 save_path = args.save_path
 
-data = pd.read_csv(os.path.join(dir_name, 'GEP_NET_scRNAseq_normalized_counts.csv'), index_col=0)
-meta_data = pd.read_csv(os.path.join(dir_name, 'Final_SCP_Metadata.txt'), sep='\t') # 手动去掉了第二行
+data = pd.read_csv(os.path.join(dir_name, 'Table_S11.txt'), index_col=0, sep='\t')
+meta_data = pd.read_csv(os.path.join(dir_name, 'MetaDataFromTableS11.csv')) # 手动去掉了第二行
 
 gene_names = data.index.tolist()
 cell_names = data.columns.tolist() 
 
-cell_types = meta_data['broad_cell_type'].tolist()
+cell_types = meta_data['biosample_id'].tolist()
 
 data = data.T
 adata = ad.AnnData(csr_matrix(data.to_numpy()), dtype=float)
