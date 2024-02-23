@@ -21,7 +21,8 @@ setlocal enabledelayedexpansion
 @REM EXP0059_EXP0061,^
 @REM EXP0059_EXP0063,^
 @REM EXP0059_EXP0050
-set projects=bcp1_bcp2_exp0013
+set projects=bcp1_bcp2_exp0013,^
+second_proj
 
 
 
