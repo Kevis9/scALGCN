@@ -3,8 +3,8 @@ import random
 import os
 import anndata as ad
 from scipy.sparse import csr_matrix
-root_path = '~/raw_data/cell_states_data'
-save_path = '~/raw_data/cell_states_data'
+root_path = '/home/Users/kevislin/raw_data/cell_states_data'
+save_path = '/home/Users/kevislin/raw_data/cell_states_data'
 '''
 pipeline:
     1. modify the expression data to cell * gene (index and columns only contains cell names and gene names)

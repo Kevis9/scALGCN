@@ -33,9 +33,9 @@ def random_stratify(cell_types, adata, size, selected_idx=[]):
 parser = argparse.ArgumentParser()
 
 parser.add_argument('--dir_name', type=str, 
-                    default='~/raw_data/Wu2021')
+                    default='/home/Users/kevislin/raw_data/Wu2021')
 parser.add_argument('--save_path', type=str, 
-                    default='~/raw_data/Wu2021')
+                    default='/home/Users/kevislin/raw_data/Wu2021')
 
 args = parser.parse_args()
 dir_name = args.dir_name
