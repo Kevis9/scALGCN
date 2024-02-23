@@ -1,3 +1,4 @@
+suppressPackageStartupMessages(library(batchelor))
 suppressPackageStartupMessages(library(Seurat))
 suppressPackageStartupMessages(library(Matrix))
 
