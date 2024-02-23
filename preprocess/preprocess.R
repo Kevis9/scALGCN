@@ -133,7 +133,7 @@ main <- function(ref_data_dir,
     rownames(ref_data) = inter_genes
     rownames(query_data) = inter_genes
     rownames(auxilary_data) = inter_genes
-        
+
     ref_label = read_label(ref_data_dir, 'ref_label_middle')
                 
     # gene intersection    
@@ -166,7 +166,7 @@ main <- function(ref_data_dir,
     write.csv(sel.features, file=paste(paste(base_path, 'data' , 'selected_genes_middle.csv', sep='/')))
     
     graphs <- suppressWarnings(GenerateGraph(Dat1=norm.ref_data,Dat2=norm.query_data,Dat3=norm.auxilary_data,
-                                                 Lab1=ref_label,K=5 #这里修改了K值 2024.1.18
+                                                 Lab1=ref_label,K=10
                                                  ))
 
 

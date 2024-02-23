@@ -11,7 +11,12 @@ pipeline:
     2. change gene IDs to gene names
 '''
 
-projs = ['EXP0047', 'EXP0013', 'EXP0050']
+projs = [
+        # 'EXP0047', 
+        #  'EXP0013', 
+        #  'EXP0050',
+         'EXP0038',
+         'EXP0040']
 
 
 for i, proj in enumerate(projs):
