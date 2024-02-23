@@ -128,18 +128,15 @@ main <- function(ref_data_dir,
     query_data = read_data(query_data_dir, 'query_data_middle')
     auxilary_data = read_data(auxilary_data_dir, 'auxilary_data_middle')    
     
-    ref_gene = read_gene(ref_data_dir, 'ref_gene_middle')
-    query_gene = read_gene(query_data_dir, 'query_gene_middle')
-    auxilary_gene = read_gene(auxilary_data_dir, 'auxilary_gene_middle')
-
-    rownames(ref_data) = ref_gene
-    rownames(query_data) = query_gene
-    rownames(auxilary_data) = auxilary_gene
+    inter_genes = read_gene(ref_data_dir, 'common_gene_middle')
     
+    rownames(ref_data) = inter_genes
+    rownames(query_data) = inter_genes
+    rownames(auxilary_data) = inter_genes
+        
     ref_label = read_label(ref_data_dir, 'ref_label_middle')
                 
-    # gene intersection
-    inter_genes = intersect(intersect(rownames(ref_data), rownames(query_data)), rownames(auxilary_data))
+    # gene intersection    
     ref_data = ref_data[inter_genes, ]
     query_data = query_data[inter_genes, ]
     auxilary_data = auxilary_data[inter_genes, ]

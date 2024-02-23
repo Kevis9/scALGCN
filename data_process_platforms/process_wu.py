@@ -57,9 +57,13 @@ for i, group in enumerate(group_list):
     key2 = donor_id[i]
     idx = list(np.where(np.isin(bio_samples, [key1, key2]))[0])
     data = csr_data[idx, :]
-    types = list(cell_types[idx, :])
+    # BC和PC有上皮组织的cancer，全部转成cancer类型就好    
+    types = cell_types[idx, :]
+    types = np.where(types == 'Cancer/Epithelial', 'Cancer', types)
+    types = np.where(types == 'Cancer/Epithelial Cycling', 'Cancer', types)
+        
     names = list(cell_names[idx, :])
-
+    
     adata = ad.AnnData(data, dtype=float)
     adata.obs_names = names
     adata.var_names = gene_names.iloc[:, 0].tolist()

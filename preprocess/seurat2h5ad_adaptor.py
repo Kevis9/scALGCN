@@ -12,15 +12,16 @@ import re
     3. afterNorm_auxilary_data_middle.mtx
     read them and turn into h5ad file
 '''
-def copy_h5ad(adata, data, genes, auxilary):
-    new_data = ad.AnnData(data)
-    new_data.var_names = genes
-    new_data.obs_names = adata.obs_names
+
+def create_adata(data, cell_names, gene_names, cell_label, auxilary):
+    data = ad.AnnData(data)
+    data.var_names = gene_names
+    data.obs_names = cell_names    
     if auxilary:
-        new_data.obsm['label'] = adata.obsm['label']
+        data.obsm['label'] = cell_label
     else:
-        new_data.obs['cell_type'] = adata.obs['cell_type']
-    return new_data
+        data.obs['cell_type'] = cell_label
+    return data
     
 
 parser = argparse.ArgumentParser()
@@ -40,10 +41,16 @@ auxilary_data = ad.read(os.path.join(dir_name, 'raw_data', 'auxilary_data.h5ad')
 genes_df = pd.read_csv(os.path.join(dir_name, 'data', 'selected_genes_middle.csv'), index_col=0)
 genes = genes_df.iloc[:, 0].tolist()
 
-new_ref_data = copy_h5ad(ref_data, norm_ref_data.transpose(), genes, False)
-new_query_data = copy_h5ad(query_data, norm_query_data.transpose(), genes, False)
-new_auxilary_data = copy_h5ad(auxilary_data, norm_auxilary_data.transpose(), genes, True)
+ref_name = pd.read_csv(os.path.join(dir_name, 'raw_data', 'ref_name_middle.csv'))
+query_name = pd.read_csv(os.path.join(dir_name, 'raw_data', 'ref_name_middle.csv'))
 
+ref_label = pd.read_csv(os.path.join(dir_name, 'raw_data', 'ref_label_middle.csv'))
+query_label = pd.read_csv(os.path.join(dir_name, 'raw_data', 'query_label_middle.csv'))
+
+
+new_ref_data = create_adata(norm_ref_data.transpose(), ref_name['cell_name'].tolist(), genes, ref_label['cell_type'].tolist(), False)
+new_query_data = create_adata(norm_query_data.transpose(), query_name['cell_name'].tolist(), genes, query_label['cell_type'].tolist(), False)
+new_auxilary_data = create_adata(norm_auxilary_data.transpose(), auxilary_data.obs_names.tolist(), genes, auxilary_data.obsm['label'], True)
 
 new_ref_data.write(os.path.join(dir_name, 'data', 'ref_data.h5ad'))
 new_query_data.write(os.path.join(dir_name, 'data', 'query_data.h5ad'))
