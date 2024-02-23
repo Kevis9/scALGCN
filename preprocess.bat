@@ -21,14 +21,7 @@ setlocal enabledelayedexpansion
 @REM EXP0059_EXP0061,^
 @REM EXP0059_EXP0063,^
 @REM EXP0059_EXP0050
-set projects=wu2021_5000_wu2021_5000_exp0013,^
-wu2021_5000_wu2021_5000_exp0047,^
-wu2021_5000_wu2021_5000,^
-lep5000_lep5000_exp0047,^
-lep5000_lep5000,^
-nets5000_nets5000_exp0047,^
-nets5000_nets5000
-
+set projects=bcp1_bcp2_exp0013
 
 
 
