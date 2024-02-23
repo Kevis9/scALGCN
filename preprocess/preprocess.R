@@ -128,16 +128,16 @@ main <- function(ref_data_dir,
     
     inter_genes = read_gene(ref_data_dir, 'common_gene_middle')
     
-    rownames(ref_data) = inter_genes
-    rownames(query_data) = inter_genes
-    rownames(auxilary_data) = inter_genes
-
     ref_label = read_label(ref_data_dir, 'ref_label_middle')
                 
     # gene intersection    
     ref_data = ref_data[inter_genes, ]
     query_data = query_data[inter_genes, ]
     auxilary_data = auxilary_data[inter_genes, ]
+    
+    rownames(ref_data) = inter_genes
+    rownames(query_data) = inter_genes
+    rownames(auxilary_data) = inter_genes
     
     
     # gene selection
