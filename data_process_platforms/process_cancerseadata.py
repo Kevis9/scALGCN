@@ -4,7 +4,7 @@ import os
 import anndata as ad
 from scipy.sparse import csr_matrix
 root_path = '/home/Users/kevislin/raw_data/cell_states_data'
-save_path = '/home/Users/kevislin/raw_data/cell_states_data'
+old_save_path = '/home/Users/kevislin/raw_data/cell_states_data'
 '''
 pipeline:
     1. modify the expression data to cell * gene (index and columns only contains cell names and gene names)
@@ -36,7 +36,7 @@ for i, proj in enumerate(projs):
     adata.var_names = pcg_data.columns.tolist()
     adata.obsm['label'] = cell_state.to_numpy()
     print(adata)
-    save_path = os.path.join(save_path, proj)
+    save_path = os.path.join(old_save_path, proj)
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     
