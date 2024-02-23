@@ -1,7 +1,4 @@
-suppressPackageStartupMessages(library(batchelor))
 suppressPackageStartupMessages(library(Seurat))
-suppressPackageStartupMessages(library(SeuratDisk))
-suppressPackageStartupMessages(library(SeuratData))
 suppressPackageStartupMessages(library(Matrix))
 
 readH5AD <- function(dir_name, file_name) {
