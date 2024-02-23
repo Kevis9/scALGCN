@@ -34,9 +34,9 @@ norm_ref_data = mmread(os.path.join(dir_name, 'data', 'afterNorm_ref_data_middle
 norm_query_data = mmread(os.path.join(dir_name, 'data', 'afterNorm_query_data_middle.mtx')).tocsr()
 norm_auxilary_data = mmread(os.path.join(dir_name, 'data', 'afterNorm_auxilary_data_middle.mtx')).tocsr()
 
-ref_data = ad.read(os.path.join(dir_name, 'raw_data', 'ref_data.h5ad'))
-query_data = ad.read(os.path.join(dir_name, 'raw_data', 'query_data.h5ad'))
-auxilary_data = ad.read(os.path.join(dir_name, 'raw_data', 'auxilary_data.h5ad'))
+ref_data = ad.read_h5ad(os.path.join(dir_name, 'raw_data', 'ref_data.h5ad'))
+query_data = ad.read_h5ad(os.path.join(dir_name, 'raw_data', 'query_data.h5ad'))
+auxilary_data = ad.read_h5ad(os.path.join(dir_name, 'raw_data', 'auxilary_data.h5ad'))
 
 genes_df = pd.read_csv(os.path.join(dir_name, 'data', 'selected_genes_middle.csv'), index_col=0)
 genes = genes_df.iloc[:, 0].tolist()

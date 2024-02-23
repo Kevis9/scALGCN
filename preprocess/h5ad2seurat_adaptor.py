@@ -15,9 +15,9 @@ parser.add_argument('--dir_name', type=str, default='')
 
 args = parser.parse_args()
 dir_name = args.dir_name
-ref_data_h5 = ad.read(os.path.join(dir_name, 'raw_data', 'ref_data.h5ad'))
-query_data_h5 = ad.read(os.path.join(dir_name, 'raw_data', 'query_data.h5ad'))
-auxilary_data_h5 = ad.read(os.path.join(dir_name, 'raw_data', 'auxilary_data.h5ad'))
+ref_data_h5 = ad.read_h5ad(os.path.join(dir_name, 'raw_data', 'ref_data.h5ad'))
+query_data_h5 = ad.read_h5ad(os.path.join(dir_name, 'raw_data', 'query_data.h5ad'))
+auxilary_data_h5 = ad.read_h5ad(os.path.join(dir_name, 'raw_data', 'auxilary_data.h5ad'))
 
 ref_obs_names = ref_data_h5.obs_names.to_numpy()
 query_obs_names = query_data_h5.obs_names.to_numpy()

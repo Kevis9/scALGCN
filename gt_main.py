@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser()
 
 # data config
 parser.add_argument('--data_dir', type=str, 
-                             default='D:/YuAnHuang/kevislin/scALGCN/experiments/wu2021_5000_wu2021_5000_exp0047/data', 
+                             default='/home/kevislin/scALGCN/experiments/bcp1_bcp2_exp0013', 
                              help='data directory')
 ####### Active learning #######
 parser.add_argument('--basef', type=float, 
@@ -136,6 +136,7 @@ parser.add_argument('--use_auxilary', action='store_true',
 
 args = parser.parse_args()
 
+args.data_dir = os.path.join(args.data_dir, 'data')
 seed = 32
 setup_seed(seed)
 
