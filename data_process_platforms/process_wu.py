@@ -52,10 +52,7 @@ csr_data = mmread(os.path.join(dir_name, 'data.mtx')).tocsr().transpose() # cell
 group_list = ['BC-P1', 'BC-P2', 'BC-P3', 'PC-P1', ' M-P1'] #注意源文件里面的M-P1前面多了一个空格
 donor_id = ['CID4471', 'CID44971', 'CID4513', 'PID17267', 'SCC180161']
 
-for i, group in enumerate(group_list):
-    if not group == 'M-P1':
-        continue
-    
+for i, group in enumerate(group_list):        
     key1 = group
     key2 = donor_id[i]    
     idx = list(np.where(np.isin(bio_samples, [key1, key2]))[0])          
