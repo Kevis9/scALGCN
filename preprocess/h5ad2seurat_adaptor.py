@@ -32,10 +32,10 @@ common_types = list(set(ref_cell_types) & set(query_cell_types))
 ref_idx = np.where(np.isin(ref_cell_types, common_types))[0]
 query_idx = np.where(np.isin(query_cell_types, common_types))[0]
 
-ref_label = ref_cell_types[ref_idx, :]
-query_label = query_cell_types[query_idx, :]
-ref_obs_names = ref_obs_names[ref_idx, :]
-query_obs_names = query_obs_names[query_idx, :]
+ref_label = ref_cell_types[ref_idx]
+query_label = query_cell_types[query_idx]
+ref_obs_names = ref_obs_names[ref_idx]
+query_obs_names = query_obs_names[query_idx]
 
 ref_data = ref_data[ref_idx, :]
 query_data = query_data[query_idx, :]
