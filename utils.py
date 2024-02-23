@@ -177,41 +177,38 @@ def random_stratify_sample_with_train_idx(ref_labels, train_idx, train_class_num
 def get_anndata(args):
     data_dir = args.data_dir    
     # 判断是否存在一个叫做all_data.h5ad的文件        
-    h5ad_file = os.path.join(data_dir, 'all_data.h5ad')    
-    if os.path.isfile(h5ad_file):
-        '''ann data exists'''
-        adata = ad.read(os.path.join(data_dir, 'all_data.h5ad'))  
-    else:
-        ref_data_h5 = ad.read(os.path.join(data_dir, 'ref_data.h5ad'))
-        query_data_h5 = ad.read(os.path.join(data_dir, 'query_data.h5ad'))
-        auxilary_data_h5 = ad.read(os.path.join(data_dir, 'auxilary_data.h5ad'))
-        
-        ref_data = ref_data_h5.X.toarray()
-        query_data = query_data_h5.X.toarray()
-        
-        data = np.concatenate([ref_data, query_data], axis=0)
-        label = np.concatenate([ref_data_h5.obs['cell_type'].to_numpy(), query_data_h5.obs['cell_type'].to_numpy()], axis=0)                
-        edge_index = combine_inter_intra_graph(inter_graph_path=os.path.join(data_dir, 'inter_graph.csv'),
-                                               intra_graph_path=os.path.join(data_dir, 'intra_graph.csv'),
-                                               n_nodes_ref=ref_data.shape[0],
-                                               n_nodes_query=query_data.shape[0])
-        
-        auxilary_edge_index = get_auxilary_graph(auxilary_graph_path=os.path.join(data_dir, 'auxilary_graph.csv'), n_nodes=auxilary_data_h5.n_obs)        
-
-        adata = ad.AnnData(csr_matrix(data, dtype=float), dtype=float)
-        
-        adata.obs_names = list(ref_data_h5.obs_names) + list(query_data_h5.obs_names)
-        adata.var_names = ref_data_h5.var_names
-        adata.obs['cell_type'] = label        
-        adata.uns['edge_index'] = edge_index
-        # take auxilary data all into all_data        
-        adata.uns['auxilary_data'] = auxilary_data_h5.X.toarray()
-        adata.uns['auxilary_label'] = auxilary_data_h5.obsm['label']
-        adata.uns['auxilary_edge_index'] = auxilary_edge_index                                        
-        adata.uns['n_ref'] = ref_data_h5.n_obs
-        adata.uns['n_query'] = query_data_h5.n_obs
-        adata.write(os.path.join(data_dir, 'all_data.h5ad'))
+    # h5ad_file = os.path.join(data_dir, 'all_data.h5ad')    
     
+    ref_data_h5 = ad.read(os.path.join(data_dir, 'ref_data.h5ad'))
+    query_data_h5 = ad.read(os.path.join(data_dir, 'query_data.h5ad'))
+    auxilary_data_h5 = ad.read(os.path.join(data_dir, 'auxilary_data.h5ad'))
+    
+    ref_data = ref_data_h5.X.toarray()
+    query_data = query_data_h5.X.toarray()
+    
+    data = np.concatenate([ref_data, query_data], axis=0)
+    label = np.concatenate([ref_data_h5.obs['cell_type'].to_numpy(), query_data_h5.obs['cell_type'].to_numpy()], axis=0)                
+    edge_index = combine_inter_intra_graph(inter_graph_path=os.path.join(data_dir, 'inter_graph.csv'),
+                                            intra_graph_path=os.path.join(data_dir, 'intra_graph.csv'),
+                                            n_nodes_ref=ref_data.shape[0],
+                                            n_nodes_query=query_data.shape[0])
+    
+    auxilary_edge_index = get_auxilary_graph(auxilary_graph_path=os.path.join(data_dir, 'auxilary_graph.csv'), n_nodes=auxilary_data_h5.n_obs)        
+
+    adata = ad.AnnData(csr_matrix(data, dtype=float), dtype=float)
+    
+    adata.obs_names = list(ref_data_h5.obs_names) + list(query_data_h5.obs_names)
+    adata.var_names = ref_data_h5.var_names
+    adata.obs['cell_type'] = label        
+    adata.uns['edge_index'] = edge_index
+    # take auxilary data all into all_data        
+    adata.uns['auxilary_data'] = auxilary_data_h5.X.toarray()
+    adata.uns['auxilary_label'] = auxilary_data_h5.obsm['label']
+    adata.uns['auxilary_edge_index'] = auxilary_edge_index                                        
+    adata.uns['n_ref'] = ref_data_h5.n_obs
+    adata.uns['n_query'] = query_data_h5.n_obs
+    adata.write(os.path.join(data_dir, 'all_data.h5ad'))
+    # TODO: 处理reverse
     return adata, adata.uns['n_ref'], adata.uns['n_query']
     
 

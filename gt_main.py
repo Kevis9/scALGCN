@@ -7,6 +7,7 @@ from model import GTModel
 import json
 import argparse
 from prognn import ProGNN
+import pandas as pd
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 parser = argparse.ArgumentParser()
@@ -132,10 +133,14 @@ parser.add_argument('--use_auxilary', action='store_true',
                     default=True,
                     help='for GTModel, whether use auxilary model')
 
+parser.add_argument('--exp_reverse', action='store_true',
+                    default=False,
+                    help='reverse ref_data and query_data')
 
 
 args = parser.parse_args()
 
+proj = args.data_dir.split('/')[-1]
 args.data_dir = os.path.join(args.data_dir, 'data')
 seed = 32
 setup_seed(seed)
@@ -189,6 +194,9 @@ proj = args.data_dir.split('/')[1]
 with open('config/{:}_acc_{:.3f}.json'.format(proj, test_res), 'w') as f:
     json.dump(vars(args), f)
     
+acc_data = pd.read_csv('result/acc.csv', index=0)
+
+
 with open("result/acc.csv", 'a') as f:
     f.write('{:.3f}\n'.format(test_res))
 
