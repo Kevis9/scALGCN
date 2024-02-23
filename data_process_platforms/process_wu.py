@@ -41,13 +41,16 @@ args = parser.parse_args()
 dir_name = args.dir_name
 old_save_path = args.save_path
 
-csr_data = mmread(os.path.join(dir_name, 'data.mtx')).tocsr().transpose() # cell * gene
+
 gene_names = pd.read_csv(os.path.join(dir_name, 'gene.tsv'), delimiter='\t', header=None)
 meta_data = pd.read_csv(os.path.join(dir_name, 'meta_data.txt'), delimiter='\t')
 cell_names = np.array(meta_data['NAME'].tolist())
 cell_types = np.array(meta_data['CellType'].tolist())
 bio_samples = np.array(meta_data['biosample_id'].tolist())
+print(np.unique(bio_samples))
+exit()
 
+csr_data = mmread(os.path.join(dir_name, 'data.mtx')).tocsr().transpose() # cell * gene
 
 group_list = ['BC-P1', 'BC-P2', 'BC-P3', 'PC-P1', 'M-P1']
 donor_id = ['CID4471', 'CID44971', 'CID4513', 'PID17267', 'SCC180161']
@@ -57,7 +60,7 @@ for i, group in enumerate(group_list):
         continue
     
     key1 = group
-    key2 = donor_id[i]
+    key2 = donor_id[i]    
     idx = list(np.where(np.isin(bio_samples, [key1, key2]))[0])    
     print(len(idx))    
     data = csr_data[idx, :]
