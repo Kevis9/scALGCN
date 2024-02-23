@@ -15,12 +15,12 @@ projs = ['EXP0047', 'EXP0013', 'EXP0050']
 
 
 for i, proj in enumerate(projs):
-    pcg_data = pd.read_csv(os.path.join(root_path, proj + '_PCG_log2_afterQC.txt'), delimiter='\t', index_col=0)
+    pcg_data = pd.read_csv(os.path.join(root_path, proj, proj + '_PCG_log2_afterQC.txt'), delimiter='\t', index_col=0)
     pcg_data = pcg_data.copy()
     pcg_data = pcg_data.drop(index=['Sample'])
     pcg_data = pcg_data.T
 
-    cell_state = pd.read_csv(os.path.join(root_path, proj + '_Score.txt'), delimiter='\t', index_col=3)
+    cell_state = pd.read_csv(os.path.join(root_path, proj, proj + '_Score.txt'), delimiter='\t', index_col=3)
     cell_state = cell_state.copy()
     cell_state = cell_state.drop(columns=['ExpID', 'cancer', 'sample'])
         
