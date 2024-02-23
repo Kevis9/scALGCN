@@ -21,14 +21,22 @@ setlocal enabledelayedexpansion
 @REM EXP0059_EXP0061,^
 @REM EXP0059_EXP0063,^
 @REM EXP0059_EXP0050
-set projects=wu2021_5000_wu2021_5000_exp0047
+set projects=wu2021_5000_wu2021_5000_exp0013,^
+wu2021_5000_wu2021_5000_exp0047,^
+wu2021_5000_wu2021_5000,^
+lep5000_lep5000_exp0047,^
+lep5000_lep5000,^
+nets5000_nets5000_exp0047,^
+nets5000_nets5000
+
+
 
 
 
 for %%i in (%projects%) do (
-    python preprocess\h5ad2seurat_adaptor.py --dir_name=D:\YuAnHuang\kevislin\scALGCN\experiments\%%i
-    Rscript preprocess\preprocess.R D:\YuAnHuang\kevislin\scALGCN\experiments\%%i
-    python preprocess\seurat2h5ad_adaptor.py --dir_name=D:\YuAnHuang\kevislin\scALGCN\experiments\%%i    
+    python preprocess\h5ad2seurat_adaptor.py --dir_name=experiments\%%i
+    Rscript preprocess\preprocess.R experiments\%%i
+    python preprocess\seurat2h5ad_adaptor.py --dir_name=experiments\%%i    
     
 )
 

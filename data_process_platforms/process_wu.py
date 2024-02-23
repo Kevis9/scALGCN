@@ -33,33 +33,50 @@ def random_stratify(cell_types, adata, size, selected_idx=[]):
 parser = argparse.ArgumentParser()
 
 parser.add_argument('--dir_name', type=str, 
-                    default='D:/YuAnHuang/kevislin/cancerCellType/Wu2021')
+                    default='~/raw_data/Wu2021')
 parser.add_argument('--save_path', type=str, 
-                    default='D:/YuAnHuang/kevislin/scALGCN/experiments/Wu2021_500_Wu2021_5000')
+                    default='~/raw_data')
 
 args = parser.parse_args()
 dir_name = args.dir_name
 save_path = args.save_path
 
-csr_data = mmread(os.path.join(dir_name, 'data.mtx')).tocsr()
+csr_data = mmread(os.path.join(dir_name, 'data.mtx')).tocsr().transpose() # cell * gene
 gene_names = pd.read_csv(os.path.join(dir_name, 'gene.tsv'), delimiter='\t', header=None)
 meta_data = pd.read_csv(os.path.join(dir_name, 'meta_data.txt'), delimiter='\t')
-'''
-    !!! different meta data have differet columns, you should change the name keys here
-'''
-cell_names = meta_data['NAME'].tolist()
-cell_types = meta_data['CellType'].tolist()
+cell_names = np.array(meta_data['NAME'].tolist())
+cell_types = np.array(meta_data['CellType'].tolist())
+bio_samples = np.array(meta_data['biosample_id'].tolist())
 
-adata = ad.AnnData(csr_data.transpose(), dtype=float)
-adata.obs_names = cell_names
-adata.var_names = gene_names.iloc[:, 0].tolist()
-adata.obs['cell_type'] = cell_types
 
-ref_adata, ref_idxs = random_stratify(np.array(cell_types), adata=adata, size=(5000/adata.n_obs))
-query_adata, query_idxs = random_stratify(np.array(cell_types), adata=adata, size=(5000/adata.n_obs), selected_idx=ref_idxs)
+group_list = ['BC-P1', 'BC-P2', 'BC-P3', 'PC-P1', 'M-P1']
+donor_id = ['CID4471', 'CID44971', 'CID4513', 'PID17267', 'SCC180161']
 
-print("ref idxs and query idxs intersections:")
-print(set(ref_idxs) & set(query_idxs))
+for i, group in enumerate(group_list):
+    key1 = group
+    key2 = donor_id[i]
+    idx = list(np.where(np.isin(bio_samples, [key1, key2]))[0])
+    data = csr_data[idx, :]
+    types = list(cell_types[idx, :])
+    names = list(cell_names[idx, :])
 
-ref_adata.write(os.path.join(save_path, 'ref_data.h5ad'))
-query_adata.write(os.path.join(save_path, 'query_data.h5ad'))
+    adata = ad.AnnData(data, dtype=float)
+    adata.obs_names = names
+    adata.var_names = gene_names.iloc[:, 0].tolist()
+    adata.obs['cell_type'] = types
+        
+    save_path = os.path.join(save_path, group)
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)    
+    adata.write(os.path.join(save_path, 'data.h5ad'), compression='gzip')
+    
+
+
+# ref_adata, ref_idxs = random_stratify(np.array(cell_types), adata=adata, size=(5000/adata.n_obs))
+# query_adata, query_idxs = random_stratify(np.array(cell_types), adata=adata, size=(5000/adata.n_obs), selected_idx=ref_idxs)
+
+# print("ref idxs and query idxs intersections:")
+# print(set(ref_idxs) & set(query_idxs))
+
+# ref_adata.write(os.path.join(save_path, 'ref_data.h5ad'))
+# query_adata.write(os.path.join(save_path, 'query_data.h5ad'))

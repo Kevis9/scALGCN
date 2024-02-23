@@ -1,4 +1,5 @@
 /experiments
+/experiment
 *.csv
 *.pt
 *.h5ad

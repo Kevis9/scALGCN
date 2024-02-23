@@ -3,8 +3,7 @@ import random
 import os
 import anndata as ad
 from scipy.sparse import csr_matrix
-root_path = 'D:\\YuAnHuang\\kevislin\\cancerSEA'
-save_path = 'D:\\YuAnHuang\\kevislin\\scALGCN\\experiments\\wu2021_5000_wu2021_5000_exp0047\\raw_data'
+root_path = '~/raw_data/cell_states_data'
 
 '''
 pipeline:
@@ -12,8 +11,13 @@ pipeline:
     2. change gene IDs to gene names
 '''
 
-projs = ['EXP0047']
-for proj in projs:
+projs = ['EXP0047', 'EXP0013', 'EXP0050']
+save_paths = ['../experiments/wu2021_5000_wu2021_5000_exp0047/raw_data',
+              '../experiments/wu2021_5000_wu2021_5000_exp0013/raw_data',             
+              '../experiments/wu2021_5000_wu2021_5000_exp0050/raw_data',
+              ]
+
+for i, proj in enumerate(projs):
     pcg_data = pd.read_csv(os.path.join(root_path, proj + '_PCG_log2_afterQC.txt'), delimiter='\t', index_col=0)
     pcg_data = pcg_data.copy()
     pcg_data = pcg_data.drop(index=['Sample'])
@@ -35,5 +39,6 @@ for proj in projs:
     adata.var_names = pcg_data.columns.tolist()
     adata.obsm['label'] = cell_state.to_numpy()
     print(adata)
+    save_path = save_paths[i]
     adata.write(os.path.join(save_path, 'auxilary_data.h5ad'))
     print('save successfully!')

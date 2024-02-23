@@ -15,31 +15,55 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--data_dir', type=str, 
                              default='D:/YuAnHuang/kevislin/scALGCN/experiments/wu2021_5000_wu2021_5000_exp0047/data', 
                              help='data directory')
-parser.add_argument('--epochs', type=int, 
-                             default=30, 
-                             help='epochs for training')
+####### Active learning #######
 parser.add_argument('--basef', type=float, 
                              default=0.8, 
                              help='base factor for active learning')
 parser.add_argument('--k_select', type=int, 
                              default=1, 
                              help='num of nodes to select for every iteration')
-parser.add_argument('--wd', type=float, 
-                             default=0.0005, 
-                             help='weight decay')
 parser.add_argument('--init_train_num', type=int, 
                              default=100, 
                              help='for active learning, we will pick some initial nodes for training')
-parser.add_argument('--debug', action='store_true', 
-                             default=True, 
-                             help='debug mode')
 parser.add_argument('--max_per_class', type=int, 
                              default=30, 
                              help='max number of nodes for each class')
 
+####### GT Model #######
+parser.add_argument('--epochs', type=int, 
+                             default=30, 
+                             help='epochs for training')
+
+parser.add_argument('--wd', type=float, 
+                             default=0.0005, 
+                             help='weight decay')
+parser.add_argument('--debug', action='store_true', 
+                             default=True, 
+                             help='debug mode')
+
 parser.add_argument('--gt_lr', type=float,
                              default=1e-3, 
                              help='learning rate for graph transformer')
+parser.add_argument('--hidden_dim', type=int,
+                             default=256, 
+                             help='hidden dim for graph transformer')
+parser.add_argument('--out_dim', type=int,
+                             default=128, 
+                             help='output dim of GTModel, input dim for classifier')
+parser.add_argument('--n_heads', type=int,
+                             default=1, 
+                             help='num of heads for GTModel')
+parser.add_argument('--dropout_rate', type=float,
+                             default=0.2, 
+                             help='dropout rate for GTModel')
+parser.add_argument('--n_layers', type=int, 
+                             default=2, 
+                             help='num of layers for GTModel')
+parser.add_argument('--pos_enc_dim', type=int,
+                             default=8, 
+                             help='positional encoding dim')
+
+####### Graph Learning #######
 parser.add_argument('--adj_lr', type=float,
                              default=1e-3, 
                              help='learning rate for training adj')
@@ -67,25 +91,12 @@ parser.add_argument('--inner_steps', type=int,
 parser.add_argument('--outer_steps', type=int, 
                     default=1, 
                     help='steps for outer optimization')
+parser.add_argument('--adj_thresh', type=float,
+                            default=1e-3,
+                            help='threshold for adj to turn to 0')
 
-parser.add_argument('--hidden_dim', type=int,
-                             default=256, 
-                             help='hidden dim for graph transformer')
-parser.add_argument('--out_dim', type=int,
-                             default=128, 
-                             help='output dim of GTModel, input dim for classifier')
-parser.add_argument('--n_heads', type=int,
-                             default=1, 
-                             help='num of heads for GTModel')
-parser.add_argument('--dropout_rate', type=float,
-                             default=0.2, 
-                             help='dropout rate for GTModel')
-parser.add_argument('--n_layers', type=int, 
-                             default=2, 
-                             help='num of layers for GTModel')
-parser.add_argument('--pos_enc_dim', type=int,
-                             default=8, 
-                             help='positional encoding dim')
+####### Switch #######
+
 parser.add_argument('--layer_norm', action='store_true',
                              default=False, 
                              help='layer norm for GTModel')
@@ -100,9 +111,6 @@ parser.add_argument('--symmetric', action='store_true',
                             default=True,
                             help='whether use symmetric matrix')
 
-parser.add_argument('--adj_thresh', type=float,
-                            default=1e-3,
-                            help='threshold for adj to turn to 0')
 
 parser.add_argument('--adj_training', action='store_true',
                     default=False,
