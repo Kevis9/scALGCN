@@ -72,8 +72,10 @@ for i, group in enumerate(group_list):
     adata.obs_names = names
     adata.var_names = gene_names.iloc[:, 0].tolist()
     adata.obs['cell_type'] = types
-        
-    save_path = os.path.join(old_save_path, group)
+    
+    new_data, _ = random_stratify(types, adata, 6000 / adata.n_obs)    
+    save_path = os.path.join(old_save_path, group+'6000')
+    
     if not os.path.exists(save_path):
         os.makedirs(save_path)    
     adata.write(os.path.join(save_path, 'data.h5ad'), compression='gzip')
