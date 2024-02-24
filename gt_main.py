@@ -14,7 +14,7 @@ parser = argparse.ArgumentParser()
 
 # data config
 parser.add_argument('--data_dir', type=str, 
-                             default='/home/kevislin/scALGCN/experiments/bcp1_bcp2_exp0013', 
+                             default='/home/Users/kevislin/scALGCN/experiments/bcp1_bcp2_exp0013', 
                              help='data directory')
 ####### Active learning #######
 parser.add_argument('--basef', type=float, 
@@ -194,11 +194,11 @@ proj = args.data_dir.split('/')[1]
 with open('config/{:}_acc_{:.3f}.json'.format(proj, test_res), 'w') as f:
     json.dump(vars(args), f)
     
-acc_data = pd.read_csv('result/acc.csv', index=0)
+# acc_data = pd.read_csv('result/acc.csv', index=0)
 
 
-with open("result/acc.csv", 'a') as f:
-    f.write('{:.3f}\n'.format(test_res))
+# with open("result/acc.csv", 'a') as f:
+#     f.write('{:.3f}\n'.format(test_res))
 
     
     
