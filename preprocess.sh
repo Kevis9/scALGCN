@@ -4,22 +4,22 @@
 # second_proj"
 
 
-projects="bcp1_6000-bcp2_6000-exp0050,\
-bcp1_6000-bcp2_6000-exp0047,\
-bcp1_6000-bcp3_6000-exp0013,\
-bcp1_6000-bcp3_6000-exp0050,\
-bcp1_6000-bcp3_6000-exp0047,\
-bcp2_6000-bcp3_6000-exp0013,\
-bcp2_6000-bcp3_6000-exp0047,\
-bcp2_6000-bcp3_6000-exp0050,\
-bcp1_6000-pcp1_6000-exp0013,\
-bcp1_6000-pcp1_6000-exp0038,\
-bcp1_6000-pcp1_6000-exp0050,\
-bcp1_6000-pcp1_6000-exp0047,\
-bcp1_6000-mp1_6000-exp0013,\
-bcp1_6000-mp1_6000-exp0040,\
-bcp1_6000-mp1_6000-exp0050,\
-bcp1_6000-mp1_6000-exp0047"
+projects=("bcp1_6000-bcp2_6000-exp0050" \
+          "bcp1_6000-bcp2_6000-exp0047" \
+          "bcp1_6000-bcp3_6000-exp0013" \
+          "bcp1_6000-bcp3_6000-exp0050" \
+          "bcp1_6000-bcp3_6000-exp0047" \
+          "bcp2_6000-bcp3_6000-exp0013" \
+          "bcp2_6000-bcp3_6000-exp0047" \
+          "bcp2_6000-bcp3_6000-exp0050" \
+          "bcp1_6000-pcp1_6000-exp0013" \
+          "bcp1_6000-pcp1_6000-exp0038" \
+          "bcp1_6000-pcp1_6000-exp0050" \
+          "bcp1_6000-pcp1_6000-exp0047" \
+          "bcp1_6000-mp1_6000-exp0013" \
+          "bcp1_6000-mp1_6000-exp0040" \
+          "bcp1_6000-mp1_6000-exp0050" \
+          "bcp1_6000-mp1_6000-exp0047")
 
 for i in $projects; do
     python preprocess/h5ad2seurat_adaptor.py --dir_name=experiments/$i
