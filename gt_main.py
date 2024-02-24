@@ -151,6 +151,9 @@ g_data, auxilary_g_data, adata, data_info = load_data(args=args, use_auxilary=ar
 max_nodes_num = data_info['class_num'] * args.max_per_class
 data_info['max_nodes_num'] = max_nodes_num
 
+# For debug information
+print("data path is {:}, \n ref_data num: {:}, \nquery_data num :{:}, \n auxilary data num:{:}".format(args.data_dir, adata.uns['n_ref'], adata.uns['n_query'], auxilary_g_data.num_nodes()))
+
 if args.add_pos_enc:
     g_data.ndata['PE'] = dgl.lap_pe(g_data, k=args.pos_enc_dim, padding=True)
     auxilary_g_data.ndata['PE'] = dgl.lap_pe(auxilary_g_data, k=args.pos_enc_dim, padding=True)
