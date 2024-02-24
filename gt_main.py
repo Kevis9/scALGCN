@@ -14,7 +14,7 @@ parser = argparse.ArgumentParser()
 
 # data config
 parser.add_argument('--data_dir', type=str, 
-                             default='/home/Users/kevislin/scALGCN/experiments/bcp1_bcp2_exp0013', 
+                             default='/home/Users/kevislin/scALGCN/experiments/bcp1_6000_bcp2_6000_exp0013', 
                              help='data directory')
 ####### Active learning #######
 parser.add_argument('--basef', type=float, 
