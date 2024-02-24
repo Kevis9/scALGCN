@@ -120,7 +120,7 @@ class ProGNN:
                                labels=labels,
                                epoch=epoch,
                                criterion=criterion,
-                               edge_index=torch.stack(g_data.edges()).to(device))
+                               edge_index=torch.stack(g_data.edges()).to(self.device))
                                 
                 
                 if args.active_learning:
