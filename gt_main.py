@@ -211,7 +211,7 @@ if not args.use_auxilary:
 with open('config/{:}-{:}-{:}_acc_{:.3f}.json'.format(ref_proj, query_proj, auxilary_proj, test_res), 'w') as f:
     json.dump(vars(args), f)
     
-acc_data = pd.read_csv('result/acc.csv', index=0)
+acc_data = pd.read_csv('result/acc.csv', index_col=0)
 second_key = 'GT'
 if args.add_pos_enc:
     second_key += ' + pos'
