@@ -153,10 +153,11 @@ class GTModel(nn.Module):
         )
     
     def get_embeddings(self, g_data, args):
-        self.eval()        
-        adj = g_data.adjacency_matrix().to_dense().to(device)
+        self.eval()                
+        # 这里edge_index 变成 torch.tensor([[srt...], [dst...]])                  
+        print("type model adj shape is {:}".format(g_data.adjacency_matrix().to_dense().shape))      
         
-        edge_index = adj.nonzero().T                
+        edge_index = torch.stack(g_data.edges())
         indices = edge_index.to(device)        
         features = g_data.ndata['x'].to(device)    
         if args.add_pos_enc: 

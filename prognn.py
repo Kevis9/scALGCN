@@ -62,9 +62,8 @@ class ProGNN:
         self.model_optimizer = optim.Adam(self.model.parameters(),
                                lr=args.gt_lr, weight_decay=args.wd)
         
-        # 不需要转为numpy
-        adj = g_data.adjacency_matrix().to_dense().to(self.device)
-        save_eidx = adj.nonzero().t().cpu().numpy()        
+        # 不需要转为numpy        
+        save_eidx = torch.stack(g_data.edges()).cpu().numpy()
         np.savetxt('old_graph.csv', save_eidx, delimiter=',')        
                 
         estimator = EstimateAdj(adj, symmetric=args.symmetric, device=self.device).to(self.device)
@@ -120,8 +119,9 @@ class ProGNN:
                                features=node_x,                               
                                labels=labels,
                                epoch=epoch,
-                               criterion=criterion)
-                
+                               criterion=criterion,
+                               edge_index=torch.stack(g_data.edges()).to(device))
+                                
                 
                 if args.active_learning:
                     # will change outer data_info (the parameter is reference)
@@ -141,15 +141,17 @@ class ProGNN:
         print("picking the best model according to validation performance")
         self.model.load_state_dict(self.weights)
 
-    def train_gnn(self, adj, features, labels, epoch, criterion):
+    def train_gnn(self, adj, features, labels, epoch, criterion, edge_index=None):
         args = self.args
         labels = labels.to(self.device)
         if args.debug:
             print("\n=== train_gnn ===")                
-        adj = adj.detach().clone()
-        # 尝试调整adj的阈值
-        adj[adj < self.args.adj_thresh] = 0              
-        edge_index = adj.nonzero().T
+        
+        # adj = adj.detach().clone()
+        # # 尝试调整adj的阈值
+        # adj[adj < self.args.adj_thresh] = 0              
+        # edge_index = adj.nonzero().T
+        
                 
         t = time.time()
         self.model.train()
@@ -319,7 +321,7 @@ class ProGNN:
                       'loss_nuclear: {:.4f}'.format(loss_nuclear.item()))
 
 
-    def test(self, features, idx_test, labels):
+    def test(self, features, idx_test, labels, edge_index=None):
         """
             Evaluate the performance of ProGNN on test set
         """
@@ -336,7 +338,8 @@ class ProGNN:
             adj = self.estimator.get_estimated_adj()
         
         adj[adj < self.args.adj_thresh] = 0
-        edge_index = adj.nonzero().T                 
+        # edge_index = adj.nonzero().T                 
+        
         output = self.model(edge_index, features)                
         save_eidx = edge_index.detach().cpu().numpy()
         np.savetxt('new_graph.csv', save_eidx, delimiter=',')
