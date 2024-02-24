@@ -105,11 +105,11 @@ parser.add_argument('--batch_norm', action='store_true',
                              default=True, 
                              help='Batch norm for GTModel')
 parser.add_argument('--residual', action='store_true',
-                             default=False, 
+                             default=True, 
                              help='residual for GTModel')
 
 parser.add_argument('--symmetric', action='store_true', 
-                            default=True,
+                            default=False,
                             help='whether use symmetric matrix')
 
 
