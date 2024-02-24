@@ -41,10 +41,16 @@ ref_data = ref_data[ref_idx, :]
 query_data = query_data[query_idx, :]
 
 
-# secode: gene intersection, we don't need to change the data here, since the slice operation will happen in preprocess.R
-common_gene = list(set(ref_data_h5.var_names.tolist()) & set(query_data_h5.var_names.tolist()) & set(auxilary_data_h5.var_names.tolist()))
-common_gene_df = pd.DataFrame(common_gene, columns=['gene_name'])
-common_gene_df.to_csv(os.path.join(dir_name, 'raw_data', 'common_gene_middle.csv'), index=False)
+# secode: gene intersection will happen in the preprocess.R
+# But need to provide original gene information for ref and query
+ref_gene = pd.DataFrame(ref_data_h5.var_names, columns=['gene_name'])
+query_gene = pd.DataFrame(query_data_h5.var_names, columns=['gene_name'])
+auxilary_gene = pd.DataFrame(auxilary_data_h5.var_names, columns=['gene_name'])
+
+ref_gene.to_csv(os.path.join(dir_name, 'raw_data', 'ref_gene_middle.csv'), index=False)
+query_gene.to_csv(os.path.join(dir_name, 'raw_data', 'query_gene_middle.csv'), index=False)
+auxilary_gene.to_csv(os.path.join(dir_name, 'raw_data', 'auxilary_gene_middle.csv'), index=False)
+
 
 
 ref_label = pd.DataFrame(ref_label, columns=['cell_type'])
