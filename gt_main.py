@@ -130,7 +130,7 @@ parser.add_argument('--is_auxilary', action='store_true',
                     help='is auxilari model?')
 
 parser.add_argument('--use_auxilary', action='store_true',
-                    default=True,
+                    default=False,
                     help='for GTModel, whether use auxilary model')
 
 parser.add_argument('--exp_reverse', action='store_true',
