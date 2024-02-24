@@ -42,7 +42,7 @@ genes_df = pd.read_csv(os.path.join(dir_name, 'data', 'selected_genes_middle.csv
 genes = genes_df.iloc[:, 0].tolist()
 
 ref_name = pd.read_csv(os.path.join(dir_name, 'raw_data', 'ref_name_middle.csv'))
-query_name = pd.read_csv(os.path.join(dir_name, 'raw_data', 'ref_name_middle.csv'))
+query_name = pd.read_csv(os.path.join(dir_name, 'raw_data', 'query_name_middle.csv'))
 
 ref_label = pd.read_csv(os.path.join(dir_name, 'raw_data', 'ref_label_middle.csv'))
 query_label = pd.read_csv(os.path.join(dir_name, 'raw_data', 'query_label_middle.csv'))

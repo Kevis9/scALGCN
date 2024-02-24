@@ -27,7 +27,8 @@ ref_data = ref_data_h5.X
 query_data = query_data_h5.X
 auxilary_data = auxilary_data_h5.X
 ref_cell_types = np.array(ref_data_h5.obs['cell_type'].tolist())
-query_cell_types = np.array(ref_data_h5.obs['cell_type'].tolist())
+query_cell_types = np.array(query_data_h5.obs['cell_type'].tolist())
+
 common_types = list(set(ref_cell_types) & set(query_cell_types))
 ref_idx = np.where(np.isin(ref_cell_types, common_types))[0]
 query_idx = np.where(np.isin(query_cell_types, common_types))[0]
