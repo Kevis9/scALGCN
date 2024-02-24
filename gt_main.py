@@ -14,7 +14,7 @@ parser = argparse.ArgumentParser()
 
 # data config
 parser.add_argument('--data_dir', type=str, 
-                             default='/home/Users/kevislin/scALGCN/experiments/bcp1_6000_bcp2_6000_exp0013', 
+                             default='/home/Users/kevislin/scALGCN/experiments/bcp1_6000-bcp2_6000-exp0013', 
                              help='data directory')
 ####### Active learning #######
 parser.add_argument('--basef', type=float, 
@@ -208,7 +208,7 @@ if args.exp_reverse:
 if not args.use_auxilary:
     auxilary_proj = ''
 
-with open('config/{:}-{:}-{:}_acc_{:.3f}.json'.format(proj, test_res), 'w') as f:
+with open('config/{:}-{:}-{:}_acc_{:.3f}.json'.format(ref_proj, query_proj, auxilary_proj, test_res), 'w') as f:
     json.dump(vars(args), f)
     
 acc_data = pd.read_csv('result/acc.csv', index=0)
