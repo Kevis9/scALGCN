@@ -65,7 +65,7 @@ class ProGNN:
         # 不需要转为numpy        
         save_eidx = torch.stack(g_data.edges()).cpu().numpy()
         np.savetxt('old_graph.csv', save_eidx, delimiter=',')        
-                
+        adj = g_data.adjacency_matrix().to_dense()
         estimator = EstimateAdj(adj, symmetric=args.symmetric, device=self.device).to(self.device)
         self.estimator = estimator
         self.model_optimizer_adj = optim.SGD(estimator.parameters(),
