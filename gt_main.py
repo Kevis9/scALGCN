@@ -193,16 +193,38 @@ print("acc is {:.3f}".format(test_res))
 
 
 # save config
-proj = args.data_dir.split('/')[1]
-with open('config/{:}_acc_{:.3f}.json'.format(proj, test_res), 'w') as f:
+ref_proj = proj.split('-')[0]
+query_proj = proj.split('-')[1]
+auxilary_proj = proj.split('-')[2]
+
+if args.exp_reverse:
+    tmp = ref_proj
+    ref_proj = query_proj
+    query_proj = tmp
+
+if not args.use_auxilary:
+    auxilary_proj = ''
+
+with open('config/{:}-{:}-{:}_acc_{:.3f}.json'.format(proj, test_res), 'w') as f:
     json.dump(vars(args), f)
     
-# acc_data = pd.read_csv('result/acc.csv', index=0)
+acc_data = pd.read_csv('result/acc.csv', index=0)
+second_key = 'GT'
+if args.add_pos_enc:
+    second_key += ' + pos'
 
+if args.active_learning:
+    second_key += ' + AL'
 
-# with open("result/acc.csv", 'a') as f:
-#     f.write('{:.3f}\n'.format(test_res))
+if args.adj_training:
+    second_key += ' + GL'
+    
+last_proj = ref_proj + '-' + query_proj
+if args.use_auxilary:
+    last_proj += ('-' + auxilary_proj)
 
+acc_data.loc[last_proj][second_key] = test_res
+acc_data.to_csv('result/acc.csv')
     
     
 

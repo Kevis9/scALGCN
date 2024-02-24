@@ -175,12 +175,15 @@ def random_stratify_sample_with_train_idx(ref_labels, train_idx, train_class_num
 
 
 def get_anndata(args):
-    data_dir = args.data_dir    
-    # 判断是否存在一个叫做all_data.h5ad的文件        
-    # h5ad_file = os.path.join(data_dir, 'all_data.h5ad')    
+    data_dir = args.data_dir                
+    if args.exp_reverse:
+        # ref和query对调
+        ref_data_h5 = ad.read(os.path.join(data_dir, 'query_data.h5ad'))
+        query_data_h5 = ad.read(os.path.join(data_dir, 'ref_data.h5ad'))
+    else:
+        ref_data_h5 = ad.read(os.path.join(data_dir, 'ref_data.h5ad'))
+        query_data_h5 = ad.read(os.path.join(data_dir, 'query_data.h5ad'))
     
-    ref_data_h5 = ad.read(os.path.join(data_dir, 'ref_data.h5ad'))
-    query_data_h5 = ad.read(os.path.join(data_dir, 'query_data.h5ad'))
     auxilary_data_h5 = ad.read(os.path.join(data_dir, 'auxilary_data.h5ad'))
     
     ref_data = ref_data_h5.X.toarray()
@@ -207,8 +210,11 @@ def get_anndata(args):
     adata.uns['auxilary_edge_index'] = auxilary_edge_index                                        
     adata.uns['n_ref'] = ref_data_h5.n_obs
     adata.uns['n_query'] = query_data_h5.n_obs
-    adata.write(os.path.join(data_dir, 'all_data.h5ad'))
-    # TODO: 处理reverse
+    if args.exp_reverse:
+        adata.write(os.path.join(data_dir, 'all_data_reverse.h5ad'))
+    else:
+        adata.write(os.path.join(data_dir, 'all_data.h5ad'))
+    
     return adata, adata.uns['n_ref'], adata.uns['n_query']
     
 
