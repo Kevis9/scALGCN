@@ -9,7 +9,7 @@ from pgd import PGD, prox_operators
 import warnings
 import networkx as nx
 from utils import centralissimo, accuracy, active_learning
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, f1_score
 
 class ProGNN:
     """ ProGNN (Properties Graph Neural Network). See more details in Graph Structure Learning for Robust Graph Neural Networks, KDD 2020, https://arxiv.org/abs/2005.10203.
@@ -358,10 +358,12 @@ class ProGNN:
             return loss_test.item()
         else:            
             acc_test = accuracy(output[idx_test], labels[idx_test])
+            macrof1_test = f1_score(output[idx_test].detach().cpu().numpy(), labels[idx_test].detach().cpu().numpy())
+            
             print("\tTest set results:",
                 "loss= {:.4f}".format(loss_test.item()),
                 "accuracy= {:.4f}".format(acc_test.item()))
-            return acc_test.item()
+            return acc_test.item(), macrof1_test, output[idx_test].detach().cpu().numpy() 
         
 
     def feature_smoothing(self, adj, X):

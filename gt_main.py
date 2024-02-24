@@ -211,7 +211,6 @@ if not args.use_auxilary:
 with open('config/{:}-{:}-{:}_acc_{:.3f}.json'.format(ref_proj, query_proj, auxilary_proj, test_res), 'w') as f:
     json.dump(vars(args), f)
     
-acc_data = pd.read_csv('result/acc.csv', index_col=0)
 second_key = 'GT'
 if args.add_pos_enc:
     second_key += ' + pos'
@@ -222,12 +221,39 @@ if args.active_learning:
 if args.adj_training:
     second_key += ' + GL'
     
-last_proj = ref_proj + '-' + query_proj
+first_key = ref_proj + '-' + query_proj
 if args.use_auxilary:
-    last_proj += ('-' + auxilary_proj)
+    first_key += ('-' + auxilary_proj)
 
-acc_data.loc[last_proj][second_key] = test_res
+acc_data = pd.read_csv('result/acc.csv', index_col=0)
+acc_data.loc[first_key][second_key] = test_res[0]
 acc_data.to_csv('result/acc.csv')
-    
-    
 
+f1_data = pd.read_csv('result/macro-f1.csv', index_col=0)
+f1_data.loc[first_key][second_key] = test_res[1]
+f1_data.to_csv('result/macro-f1.csv')
+
+# save query_true.csv, query_predict.csv
+query_true = data_info['label_encoder'].inverse_transform(g_data.ndata['y_true'].numpy())
+query_predict = data_info['label_encoder'].inverse_transform(test_res[2])
+
+query_true_df = pd.DataFrame(query_true, columns=['cell_type'])
+query_predict_df = pd.DataFrame(query_predict, columns=['cell_type'])
+
+exp_save_path = os.path.join('result', first_key + '_' + second_key)
+if not os.path.exists(exp_save_path):
+    os.makedirs(exp_save_path)
+
+query_true_df.to_csv(os.path.join(exp_save_path, 'query_true.csv'), index=False)
+query_predict_df.to_csv(os.path.join(exp_save_path, 'query_predict.csv'), index=False)
+
+# save ref embeedings and query embeedings and auxilary embeddings
+if args.use_auxilary:
+    np.save(os.path.join(exp_save_path, 'auxilary_embeddings.npy'), auxilary_embeddings.detach().cpu().numpy())
+
+ref_query_embeddings = type_model.get_embeddings(g_data=g_data, args=args).detach().cpu().numpy()
+ref_embeddings = ref_query_embeddings[:adata.uns['n_ref']]
+query_embeddings = ref_query_embeddings[adata.uns['n_ref']:]
+
+np.save(os.path.join(exp_save_path, 'ref_embeddings.npy'), ref_embeddings)
+np.save(os.path.join(exp_save_path, 'query_embeddings.npy'), query_embeddings)
