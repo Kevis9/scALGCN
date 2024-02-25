@@ -208,7 +208,7 @@ if args.exp_reverse:
 if not args.use_auxilary:
     auxilary_proj = ''
 
-with open('config/{:}-{:}-{:}_acc_{:.3f}.json'.format(ref_proj, query_proj, auxilary_proj, test_res), 'w') as f:
+with open('config/{:}-{:}-{:}_acc_{:.3f}.json'.format(ref_proj, query_proj, auxilary_proj, test_res[0]), 'w') as f:
     json.dump(vars(args), f)
     
 second_key = 'GT'
