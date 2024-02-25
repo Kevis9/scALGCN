@@ -360,7 +360,8 @@ class ProGNN:
         else:            
             acc_test = accuracy(output[idx_test], labels[idx_test])
             macrof1_test = f1_score(output[idx_test].detach().cpu().numpy(), labels[idx_test].detach().cpu().numpy(), average='macro')
-            
+            print(output[idx_test].detach().cpu().numpy().shape)
+            print(labels[idx_test].detach().cpu().numpy().shape)
             print("\tTest set results:",
                 "loss= {:.4f}".format(loss_test.item()),
                 "accuracy= {:.4f}".format(acc_test.item()))
