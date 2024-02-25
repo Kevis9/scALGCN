@@ -172,7 +172,7 @@ class GTModel(nn.Module):
         for layer in self.layers:
             h = layer(A, h)
 
-        if not args.is_auxilary and args.use_auxilary and self.state_embeddings:
+        if not args.is_auxilary and args.use_auxilary and self.state_embeddings is not None:
             h = h + self.state_embeddings
         
         return h
