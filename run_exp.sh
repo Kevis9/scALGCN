@@ -19,9 +19,9 @@
 #           "bcp1_6000-mp1_6000-exp0047")
 
 projects=("bcp1_6000-bcp2_6000-exp0013" \
-          "bcp1_6000-bcp2_6000-exp0013")
+          "bcp1_6000-bcp2_6000-exp0050")
 
-for i in $projects; do
+for i in ${projects[@]}; do
     # ref_query_auxilary
     python gt_main.py --data_dir=./experiments/$i  --use_auxilary
     # python gt_main.py --add_pos_enc --data_dir=./experiments/$i --use_auxilary
