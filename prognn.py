@@ -358,10 +358,8 @@ class ProGNN:
             print("scALGT regression mse: {:.3f}, mae: {:.3f}, r2: {:.3f}".format(mse, mae, r2))            
             return loss_test.item()
         else:            
-            acc_test = accuracy(output[idx_test], labels[idx_test])
-            print(output[idx_test].detach().cpu().numpy().shape)
-            print(labels[idx_test].detach().cpu().numpy().shape)
-            macrof1_test = f1_score(output[idx_test].detach().cpu().numpy(), labels[idx_test].detach().cpu().numpy(), average='macro')
+            acc_test = accuracy(output[idx_test], labels[idx_test])            
+            macrof1_test = f1_score(torch.argmax(output[idx_test], dim=1).cpu().numpy(), labels[idx_test].detach().cpu().numpy(), average='macro')
             
             print("\tTest set results:",
                 "loss= {:.4f}".format(loss_test.item()),
