@@ -226,14 +226,15 @@ class ProGNN:
         self.model_optimizer_adj.zero_grad()
 
         loss_l1 = torch.norm(estimator.estimated_adj, 1)
-        loss_fro = torch.norm(estimator.estimated_adj - original_adj, p='fro')
-        estimated_adj = estimator.get_estimated_adj()
+        loss_fro = torch.norm(estimator.estimated_adj - original_adj, p='fro')        
+        estimated_adj = estimator.get_estimated_adj().clone().detach()
         
         if args.lambda_:
             loss_smooth_feat = self.feature_smoothing(estimator.estimated_adj, features)
         else:
             loss_smooth_feat = 0 * loss_l1
-                
+
+        
         estimated_adj[estimated_adj < self.args.adj_thresh] = 0
         edge_index = estimated_adj.nonzero().T        
         
@@ -280,7 +281,7 @@ class ProGNN:
         # Evaluate validation set performance separately,
         # deactivates dropout during validation run.
         self.model.eval()
-        estimated_adj = estimator.get_estimated_adj()
+        estimated_adj = estimator.get_estimated_adj().clone().detach()
         estimated_adj[estimated_adj < self.args.adj_thresh] = 0
         edge_index = estimated_adj.nonzero().T           
         output = self.model(edge_index, features)
