@@ -18,14 +18,15 @@
 #           "bcp1_6000-mp1_6000-exp0050" \
 #           "bcp1_6000-mp1_6000-exp0047")
 
-projects=("bcp1_6000-bcp2_6000-exp0013")
+projects=("bcp1_6000-bcp2_6000-exp0013" \
+          "bcp1_6000-bcp2_6000-exp0013")
 
 for i in $projects; do
     # ref_query_auxilary
-    # python gt_main.py --data_dir=./experiments/$i  --use_auxilary
+    python gt_main.py --data_dir=./experiments/$i  --use_auxilary
     # python gt_main.py --add_pos_enc --data_dir=./experiments/$i --use_auxilary
     # python gt_main.py --active_learning --data_dir=./experiments/$i --use_auxilary
-    python gt_main.py --adj_training --data_dir=./experiments/$i --use_auxilary
+    # python gt_main.py --adj_training --data_dir=./experiments/$i --use_auxilary
     # python gt_main.py --adj_training --add_pos_enc --active_learning --data_dir=./experiments/$i --use_auxilary
     
     # ref_query
