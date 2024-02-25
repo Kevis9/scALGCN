@@ -192,7 +192,7 @@ test_res = prognn.test(features=g_data.ndata['x'].to(device),
                        edge_index=torch.stack(g_data.edges()).to(device))
 
 
-print("acc is {:.3f}".format(test_res))
+print("acc is {:.3f}".format(test_res[0]))
 
 
 # save config
