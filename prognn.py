@@ -364,7 +364,7 @@ class ProGNN:
             print("\tTest set results:",
                 "loss= {:.4f}".format(loss_test.item()),
                 "accuracy= {:.4f}".format(acc_test.item()))
-            return acc_test.item(), macrof1_test, output[idx_test].detach().cpu().numpy() 
+            return acc_test.item(), macrof1_test, torch.argmax(output[idx_test], dim=1).detach().cpu().numpy() 
         
 
     def feature_smoothing(self, adj, X):
