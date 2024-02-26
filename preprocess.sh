@@ -4,7 +4,7 @@
 # second_proj"
 
 
-projects=("bcp1_6000-bcp2_6000-exp0050" \
+projects=(    
           "bcp1_6000-bcp2_6000-exp0047" \
           "bcp1_6000-bcp3_6000-exp0013" \
           "bcp1_6000-bcp3_6000-exp0050" \
@@ -21,7 +21,7 @@ projects=("bcp1_6000-bcp2_6000-exp0050" \
           "bcp1_6000-mp1_6000-exp0050" \
           "bcp1_6000-mp1_6000-exp0047")
 
-for i in $projects; do
+for i in ${projects[@]}; do
     python preprocess/h5ad2seurat_adaptor.py --dir_name=experiments/$i
     Rscript preprocess/preprocess.R experiments/$i
     python preprocess/seurat2h5ad_adaptor.py --dir_name=experiments/$i
