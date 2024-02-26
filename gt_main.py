@@ -39,7 +39,7 @@ parser.add_argument('--wd', type=float,
                              default=0.0005, 
                              help='weight decay')
 parser.add_argument('--debug', action='store_true', 
-                             default=True, 
+                             default=False, 
                              help='debug mode')
 
 parser.add_argument('--gt_lr', type=float,
@@ -133,10 +133,6 @@ parser.add_argument('--use_auxilary', action='store_true',
                     default=False,
                     help='for GTModel, whether use auxilary model')
 
-parser.add_argument('--exp_reverse', action='store_true',
-                    default=False,
-                    help='reverse ref_data and query_data')
-
 
 args = parser.parse_args()
 
@@ -200,11 +196,6 @@ ref_proj = proj.split('-')[0]
 query_proj = proj.split('-')[1]
 auxilary_proj = proj.split('-')[2]
 
-if args.exp_reverse:
-    tmp = ref_proj
-    ref_proj = query_proj
-    query_proj = tmp
-
 if not args.use_auxilary:
     auxilary_proj = ''
 
@@ -225,6 +216,7 @@ first_key = ref_proj + '-' + query_proj
 if args.use_auxilary:
     first_key += ('-' + auxilary_proj)
 
+print("experimens {:}_{:} finished".format(first_key, second_key))
 acc_data = pd.read_csv('result/acc.csv', index_col=0)
 acc_data.loc[first_key][second_key] = test_res[0]
 acc_data.to_csv('result/acc.csv')
@@ -257,3 +249,4 @@ query_embeddings = ref_query_embeddings[adata.uns['n_ref']:]
 
 np.save(os.path.join(exp_save_path, 'ref_embeddings.npy'), ref_embeddings)
 np.save(os.path.join(exp_save_path, 'query_embeddings.npy'), query_embeddings)
+
