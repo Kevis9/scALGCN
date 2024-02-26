@@ -152,7 +152,8 @@ print("data path is {:}, \n ref_data num: {:}, \nquery_data num :{:}, \n auxilar
 
 if args.add_pos_enc:
     g_data.ndata['PE'] = dgl.lap_pe(g_data, k=args.pos_enc_dim, padding=True)
-    auxilary_g_data.ndata['PE'] = dgl.lap_pe(auxilary_g_data, k=args.pos_enc_dim, padding=True)
+    if args.use_auxilary:
+        auxilary_g_data.ndata['PE'] = dgl.lap_pe(auxilary_g_data, k=args.pos_enc_dim, padding=True)
 
 if args.use_auxilary:
     auxilary_model = GTModel(args=args,
