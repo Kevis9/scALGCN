@@ -99,8 +99,11 @@ class ProGNN:
             
         # Train model
         t_total = time.time()
+        if args.active_learning:
+            graph = nx.Graph(adj.detach().cpu().numpy())
+            norm_centrality = centralissimo(graph)
+                            
         for epoch in range(args.epochs):
-            
             if args.adj_training:
                 # Update S
                 for i in range(int(args.outer_steps)):
@@ -109,10 +112,6 @@ class ProGNN:
                          
             updated_adj = self.estimator.get_estimated_adj()            
             # after updating S, need to calculate the norm centrailty again for selecting new nodes
-            # ======= graph active learning ======                    
-            if args.active_learning:
-                graph = nx.Graph(updated_adj.detach().cpu().numpy())
-                norm_centrality = centralissimo(graph) 
             
             for i in range(int(args.inner_steps)):
                 prob = self.train_gnn(adj=updated_adj, 
