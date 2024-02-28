@@ -22,7 +22,6 @@ read_gene <- function(path, file_name) {
     path = paste(path, '/', file_name, '.csv', sep='')
     gene = as.matrix(read.csv(path))
     return (gene)
-    
 }
 read_label <- function(path, label_name) {
     #return matrix
