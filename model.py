@@ -17,7 +17,7 @@ from graphtransformer.layers.graph_transformer_layer import GraphTransformerLaye
 from graphtransformer.layers.mlp_readout_layer import MLPReadout
 
 
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 class SparseMHA(nn.Module):

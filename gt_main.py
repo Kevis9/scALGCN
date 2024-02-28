@@ -8,7 +8,7 @@ import json
 import argparse
 from prognn import ProGNN
 import pandas as pd
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 parser = argparse.ArgumentParser()
 

@@ -19,7 +19,7 @@ from sklearn.metrics import accuracy_score
 from model import GTModel
 
 
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def setup_seed(seed=32):
     dgl.seed(seed)
