@@ -2,7 +2,7 @@ suppressPackageStartupMessages(library(Seurat))
 suppressPackageStartupMessages(library(CHETAH))
 suppressPackageStartupMessages(library(SingleR))
 suppressPackageStartupMessages(library(scmap))
-suppressPackageStartupMessages(library(conos))
+# suppressPackageStartupMessages(library(conos))
 suppressPackageStartupMessages(library(pagoda2))
 suppressPackageStartupMessages(library(Matrix))
 
