@@ -428,7 +428,6 @@ for(i in 1:length(project)){
 
     acc = c(
         main(data, 'seurat_pca', proj)
-#         main(data, 'seurat_cca', proj),
         main(data, 'singler', proj),
         main(data, 'scmap', proj),
         main(data, 'chetah', proj)
