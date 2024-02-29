@@ -126,8 +126,8 @@ seurat_pca_pred <- function(ref_data, query_data, ref_label, query_label, proj_n
     # reurn prediction (matrix)
     # ref_data = as.data.frame(ref_data)
     # query_data = as.data.frame(query_data)
-    # ref_label = as.data.frame(ref_label)
-    # query_label = as.data.frame(query_label)
+    ref_label = as.data.frame(ref_label)
+    query_label = as.data.frame(query_label)
 
 
 
@@ -159,12 +159,10 @@ seurat_pca_pred <- function(ref_data, query_data, ref_label, query_label, proj_n
     reference.object <- RunPCA(reference.object, npcs = 30, verbose = FALSE)
     reference.anchors <- FindTransferAnchors(reference = reference.object, query = query.object, dims = 1:30, reduction='pcaproject', reference.reduction='pca')
     reference.object = RunUMAP(reference.object, dims = 1:30, return.model = TRUE)
-#     predictions <- TransferData(anchorset = reference.anchors, refdata = as.factor(reference.object$type), dims = 1:30)
-    print("OK1")
-    query <-  MapQuery(anchorset = reference.anchors, reference = reference.object, query = query.object,
-    print("OK2")
+#     predictions <- TransferData(anchorset = reference.anchors, refdata = as.factor(reference.object$type), dims = 1:30)    
+    query <-  MapQuery(anchorset = reference.anchors, reference = reference.object, query = query.object,    
     refdata = list(celltype = "type"), reduction.model = "umap")
-
+    
     pred = query$predicted.celltype
 
     prob = pmax(as.matrix(query$predicted.celltype.score))
