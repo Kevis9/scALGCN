@@ -2,30 +2,30 @@
 
 dir_name=(
     "bcp1_6000-bcp2_6000-exp0013" \
-    # "bcp2_6000-bcp3_6000-exp0013" \
-    # "bcp1_6000-pcp1_6000-exp0013" \
-    # "bcp1_6000-mp1_6000-exp0013" \
-    # "bcp2_6000-bcp1_6000-exp0013" \
-    # "bcp3_6000-bcp1_6000-exp0013" \
-    # "bcp3_6000-bcp2_6000-exp0013" \
-    # "pcp1_6000-bcp1_6000-exp0013" \
-    # "mp1_6000-bcp1_6000-exp0013" \
+    "bcp2_6000-bcp3_6000-exp0013" \
+    "bcp1_6000-pcp1_6000-exp0013" \
+    "bcp1_6000-mp1_6000-exp0013" \
+    "bcp2_6000-bcp1_6000-exp0013" \
+    "bcp3_6000-bcp1_6000-exp0013" \
+    "bcp3_6000-bcp2_6000-exp0013" \
+    "pcp1_6000-bcp1_6000-exp0013" \
+    "mp1_6000-bcp1_6000-exp0013" \
 )
 
 projs=(
     "bcp1_6000-bcp2_6000" \
-    # "bcp2_6000-bcp3_6000" \
-    # "bcp1_6000-pcp1_6000" \
-    # "bcp1_6000-mp1_6000" \
-    # "bcp2_6000-bcp1_6000" \
-    # "bcp3_6000-bcp1_6000" \
-    # "bcp3_6000-bcp2_6000" \
-    # "pcp1_6000-bcp1_6000" \
-    # "mp1_6000-bcp1_6000" \
+    "bcp2_6000-bcp3_6000" \
+    "bcp1_6000-pcp1_6000" \
+    "bcp1_6000-mp1_6000" \
+    "bcp2_6000-bcp1_6000" \
+    "bcp3_6000-bcp1_6000" \
+    "bcp3_6000-bcp2_6000" \
+    "pcp1_6000-bcp1_6000" \
+    "mp1_6000-bcp1_6000" \
 )
 
 # 获取数组长度
-length=${#projs[@]}q
+length=${#projs[@]}
 
 for ((i = 0; i < length; i++)); do
    python h5_adaptor.py --dir_name=/home/Users/kevislin/scALGCN/experiments/${dir_name[i]} --proj=${projs[i]}

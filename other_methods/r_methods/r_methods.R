@@ -174,7 +174,7 @@ seurat_pca_pred <- function(ref_data, query_data, ref_label, query_label, proj_n
     if(!file.exists(save_path)) {
         dir.create(save_path)
     }
-    save_path = paste("result", proj_name, 'seurat_pca', sep='/')
+    save_path = paste("result", proj_name, 'seurat', sep='/')
     if(!file.exists(save_path)) {
         dir.create(save_path)
     }
@@ -412,33 +412,23 @@ proj = args[[2]]
 
 
 
-for(i in 1:length(project)){
+data_path = paste(base_path,'raw_data', sep='/')
+data = read_ref_query_data_label(data_path)
 
-    data_path = paste(base_path,'raw_data', sep='/')
-    data = read_ref_query_data_label(data_path)
+query_label = data[[4]]
+    
+save_labels(query_label,proj, "seurat")
+save_labels(query_label,proj, "scmap")    
+save_labels(query_label,proj, "chetah")
+save_labels(query_label, proj, "singler")
 
-    query_label = data[[4]]
-        
-    save_labels(query_label,proj, "seurat")
-    save_labels(query_label,proj, "scmap")    
-    save_labels(query_label,proj, "chetah")
-    save_labels(query_label, proj, "singler")
+print("数据读取完成")
 
-    print("数据读取完成")
-
-    acc = c(
-        main(data, 'seurat_pca', proj)
-        main(data, 'singler', proj),
-        main(data, 'scmap', proj),
-        main(data, 'chetah', proj)
-    )
-    acc = as.matrix(acc)
-    dim(acc) = rev(dim(acc))
-    print(acc)
-    # colnames(acc) = c('seurat_pca','seurat_cca','singler', 'scmap', 'chetah')
-    final_acc[[length(final_acc)+1]] = acc
-}
-final_acc = do.call(rbind, final_acc)
-# rownames(final_acc) = project
-print(final_acc)
-# write.csv(final_acc, file='result/acc_data_platform_reverse.csv')
+acc = c(
+    main(data, 'seurat', proj),
+    main(data, 'singler', proj),
+    main(data, 'scmap', proj),
+    main(data, 'chetah', proj)
+)
+acc = as.matrix(acc)
+print(acc)
