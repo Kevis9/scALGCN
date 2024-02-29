@@ -50,6 +50,8 @@ read_ref_query_data_label <- function(path) {
     query_gene = read_gene(query_gene_path)
     query_name = read_name(query_name_path)
 
+    ref_label[ref_label == "Unassigned"] <- "unassigned"
+    query_label[query_label == "Unassigned"] <- "unassigned"
 
     rownames(ref_data) = ref_gene
     rownames(query_data) = query_gene
