@@ -53,7 +53,9 @@ read_ref_query_data_label <- function(path) {
 
     rownames(ref_data) = ref_gene
     rownames(query_data) = query_gene
-    
+    colnames(ref_data) = ref_name
+    colnames(query_data) = query_name
+
     # gene intersection
     inter_genes = intersect(rownames(ref_data), rownames(query_data))
     ref_data = ref_data[inter_genes, ]
@@ -122,10 +124,10 @@ seurat_pca_pred <- function(ref_data, query_data, ref_label, query_label, proj_n
 
     # all input data must be matrix
     # reurn prediction (matrix)
-    ref_data = as.data.frame(ref_data)
-    query_data = as.data.frame(query_data)
-    ref_label = as.data.frame(ref_label)
-    query_label = as.data.frame(query_label)
+    # ref_data = as.data.frame(ref_data)
+    # query_data = as.data.frame(query_data)
+    # ref_label = as.data.frame(ref_label)
+    # query_label = as.data.frame(query_label)
 
 
 
@@ -158,7 +160,9 @@ seurat_pca_pred <- function(ref_data, query_data, ref_label, query_label, proj_n
     reference.anchors <- FindTransferAnchors(reference = reference.object, query = query.object, dims = 1:30, reduction='pcaproject', reference.reduction='pca')
     reference.object = RunUMAP(reference.object, dims = 1:30, return.model = TRUE)
 #     predictions <- TransferData(anchorset = reference.anchors, refdata = as.factor(reference.object$type), dims = 1:30)
+    print("OK1")
     query <-  MapQuery(anchorset = reference.anchors, reference = reference.object, query = query.object,
+    print("OK2")
     refdata = list(celltype = "type"), reduction.model = "umap")
 
     pred = query$predicted.celltype
