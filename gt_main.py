@@ -232,7 +232,7 @@ f1_data.loc[first_key][second_key] = test_res[1]
 f1_data.to_csv('result/macro-f1.csv')
 
 # save query_true.csv, query_predict.csv
-query_true = data_info['label_encoder'].inverse_transform(g_data.ndata['y_true'].numpy())
+query_true = data_info['label_encoder'].inverse_transform(g_data.ndata['y_true'].numpy()[adata.uns['n_ref']:])
 query_predict = data_info['label_encoder'].inverse_transform(test_res[2])
 
 query_true_df = pd.DataFrame(query_true, columns=['cell_type'])
@@ -243,7 +243,7 @@ if not os.path.exists(exp_save_path):
     os.makedirs(exp_save_path)
 
 query_true_df.to_csv(os.path.join(exp_save_path, 'query_true.csv'), index=False)
-query_predict_df.to_csv(os.path.join(exp_save_path, 'query_predict.csv'), index=False)
+query_predict_df.to_csv(os.path.join(exp_save_path, 'query_pred.csv'), index=False)
 
 # save ref embeedings and query embeedings and auxilary embeddings
 if args.use_auxilary:

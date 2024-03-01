@@ -3,7 +3,7 @@ import pandas as pd
 import os
 import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score
-
+import anndata as ad
 def confusion_matrix(true_labels, pred_labels):
     # Create a mapping from class labels to integers
     classes = sorted(set(true_labels + pred_labels))
@@ -54,10 +54,13 @@ methods = [
     'scmap'
 ]
 
-for i, res_path in enumerate(result_paths):
+for i, res_path in enumerate(result_paths):    
     preds, trues = read_pred_true_label(res_path=res_path)    
-    conf_matrix = confusion_matrix(trues, preds)
+    if i == 0:
+        n_ref = len(trues) - len(preds)
+        trues = trues[n_ref:]
     
+    conf_matrix = confusion_matrix(trues, preds)    
     sns.heatmap(conf_matrix,linewidths=0, cmap='Blues')
     plt.savefig(methods[i]+'_'+'confmatrix', dpi=300, transparent=True)
     plt.clf()
