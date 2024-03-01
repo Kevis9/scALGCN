@@ -29,17 +29,17 @@ def confusion_matrix(true_labels, pred_labels):
         if row_sum != 0:
             matrix[i] = [count / row_sum for count in matrix[i]]
 
-    # Convert to DataFrame with class labels
+    # Convert to DataFrame with class labels    
     columns = []
     rows = []
+    print(len(classes))
     for label in classes:
         if label in true_labels:
             rows += label
         if label in pred_labels:
             columns += pred_labels
-    classes = [label for label, _ in sorted(label_to_int.items(), key=lambda x: x[1])]
-    conf_matrix_df = pd.DataFrame(matrix, index=rows, columns=columns)
     
+    conf_matrix_df = pd.DataFrame(matrix, index=rows, columns=columns)
         
     return conf_matrix_df
 
