@@ -8,6 +8,7 @@ import json
 import argparse
 from prognn import ProGNN
 import pandas as pd
+import copy
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 parser = argparse.ArgumentParser()
@@ -156,13 +157,17 @@ if args.add_pos_enc:
         auxilary_g_data.ndata['PE'] = dgl.lap_pe(auxilary_g_data, k=args.pos_enc_dim, padding=True)
 
 if args.use_auxilary:
-    auxilary_model = GTModel(args=args,
+    # auxilary model no need: AL and GL
+    auxilary_args = copy.copy(args)
+    auxilary_args.active_learning = False
+    auxilary_args.updated_adj = False
+    auxilary_model = GTModel(args=auxilary_args,
                     in_dim=auxilary_g_data.ndata['x'].shape[1],
                     class_num=data_info['auxilary_class_num'],
                     pos_enc=auxilary_g_data.ndata['PE'].to(device) if args.add_pos_enc else None).to(device)
 
     # use Pro-GNN to train the GT
-    auxilary_model_prognn = ProGNN(auxilary_model, data_info=data_info, args=args, device=device)
+    auxilary_model_prognn = ProGNN(auxilary_model, data_info=data_info, args=auxilary_args, device=device)
     auxilary_model_prognn.fit(g_data=auxilary_g_data)
 
 

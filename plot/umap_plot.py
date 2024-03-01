@@ -27,7 +27,7 @@ def read_data(data_paths):
 data_paths = [
     '/home/Users/kevislin/raw_data/Wu2021/BC-P1_6000/data.h5ad',
     '/home/Users/kevislin/raw_data/Wu2021/BC-P1_6000/data.h5ad',
-    '/home/Users/kevislin/raw_data/Wu2021/BC-P3_6000/data.h5ad'    
+    '/home/Users/kevislin/raw_data/Wu2021/BC-P3_6000/data.h5ad',
     '/home/Users/kevislin/raw_data/Wu2021/PC-P1/data.h5ad'    
 ]
 
