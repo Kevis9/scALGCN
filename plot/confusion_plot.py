@@ -32,8 +32,8 @@ def confusion_matrix(true_labels, pred_labels):
     return conf_matrix_df
 
 def read_pred_true_label(res_path):
-    preds = pd.read_csv(os.path.join(res_path, 'query_pred.csv')).to_numpy()
-    trues = pd.read_csv(os.path.join(res_path, 'query_true.csv')).to_numpy()
+    preds = pd.read_csv(os.path.join(res_path, 'query_pred.csv')).iloc[:, 0].tolist()
+    trues = pd.read_csv(os.path.join(res_path, 'query_true.csv')).iloc[:, 0].tolist()
     return preds, trues
 
     
