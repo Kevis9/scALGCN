@@ -38,9 +38,9 @@ def read_pred_true_label(res_path):
 
     
 result_paths = [
-    '/home/Users/kevislin/scALGCN/result/bcp2_6000-bcp3_6000-exp0047_GT + pos + AL + GL'
-    '/home/Users/kevislin/scALGCN/other_methods/r_methods/result/bcp2_6000-bcp3_6000/seurat'
-    '/home/Users/kevislin/scALGCN/other_methods/r_methods/result/bcp2_6000-bcp3_6000/chetah'
+    '/home/Users/kevislin/scALGCN/result/bcp2_6000-bcp3_6000-exp0047_GT + pos + AL + GL',
+    '/home/Users/kevislin/scALGCN/other_methods/r_methods/result/bcp2_6000-bcp3_6000/seurat',
+    '/home/Users/kevislin/scALGCN/other_methods/r_methods/result/bcp2_6000-bcp3_6000/chetah',
     '/home/Users/kevislin/scALGCN/other_methods/r_methods/result/bcp2_6000-bcp3_6000/scmap'    
 ]
 
