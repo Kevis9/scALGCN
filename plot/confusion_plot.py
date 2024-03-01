@@ -14,15 +14,17 @@ def confusion_matrix(true_labels, pred_labels):
     pred_labels_int = [label_to_int[label] for label in pred_labels]
 
     # Initialize the confusion matrix
-    num_classes = len(classes)
-    matrix = [[0] * num_classes for _ in range(num_classes)]
+    # num_classes = len(classes)
+    num_of_pred_classes = len(set(pred_labels))    
+    num_of_true_classes = len(set(true_labels))    
+    matrix = [[0] * num_of_pred_classes for _ in range(num_of_true_classes)]
 
     # Fill the confusion matrix
     for true, pred in zip(true_labels_int, pred_labels_int):
         matrix[true][pred] += 1
 
     # Normalize the confusion matrix
-    for i in range(num_classes):
+    for i in range(num_of_true_classes):
         row_sum = sum(matrix[i])
         if row_sum != 0:
             matrix[i] = [count / row_sum for count in matrix[i]]
