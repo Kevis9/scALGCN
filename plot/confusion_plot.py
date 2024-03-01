@@ -32,12 +32,11 @@ def confusion_matrix(true_labels, pred_labels):
     # Convert to DataFrame with class labels    
     columns = []
     rows = []
-    print(len(classes))
     for label in classes:
         if label in true_labels:
             rows += label
         if label in pred_labels:
-            columns += pred_labels
+            columns += label
     
     conf_matrix_df = pd.DataFrame(matrix, index=rows, columns=columns)
         
