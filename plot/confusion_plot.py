@@ -30,8 +30,16 @@ def confusion_matrix(true_labels, pred_labels):
             matrix[i] = [count / row_sum for count in matrix[i]]
 
     # Convert to DataFrame with class labels
+    columns = []
+    rows = []
+    for label in classes:
+        if label in true_labels:
+            rows += label
+        if label in pred_labels:
+            columns += pred_labels
     classes = [label for label, _ in sorted(label_to_int.items(), key=lambda x: x[1])]
-    conf_matrix_df = pd.DataFrame(matrix, index=classes, columns=classes)
+    conf_matrix_df = pd.DataFrame(matrix, index=rows, columns=columns)
+    
         
     return conf_matrix_df
 
