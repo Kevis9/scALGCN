@@ -55,5 +55,6 @@ for i, res_path in enumerate(result_paths):
     preds, trues = read_pred_true_label(res_path=res_path)    
     conf_matrix = confusion_matrix(trues, preds)
     
-    sns.heatmap(conf_matrix,linewidths=.5, cbar_kws={"shrink": .5})
+    sns.heatmap(conf_matrix,linewidths=.5,)
     plt.savefig(methods[i]+'_'+'confmatrix', dpi=300, transparent=True)
+    plt.clf()
