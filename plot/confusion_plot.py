@@ -35,8 +35,7 @@ def confusion_matrix(true_labels, pred_labels):
 
 def read_pred_true_label(res_path):
     preds = pd.read_csv(os.path.join(res_path, 'query_pred.csv')).iloc[:, 0].tolist()
-    trues = pd.read_csv(os.path.join(res_path, 'query_true.csv')).iloc[:, 0].tolist()
-    print(accuracy_score(trues, preds))
+    trues = pd.read_csv(os.path.join(res_path, 'query_true.csv')).iloc[:, 0].tolist()    
     return preds, trues
 
     
@@ -59,7 +58,7 @@ for i, res_path in enumerate(result_paths):
     if i == 0:
         n_ref = len(trues) - len(preds)
         trues = trues[n_ref:]
-    
+    print(accuracy_score(trues, preds))
     conf_matrix = confusion_matrix(trues, preds)    
     sns.heatmap(conf_matrix,linewidths=0, cmap='Blues')
     plt.savefig(methods[i]+'_'+'confmatrix', dpi=300, transparent=True)
