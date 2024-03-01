@@ -6,7 +6,7 @@ import pandas as pd
 import anndata as ad
 import numpy as np
 import os
-
+from sklearn.metrics import silhouette_score, adjusted_rand_score
 
 def run_umap(data):
     reducer = umap.UMAP()
@@ -17,8 +17,9 @@ def plot_umap(data, label, name):
     data_df = pd.DataFrame(data, columns=['x', 'y'])
     data_df['label'] = label
     sns.scatterplot(data=data_df, x='x', y='y', hue='label', s=12, linewidth=0)
-    plt.savefig(name, dpi=300, transparent=True)    
-
+    plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))    
+    plt.savefig(name, dpi=300, transparent=True,bbox_inches="tight")    
+    plt.clf()
 
 def read_data(data_paths):
     datas = []
@@ -29,7 +30,7 @@ def read_data(data_paths):
 
 result_paths = [
     '/home/Users/kevislin/scALGCN/result/bcp1_6000-mp1_6000-exp0040_GT + AL',
-    '/home/Users/kevislin/scALGCN/other_methods/r_methods/result/bcp1_6000-mp1_6000/seurat',    
+    '/home/Users/kevislin/scALGCN/other_methods/r_methods/result/bcp1_6000-mp1_6000/seurat'    
 ]
 
 methods = [
@@ -44,15 +45,18 @@ for i, path in enumerate(result_paths):
         query_pred = pd.read_csv(os.path.join(path, 'query_pred.csv')).iloc[:, 0].tolist()
         all_true = pd.read_csv(os.path.join(path, 'query_true.csv')).iloc[:, 0].tolist()
         n_ref = len(all_true) - len(query_pred)
-        all_pred = all_true[:n_ref] + query_pred
+        all_pred = all_true[:n_ref] + query_pred        
         all_emb = np.concatenate([ref_emb, query_emb], axis=0)
         all_emb_2d = run_umap(all_emb)
-        
-    else:
-        all_emb_2d = pd.read_csv(os.path.join(path, 'embeddings_2d.csv')) 
+    else:        
+        all_emb_2d = pd.read_csv(os.path.join(path, 'embeddings_2d.csv')).to_numpy()
         all_pred = pd.read_csv(os.path.join(path, 'all_preds.csv')).iloc[:, 0].tolist()
-    
+        query_true = pd.read_csv(os.path.join(path, 'query_true.csv')).iloc[:, 0].tolist()
+        n_ref = len(all_pred) - len(query_true)
+        all_true = all_pred[:n_ref] + query_true        
 
+    print(methods[i])
+    print("ARI, {:.3f}, sil score {:.3f}".format(adjusted_rand_score(all_true, all_pred), silhouette_score(all_emb_2d, all_pred)))
     plot_umap(all_emb_2d, all_pred, methods[i]+'_'+'umap_pred')
     
 
