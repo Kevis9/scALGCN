@@ -99,8 +99,7 @@ class GTModel(nn.Module):
         self.add_pos_enc = args.add_pos_enc
         self.hidden_dim = args.hidden_dim
         self.pos_enc_dim = args.pos_enc_dim
-        self.num_heads = args.n_heads
-        self.dropout_rate = args.dropout_rate
+        self.num_heads = args.n_heads        
         self.num_layers = args.n_layers        
         self.pos_enc = pos_enc
         # self.task = args.task

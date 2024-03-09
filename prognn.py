@@ -60,8 +60,8 @@ class ProGNN:
                 
         args = self.args    
         self.model_optimizer = optim.Adam(self.model.parameters(),
-                               lr=args.gt_lr, weight_decay=args.wd)
-        
+                               lr=1e-3, weight_decay=5e-4)
+                                       
         # 不需要转为numpy        
         save_eidx = torch.stack(g_data.edges()).cpu().numpy()
         np.savetxt('old_graph.csv', save_eidx, delimiter=',')        

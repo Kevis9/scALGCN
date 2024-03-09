@@ -36,25 +36,17 @@ parser.add_argument('--epochs', type=int,
                              default=30, 
                              help='epochs for training')
 
-parser.add_argument('--wd', type=float, 
-                             default=0.0005, 
-                             help='weight decay')
+
 parser.add_argument('--debug', action='store_true', 
-                             default=False, 
+                             default=True, 
                              help='debug mode')
 
-parser.add_argument('--gt_lr', type=float,
-                             default=1e-3, 
-                             help='learning rate for graph transformer')
 parser.add_argument('--hidden_dim', type=int,
                              default=256, 
                              help='hidden dim for graph transformer')
 parser.add_argument('--n_heads', type=int,
                              default=1, 
                              help='num of heads for GTModel')
-parser.add_argument('--dropout_rate', type=float,
-                             default=0.2, 
-                             help='dropout rate for GTModel')
 parser.add_argument('--n_layers', type=int, 
                              default=2, 
                              help='num of layers for GTModel')
@@ -94,7 +86,7 @@ parser.add_argument('--adj_thresh', type=float,
                             default=1e-3,
                             help='threshold for adj to turn to 0')
 
-####### Switch #######
+####### Switchs #######s
 
 parser.add_argument('--layer_norm', action='store_true',
                              default=False, 
