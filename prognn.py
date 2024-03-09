@@ -407,12 +407,10 @@ class EstimateAdj(nn.Module):
         return self.estimated_adj
 
     def normalize(self):
-
         if self.symmetric:
             adj = (self.estimated_adj + self.estimated_adj.t())/2
         else:
             adj = self.estimated_adj
-
         normalized_adj = self._normalize(adj + torch.eye(adj.shape[0]).to(self.device))
         return normalized_adj
 
