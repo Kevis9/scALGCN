@@ -49,9 +49,6 @@ parser.add_argument('--gt_lr', type=float,
 parser.add_argument('--hidden_dim', type=int,
                              default=256, 
                              help='hidden dim for graph transformer')
-parser.add_argument('--out_dim', type=int,
-                             default=128, 
-                             help='output dim of GTModel, input dim for classifier')
 parser.add_argument('--n_heads', type=int,
                              default=1, 
                              help='num of heads for GTModel')
@@ -161,8 +158,7 @@ if args.use_auxilary:
     auxilary_args = copy.copy(args)
     auxilary_args.active_learning = False
     auxilary_args.updated_adj = False
-    auxilary_model = GTModel(args=auxilary_args,
-                    in_dim=auxilary_g_data.ndata['x'].shape[1],
+    auxilary_model = GTModel(args=auxilary_args,                    
                     class_num=data_info['auxilary_class_num'],
                     pos_enc=auxilary_g_data.ndata['PE'].to(device) if args.add_pos_enc else None).to(device)
 
@@ -176,8 +172,7 @@ if args.use_auxilary:
  ========= For cell type prediction ========= 
 '''
 args.is_auxilary = False
-type_model = GTModel(args=args,
-                in_dim=g_data.ndata['x'].shape[1],
+type_model = GTModel(args=args,                
                 class_num=data_info['class_num'],
                 pos_enc=g_data.ndata['PE'].to(device) if args.add_pos_enc else None).to(device)
 
