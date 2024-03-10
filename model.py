@@ -91,6 +91,7 @@ class GTModel(nn.Module):
             self,
             args,                                                       
             class_num,          
+            in_dim,
             pos_enc                      
     ):
         super().__init__()        
@@ -102,6 +103,7 @@ class GTModel(nn.Module):
         self.num_heads = args.n_heads        
         self.num_layers = args.n_layers        
         self.pos_enc = pos_enc
+        self.in_dim = in_dim
         # self.task = args.task
         self.state_embeddings = None        
         self.use_auxilary = args.use_auxilary

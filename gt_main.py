@@ -152,6 +152,7 @@ if args.use_auxilary:
     auxilary_args.updated_adj = False
     auxilary_model = GTModel(args=auxilary_args,                    
                     class_num=data_info['auxilary_class_num'],
+                    in_dim=auxilary_g_data.ndata['x'].shape[1],
                     pos_enc=auxilary_g_data.ndata['PE'].to(device) if args.add_pos_enc else None).to(device)
 
     # use Pro-GNN to train the GT
@@ -166,6 +167,7 @@ if args.use_auxilary:
 args.is_auxilary = False
 type_model = GTModel(args=args,                
                 class_num=data_info['class_num'],
+                in_dim=auxilary_g_data.ndata['x'].shape[1],
                 pos_enc=g_data.ndata['PE'].to(device) if args.add_pos_enc else None).to(device)
 
 if args.use_auxilary:
