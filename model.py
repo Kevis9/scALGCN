@@ -78,7 +78,7 @@ class GTLayer(nn.Module):
 
         h2 = h
         # two-layer FNN
-        h = self.FNN2(F.relu(self.FFN1(h)))        
+        h = self.FFN2(F.relu(self.FFN1(h)))        
 
         if self.residual:      
             h = h2 + h
