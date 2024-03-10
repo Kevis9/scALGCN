@@ -69,16 +69,16 @@ class ProGNN:
         estimator = EstimateAdj(adj, symmetric=args.symmetric, device=self.device).to(self.device)
         self.estimator = estimator
         self.model_optimizer_adj = optim.SGD(estimator.parameters(),
-                              momentum=0.9, lr=args.adj_lr)
+                              momentum=0.9, lr=1e-2)
 
         self.model_optimizer_l1 = PGD(estimator.parameters(),
                         proxs=[prox_operators.prox_l1],
-                        lr=args.adj_lr, alphas=[args.alpha])
+                        lr=1e-2, alphas=[args.alpha])
 
         warnings.warn("If you find the nuclear proximal operator runs too slow, you can modify line 77 to use prox_operators.prox_nuclear_cuda instead of prox_operators.prox_nuclear to perform the proximal on GPU. See details in https://github.com/ChandlerBang/Pro-GNN/issues/1")
         self.model_optimizer_nuclear = PGD(estimator.parameters(),
                   proxs=[prox_operators.prox_nuclear_cuda],
-                  lr=args.adj_lr, alphas=[args.beta])
+                  lr=1e-2, alphas=[args.beta])
 
 
         node_x = g_data.ndata['x'].to(self.device)
@@ -110,7 +110,7 @@ class ProGNN:
                     self.train_adj(epoch, node_x, adj, labels,
                             train_idx, val_idx)
                          
-            updated_adj = self.estimator.get_estimated_adj()            
+            updated_adj = self.estimator.normalize()            
             # after updating S, need to calculate the norm centrailty again for selecting new nodes
             
             for i in range(int(args.inner_steps)):
@@ -215,8 +215,7 @@ class ProGNN:
 
     def train_adj(self, epoch, features, original_adj, labels, idx_train, idx_val):        
         estimator = self.estimator
-        args = self.args
-        # adj = estimator.get_estimated_adj()
+        args = self.args        
         
         if args.debug:
             print("\n=== train_adj ===")
@@ -226,7 +225,7 @@ class ProGNN:
 
         loss_l1 = torch.norm(estimator.estimated_adj, 1)
         loss_fro = torch.norm(estimator.estimated_adj - original_adj, p='fro')        
-        estimated_adj = estimator.get_estimated_adj().clone().detach()
+        norm_adj = estimator.normalize() # 其实norm_adj和estimated_adj在这边没有什么差别
         
         if args.lambda_:
             loss_smooth_feat = self.feature_smoothing(estimator.estimated_adj, features)
@@ -234,12 +233,10 @@ class ProGNN:
             loss_smooth_feat = 0 * loss_l1
 
         
-        estimated_adj[estimated_adj < self.args.adj_thresh] = 0
-        edge_index = estimated_adj.nonzero().T        
+        edge_index = norm_adj.nonzero().T        
         
         if args.is_auxilary:
-            criterion = torch.nn.MSELoss()
-            
+            criterion = torch.nn.MSELoss()            
         else:
             criterion = torch.nn.CrossEntropyLoss()    
             
@@ -251,19 +248,20 @@ class ProGNN:
             # if is main model
             acc_train = accuracy(output[idx_train], labels[idx_train])
 
-        loss_symmetric = torch.norm(estimator.estimated_adj \
-                        - estimator.estimated_adj.t(), p="fro")
-
-        loss_diffiential =  loss_fro + args.gamma * loss_gcn + args.lambda_ * loss_smooth_feat + args.phi * loss_symmetric
-
+        # loss_symmetric = torch.norm(estimator.estimated_adj \
+        #                 - estimator.estimated_adj.t(), p="fro")
+        
+        # for loss that are diffiential
+        loss_diffiential =  loss_fro + args.gamma * loss_gcn + args.lambda_ * loss_smooth_feat
         loss_diffiential.backward()
-
-        self.model_optimizer_adj.step()
+        self.model_optimizer_adj.step()  # 更新adj的参数, 这部分是可微分的参数
+        
+        # 这部分不重要 loss_nuclear 和 loss_l1，这部分的更新直接看ProxOperator部分
         loss_nuclear =  0 * loss_fro
         if args.beta != 0:
             self.model_optimizer_nuclear.zero_grad()
             self.model_optimizer_nuclear.step()
-            loss_nuclear = prox_operators.nuclear_norm
+            loss_nuclear = prox_operators.nuclear_norm # 内部计算好了nulcear_norm, 这里只是为了展示
 
         self.model_optimizer_l1.zero_grad()
         self.model_optimizer_l1.step()
@@ -271,8 +269,7 @@ class ProGNN:
         total_loss = loss_fro \
                     + args.gamma * loss_gcn \
                     + args.alpha * loss_l1 \
-                    + args.beta * loss_nuclear \
-                    + args.phi * loss_symmetric
+                    + args.beta * loss_nuclear                    
         
         estimator.estimated_adj.data.copy_(torch.clamp(
                   estimator.estimated_adj.data, min=0, max=1))
@@ -280,16 +277,15 @@ class ProGNN:
         # Evaluate validation set performance separately,
         # deactivates dropout during validation run.
         self.model.eval()
-        estimated_adj = estimator.get_estimated_adj().clone().detach()
-        estimated_adj[estimated_adj < self.args.adj_thresh] = 0
-        edge_index = estimated_adj.nonzero().T           
+        norm_adj = estimator.normalize()
+        edge_index = norm_adj.nonzero().T           
         output = self.model(edge_index, features)
 
         loss_val = criterion(output[idx_val], labels[idx_val])
         if args.is_auxilary:
             if loss_val < self.best_val_loss:
                 self.best_val_loss = loss_val
-                self.best_graph = estimated_adj.detach()
+                self.best_graph = norm_adj.detach()
                 self.weights = deepcopy(self.model.state_dict())
                 if args.debug:
                     print(f'\t=== saving current graph/gcn, best_val_loss: %s' % self.best_val_loss.item())
@@ -303,7 +299,7 @@ class ProGNN:
             
             if acc_val > self.best_val_acc:
                 self.best_val_acc = acc_val
-                self.best_graph = estimated_adj.detach()
+                self.best_graph = norm_adj.detach()
                 self.weights = deepcopy(self.model.state_dict())
                 if args.debug:
                     print(f'\t=== saving current graph/gcn, best_val_acc: %s' % self.best_val_acc.item())            
@@ -313,8 +309,7 @@ class ProGNN:
                 print('Epoch: {:04d}'.format(epoch+1),
                       'loss_fro: {:.4f}'.format(loss_fro.item()),
                       'loss_gcn: {:.4f}'.format(loss_gcn.item()),
-                      'loss_feat: {:.4f}'.format(loss_smooth_feat.item()),
-                      'loss_symmetric: {:.4f}'.format(loss_symmetric.item()),
+                      'loss_feat: {:.4f}'.format(loss_smooth_feat.item()),                      
                       'delta_l1_norm: {:.4f}'.format(torch.norm(estimator.estimated_adj-original_adj, 1).item()),
                       'loss_l1: {:.4f}'.format(loss_l1.item()),
                       'loss_total: {:.4f}'.format(total_loss.item()),
@@ -335,9 +330,9 @@ class ProGNN:
         self.model.eval()
         adj = self.best_graph
         if self.best_graph is None:
-            adj = self.estimator.get_estimated_adj()
+            adj = self.estimator.normalize()
         
-        adj[adj < self.args.adj_thresh] = 0
+        # adj[adj < self.args.adj_thresh] = 0
         # edge_index = adj.nonzero().T                 
         
         output = self.model(edge_index, features)                
@@ -422,11 +417,3 @@ class EstimateAdj(nn.Module):
         mx = r_mat_inv @ mx
         mx = mx @ r_mat_inv
         return mx
-
-    def get_estimated_adj(self):
-        if self.symmetric:
-            adj = (self.estimated_adj + self.estimated_adj.t())/2
-        else:
-            adj = self.estimated_adj
-        
-        return adj

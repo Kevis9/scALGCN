@@ -71,9 +71,9 @@ parser.add_argument('--lambda_', type=float,
                     default=0, 
                     help='weight of feature smoothing')
 
-parser.add_argument('--phi', type=float, 
-                    default=0,
-                    help='weight of symmetric loss')
+# parser.add_argument('--phi', type=float, 
+#                     default=0,
+#                     help='weight of symmetric loss')
 
 parser.add_argument('--inner_steps', type=int, 
                     default=2, 
