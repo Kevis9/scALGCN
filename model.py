@@ -59,7 +59,7 @@ class GTLayer(nn.Module):
     def __init__(self, hidden_dim, num_heads, residual):
         super().__init__()        
         self.residual = residual
-        self.MHA = SparseMHA(hidden_dim==hidden_dim, num_heads=num_heads)
+        self.MHA = SparseMHA(hidden_dim=hidden_dim, num_heads=num_heads)
         self.batchnorm1 = nn.BatchNorm1d(hidden_dim)
         self.batchnorm2 = nn.BatchNorm1d(hidden_dim)
                 
