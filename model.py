@@ -27,7 +27,7 @@ class SparseMHA(nn.Module):
         super().__init__()
         self.num_heads = num_heads
         self.head_dim = hidden_dim // num_heads
-        self.scaling = self.hidden_dim ** -0.5
+        self.scaling = hidden_dim ** -0.5
         
 
         self.q_proj = nn.Linear(hidden_dim, hidden_dim)
