@@ -99,30 +99,29 @@ class ProGNN:
             
         # Train model
         t_total = time.time()
-        if args.active_learning:
+        if args.active_learning and not args.is_auxilary:
             graph = nx.Graph(adj.detach().cpu().numpy())
             norm_centrality = centralissimo(graph)
                             
         for epoch in range(args.epochs):
-            if args.adj_training:
+            # auxilary model不需要GL
+            if args.adj_training and not args.is_auxilary:
                 # Update S
                 for i in range(int(args.outer_steps)):
                     self.train_adj(epoch, node_x, adj, labels,
                             train_idx, val_idx)
                          
-            updated_adj = self.estimator.normalize()            
-            # after updating S, need to calculate the norm centrailty again for selecting new nodes
+            updated_adj = self.estimator.normalize()                        
             
             for i in range(int(args.inner_steps)):
                 prob = self.train_gnn(adj=updated_adj, 
-                               features=node_x,                               
-                               labels=labels,
-                               epoch=epoch,
-                               criterion=criterion,
-                               edge_index=torch.stack(g_data.edges()).to(self.device))
+                                    features=node_x,                               
+                                    labels=labels,
+                                    epoch=epoch,
+                                    criterion=criterion)
                                 
                 
-                if args.active_learning:
+                if args.active_learning and not args.is_auxilary:
                     # will change outer data_info (the parameter is reference)
                     active_learning(g_data=g_data,
                                     epoch=epoch,
@@ -140,7 +139,7 @@ class ProGNN:
         print("picking the best model according to validation performance")
         self.model.load_state_dict(self.weights)
 
-    def train_gnn(self, adj, features, labels, epoch, criterion, edge_index=None):
+    def train_gnn(self, adj, features, labels, epoch, criterion):
         args = self.args
         labels = labels.to(self.device)
         if args.debug:
@@ -149,9 +148,8 @@ class ProGNN:
         # adj = adj.detach().clone()
         # # 尝试调整adj的阈值
         # adj[adj < self.args.adj_thresh] = 0              
-        # edge_index = adj.nonzero().T
+        edge_index = adj.nonzero().T
         
-                
         t = time.time()
         self.model.train()
         self.model_optimizer.zero_grad()
@@ -316,7 +314,7 @@ class ProGNN:
                       'loss_nuclear: {:.4f}'.format(loss_nuclear.item()))
 
 
-    def test(self, features, idx_test, labels, edge_index=None):
+    def test(self, features, idx_test, labels):
         """
             Evaluate the performance of ProGNN on test set
         """
@@ -333,7 +331,7 @@ class ProGNN:
             adj = self.estimator.normalize()
         
         # adj[adj < self.args.adj_thresh] = 0
-        # edge_index = adj.nonzero().T                 
+        edge_index = adj.nonzero().T                 
         
         output = self.model(edge_index, features)                
         save_eidx = edge_index.detach().cpu().numpy()
