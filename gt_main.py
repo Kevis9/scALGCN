@@ -128,10 +128,8 @@ args = parser.parse_args()
 
 proj = args.data_dir.split('/')[-1]
 args.data_dir = os.path.join(args.data_dir, 'data')
-seed = 32
-setup_seed(seed)
 
-    
+setup_seed(32)
 # load data
 g_data, auxilary_g_data, adata, data_info = load_data(args=args, use_auxilary=args.use_auxilary)
 max_nodes_num = data_info['class_num'] * args.max_per_class
@@ -146,6 +144,7 @@ if args.add_pos_enc:
         auxilary_g_data.ndata['PE'] = dgl.lap_pe(auxilary_g_data, k=args.pos_enc_dim, padding=True)
 
 if args.use_auxilary:
+    setup_seed(32)
     # auxilary model no need: AL and GL
     auxilary_args = copy.copy(args)
     auxilary_args.active_learning = False
@@ -164,6 +163,7 @@ if args.use_auxilary:
 '''
  ========= For cell type prediction ========= 
 '''
+setup_seed(32)
 args.is_auxilary = False
 type_model = GTModel(args=args,                
                 class_num=data_info['class_num'],
