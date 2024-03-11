@@ -24,13 +24,12 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 def setup_seed(seed=32):   
     dgl.seed(seed)
     torch.manual_seed(seed)
-    random.seed(seed)    
+    random.seed(seed)        
     torch.cuda.manual_seed_all(seed) #所有GPU
     torch.cuda.manual_seed(seed)     # 当前GPU    
     # CUDA有些算法是non deterministic, 需要限制    
     os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8' # CUDA >= 10.2版本会提示设置这个环境变量
-    torch.use_deterministic_algorithms(True)
-    torch.backends.cudnn.deterministic = True
+    torch.use_deterministic_algorithms(True)        
     print("set up seed!")
     
     
@@ -208,18 +207,20 @@ def get_anndata(args):
     adata.uns['auxilary_label'] = auxilary_data_h5.obsm['label']
     adata.uns['auxilary_edge_index'] = auxilary_edge_index                                        
     adata.uns['n_ref'] = ref_data_h5.n_obs
-    adata.uns['n_query'] = query_data_h5.n_obs
-    
-    adata.write(os.path.join(data_dir, 'all_data.h5ad'))
+    adata.uns['n_query'] = query_data_h5.n_obs        
     
     return adata, adata.uns['n_ref'], adata.uns['n_query']
     
 
 
 def load_data(args, use_auxilary=True):
-    # 数据准备
-    adata, n_ref, n_query = get_anndata(args=args)
-    
+    if os.path.exists(os.path.join(args.data_dir, 'all_data.h5ad')):
+        adata = ad.read_h5ad('all_data.h5ad')
+        n_ref = adata.uns['n_ref']
+        n_query = adata.uns['n_query']
+    else:
+        # 数据准备
+        adata, n_ref, n_query = get_anndata(args=args)    
     # take ref_query data into dgl data
     src, dst = adata.uns['edge_index'][0], adata.uns['edge_index'][1]
     g_data = dgl.graph((src, dst), num_nodes=adata.n_obs)                
@@ -227,9 +228,8 @@ def load_data(args, use_auxilary=True):
     
     label_encoder = LabelEncoder()
     y_true = label_encoder.fit_transform(y_true)        
-
-    g_data.ndata['x'] = torch.tensor(adata.X.toarray(), dtype=torch.float)    
-          
+    
+    g_data.ndata['x'] = torch.tensor(adata.X.toarray(), dtype=torch.float)              
     g_data.ndata['y_true'] = torch.tensor(y_true, dtype=torch.long)
     g_data.ndata['y_predict'] = torch.tensor(y_true, dtype=torch.long)
     
@@ -237,11 +237,26 @@ def load_data(args, use_auxilary=True):
     data_info = get_data_info(args=args, adata=adata, n_ref=n_ref, n_query=n_query)
     data_info['label_encoder'] = label_encoder
     
+    if not 'PE' in adata.uns:            
+        pe_tensor = dgl.lap_pe(g_data, k=args.pos_enc_dim, padding=True)
+        adata.uns['PE'] = pe_tensor.numpy()
+        adata.write(os.path.join(args.data_dir, 'all_data.h5ad')) 
+        g_data.ndata['PE'] = pe_tensor            
+    else:
+        g_data.ndata['PE'] = torch.FloatTensor(adata.uns['PE'])
+
     if use_auxilary:
         auxilary_g_data = get_auxilary_g_data(adata=adata)
-        return g_data, auxilary_g_data, adata, data_info
-    else:
-        return g_data, None, adata, data_info
+        if not 'auxilary_PE' in adata.uns:            
+            pe_tensor = dgl.lap_pe(auxilary_g_data, k=args.pos_enc_dim, padding=True)
+            adata.uns['auxilary_PE'] = pe_tensor.numpy()
+            adata.write(os.path.join(args.data_dir, 'all_data.h5ad')) 
+            auxilary_g_data.ndata['PE'] = pe_tensor            
+        else:
+            auxilary_g_data.ndata['PE'] = torch.FloatTensor(adata.uns['auxilary_PE'])
+    
+    
+    return g_data, auxilary_g_data if auxilary_g_data else None, adata, data_info
 
 def get_data_info(args, adata, n_ref, n_query):
     '''
