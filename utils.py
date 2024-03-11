@@ -15,6 +15,7 @@ from sklearn.cluster import KMeans
 from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.preprocessing import LabelEncoder
 import torch.nn.functional as F
+from sklearn.neighbors import kneighbors_graph
 from sklearn.metrics import accuracy_score
 from model import GTModel
 
@@ -189,12 +190,14 @@ def get_anndata(args):
     
     data = np.concatenate([ref_data, query_data], axis=0)
     label = np.concatenate([ref_data_h5.obs['cell_type'].to_numpy(), query_data_h5.obs['cell_type'].to_numpy()], axis=0)                
+    
     edge_index = combine_inter_intra_graph(inter_graph_path=os.path.join(data_dir, 'inter_graph.csv'),
                                             intra_graph_path=os.path.join(data_dir, 'intra_graph.csv'),
                                             n_nodes_ref=ref_data.shape[0],
                                             n_nodes_query=query_data.shape[0])
     
-    auxilary_edge_index = get_auxilary_graph(auxilary_graph_path=os.path.join(data_dir, 'auxilary_graph.csv'), n_nodes=auxilary_data_h5.n_obs)        
+    
+    auxilary_edge_index = get_auxilary_graph(auxilary_graph_path=os.path.join(data_dir, 'auxilary_graph.csv'), n_nodes=auxilary_data_h5.n_obs)            
 
     adata = ad.AnnData(csr_matrix(data, dtype=float), dtype=float)
     
@@ -221,8 +224,13 @@ def load_data(args, use_auxilary=True):
     else:
         # 数据准备
         adata, n_ref, n_query = get_anndata(args=args)    
+    
+    if not 'edge_index_knn' in adata.uns:
+        adata.uns['edge_index_knn'] = construct_graph_with_knn(adata.X.toarray(), k=10)
+        adata.write(os.path.join(args.data_dir, 'all_data.h5ad')) 
+    
     # take ref_query data into dgl data
-    src, dst = adata.uns['edge_index'][0], adata.uns['edge_index'][1]
+    src, dst = adata.uns['edge_index_knn'][0], adata.uns['edge_index_knn'][1]
     g_data = dgl.graph((src, dst), num_nodes=adata.n_obs)                
     y_true = adata.obs['cell_type'].to_numpy()    
     
@@ -246,7 +254,12 @@ def load_data(args, use_auxilary=True):
         g_data.ndata['PE'] = torch.FloatTensor(adata.uns['PE'])
 
     if use_auxilary:
-        auxilary_g_data = get_auxilary_g_data(adata=adata)
+        if not 'auxilary_edge_index_knn' in adata.uns:
+            adata.uns['auxilary_edge_index_knn'] = construct_graph_with_knn(adata.uns['auxilary_data'], k=10)
+            adata.write(os.path.join(args.data_dir, 'all_data.h5ad')) 
+        
+        auxilary_g_data = get_auxilary_g_data(adata=adata)        
+        
         if not 'auxilary_PE' in adata.uns:            
             pe_tensor = dgl.lap_pe(auxilary_g_data, k=args.pos_enc_dim, padding=True)
             adata.uns['auxilary_PE'] = pe_tensor.numpy()
@@ -300,7 +313,7 @@ def get_data_info(args, adata, n_ref, n_query):
     return data_info            
 
 def get_auxilary_g_data(adata):
-    src, dst = adata.uns['auxilary_edge_index'][0], adata.uns['auxilary_edge_index'][1]
+    src, dst = adata.uns['auxilary_edge_index_knn'][0], adata.uns['auxilary_edge_index_knn'][1]
     g_data = dgl.graph((src, dst), num_nodes=adata.uns['auxilary_data'].shape[0])
     g_data.ndata['x'] = torch.tensor(adata.uns['auxilary_data'], dtype=torch.float)
     g_data.ndata['y_true'] = torch.tensor(adata.uns['auxilary_label'], dtype=torch.float)
@@ -469,3 +482,17 @@ def active_learning(g_data, epoch, out_prob, norm_centrality, args, data_info):
             g_data.ndata['y_predict'][node_idx] = g_data.ndata['y_true'][node_idx]
             if (args.debug):
                 print("Epoch {:}: pick up one node to the training set!".format(epoch))
+
+
+def construct_graph_with_knn(data, k=10):
+    A = kneighbors_graph(data, k, mode='connectivity', include_self='auto')  
+    # turn A into undirecitonal adjcent matrix        
+    G = nx.from_numpy_matrix(A.todense())
+    edges = []    
+    for (u, v) in G.edges():
+        edges.append([u, v])
+        edges.append([v, u])
+    edges = np.array(edges).T
+    # edges = torch.tensor(edges, dtype=torch.long)
+    # [row, col] 2 * n
+    return edges
