@@ -24,6 +24,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def setup_seed(seed=32):   
     dgl.seed(seed)
+    dgl.random.seed(seed)
     torch.manual_seed(seed)
     random.seed(seed)        
     torch.cuda.manual_seed_all(seed) #所有GPU
@@ -226,7 +227,7 @@ def load_data(args, use_auxilary=True):
         adata, n_ref, n_query = get_anndata(args=args)    
     
     if not 'edge_index_knn' in adata.uns:
-        adata.uns['edge_index_knn'] = construct_graph_with_knn(adata.X.toarray(), k=10)
+        adata.uns['edge_index_knn'] = construct_graph_with_knn(adata.X.toarray(), k=5)
         adata.write(os.path.join(args.data_dir, 'all_data.h5ad')) 
     
     # take ref_query data into dgl data
@@ -255,7 +256,7 @@ def load_data(args, use_auxilary=True):
 
     if use_auxilary:
         if not 'auxilary_edge_index_knn' in adata.uns:
-            adata.uns['auxilary_edge_index_knn'] = construct_graph_with_knn(adata.uns['auxilary_data'], k=10)
+            adata.uns['auxilary_edge_index_knn'] = construct_graph_with_knn(adata.uns['auxilary_data'], k=5)
             adata.write(os.path.join(args.data_dir, 'all_data.h5ad')) 
         
         auxilary_g_data = get_auxilary_g_data(adata=adata)        
