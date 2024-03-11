@@ -21,7 +21,8 @@ from model import GTModel
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-def setup_seed(seed=32):    
+def setup_seed(seed=32):   
+    dgl.seed(seed)
     torch.manual_seed(seed)
     random.seed(seed)    
     torch.cuda.manual_seed_all(seed) #所有GPU
