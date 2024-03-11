@@ -143,8 +143,7 @@ if args.add_pos_enc:
     if args.use_auxilary:
         auxilary_g_data.ndata['PE'] = dgl.lap_pe(auxilary_g_data, k=args.pos_enc_dim, padding=True)
 
-if args.use_auxilary:
-    setup_seed(32)
+if args.use_auxilary:    
     # auxilary model no need: AL and GL
     auxilary_args = copy.copy(args)
     auxilary_args.active_learning = False
@@ -163,7 +162,7 @@ if args.use_auxilary:
 '''
  ========= For cell type prediction ========= 
 '''
-setup_seed(32)
+
 args.is_auxilary = False
 type_model = GTModel(args=args,                
                 class_num=data_info['class_num'],

@@ -329,7 +329,7 @@ class ProGNN:
         else:
             criterion = torch.nn.CrossEntropyLoss()                    
         
-        self.model.load_state_dict(self.weights)        
+        # self.model.load_state_dict(self.weights)        
         self.model.eval()
         adj = self.best_graph
         if self.best_graph is None:
