@@ -218,7 +218,7 @@ def get_anndata(args):
 
 def load_data(args, use_auxilary=True):
     if os.path.exists(os.path.join(args.data_dir, 'all_data.h5ad')):
-        adata = ad.read_h5ad('all_data.h5ad')
+        adata = ad.read_h5ad(os.path.join(args.data_dir, 'all_data.h5ad'))
         n_ref = adata.uns['n_ref']
         n_query = adata.uns['n_query']
     else:
