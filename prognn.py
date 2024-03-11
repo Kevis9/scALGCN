@@ -162,7 +162,9 @@ class ProGNN:
         else:
             train_idx = self.data_info['train_idx']
             val_idx = self.data_info['val_idx']
-                
+            
+        test_idx = self.data_info['test_idx']
+        
         loss_train = criterion(output[train_idx], labels[train_idx])
         if not args.is_auxilary:
             # main model
@@ -188,6 +190,7 @@ class ProGNN:
                     print(f'saving current graph/gcn, best_val_loss: %s' % self.best_val_loss.item())
         else:            
             acc_val = accuracy(output[val_idx], labels[val_idx])
+            acc_test = accuracy(output[test_idx], labels[test_idx])
             if acc_val > self.best_val_acc:
                 self.best_val_acc = acc_val
                 self.best_graph = adj.detach()
@@ -206,6 +209,7 @@ class ProGNN:
                         'acc_train: {:.4f}'.format(acc_train.item()),
                         'loss_val: {:.4f}'.format(loss_val.item()),
                         'acc_val: {:.4f}'.format(acc_val.item()),
+                        'acc_test{:.4f}'.format(acc_test.item()),
                         'time: {:.4f}s'.format(time.time() - t))
                 
 
@@ -323,8 +327,8 @@ class ProGNN:
         if self.args.is_auxilary:
             criterion = torch.nn.MSELoss()        
         else:
-            criterion = torch.nn.CrossEntropyLoss()            
-            
+            criterion = torch.nn.CrossEntropyLoss()                    
+        self.model.load_state_dict(self.weights)        
         self.model.eval()
         adj = self.best_graph
         if self.best_graph is None:

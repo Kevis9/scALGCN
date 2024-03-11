@@ -177,6 +177,7 @@ if args.use_auxilary:
 prognn = ProGNN(type_model, data_info=data_info, args=args, device=device)
 prognn.fit(g_data=g_data)
 
+setup_seed(32)
 test_res = prognn.test(features=g_data.ndata['x'].to(device), 
                        idx_test=data_info['test_idx'], 
                        labels=g_data.ndata['y_true'].to(device))
