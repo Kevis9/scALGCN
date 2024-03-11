@@ -139,13 +139,11 @@ data_info['max_nodes_num'] = max_nodes_num
 print("data path is {:}, \n ref_data num: {:}, \nquery_data num :{:}, \n auxilary data num:{:}".format(args.data_dir, adata.uns['n_ref'], adata.uns['n_query'], auxilary_g_data.num_nodes() if args.use_auxilary else 0))
 
 if args.add_pos_enc:
-    setup_seed(32)
     g_data.ndata['PE'] = dgl.lap_pe(g_data, k=args.pos_enc_dim, padding=True)
     if args.use_auxilary:
         auxilary_g_data.ndata['PE'] = dgl.lap_pe(auxilary_g_data, k=args.pos_enc_dim, padding=True)
 
-if args.use_auxilary:    
-    setup_seed(32)
+if args.use_auxilary:        
     # auxilary model no need: AL and GL
     auxilary_args = copy.copy(args)
     auxilary_args.active_learning = False
@@ -164,7 +162,6 @@ if args.use_auxilary:
 '''
  ========= For cell type prediction ========= 
 '''
-setup_seed(32)
 args.is_auxilary = False
 type_model = GTModel(args=args,                
                 class_num=data_info['class_num'],
@@ -178,7 +175,7 @@ if args.use_auxilary:
 prognn = ProGNN(type_model, data_info=data_info, args=args, device=device)
 prognn.fit(g_data=g_data)
 
-setup_seed(32)
+
 test_res = prognn.test(features=g_data.ndata['x'].to(device), 
                        idx_test=data_info['test_idx'], 
                        labels=g_data.ndata['y_true'].to(device))
