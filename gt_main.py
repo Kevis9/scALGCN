@@ -10,6 +10,7 @@ from prognn import ProGNN
 import pandas as pd
 import copy
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+setup_seed()
 
 parser = argparse.ArgumentParser()
 
@@ -129,7 +130,6 @@ args = parser.parse_args()
 proj = args.data_dir.split('/')[-1]
 args.data_dir = os.path.join(args.data_dir, 'data')
 
-setup_seed(32)
 # load data
 g_data, auxilary_g_data, adata, data_info = load_data(args=args, use_auxilary=args.use_auxilary)
 max_nodes_num = data_info['class_num'] * args.max_per_class
