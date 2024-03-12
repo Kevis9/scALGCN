@@ -124,7 +124,7 @@ class GTModel(nn.Module):
         # 这里edge_index 变成 torch.tensor([[srt...], [dst...]])                                  
         # edge_index = torch.stack(g_data.edges())
         # indices = edge_index.to(device)        
-        A = g_data.adj.todense().to(device)
+        A = g_data.adj().todense().to(device)
         features = g_data.ndata['x'].to(device)    
         if args.add_pos_enc: 
             pos_enc = g_data.ndata['PE'].to(device)
