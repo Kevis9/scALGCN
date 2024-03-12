@@ -21,7 +21,7 @@ from model import GTModel
 import numpy as np
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    
+
 def setup_seed(seed=32):   
     dgl.seed(seed)        
     dgl.random.seed(seed)
@@ -35,6 +35,19 @@ def setup_seed(seed=32):
         os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8' # CUDA >= 10.2版本会提示设置这个环境变量
         torch.use_deterministic_algorithms(True)        
     print("set up seed!")
+
+def normalize_adj(adj):
+    adj = adj + np.eye(adj.shape[0])
+    # 计算行和
+    rowsum = adj.sum(1)    
+    # 计算每行的倒数的平方，并将无穷大值替换为 0
+    r_inv_sqrt = np.where(rowsum != 0, 1 / np.sqrt(rowsum), 0)    
+    # 构建对角矩阵
+    r_mat_inv_sqrt = np.diag(r_inv_sqrt)    
+    # 对称归一化
+    norm_adj = r_mat_inv_sqrt @ adj @ r_mat_inv_sqrt    
+    return norm_adj
+
 
 def capsule_pd_data_to_anndata(data, label, edge_index):
     '''

@@ -13,6 +13,7 @@ old_graph = load_npz('old_graph.npz')
 new_graph = load_npz('new_graph.npz')
 
 graph = new_graph - old_graph
+
 graph = graph.toarray()
 
 # 统计-1的数量，删除的边

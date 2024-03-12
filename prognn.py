@@ -8,7 +8,7 @@ import torch.optim as optim
 from pgd import PGD, prox_operators
 import warnings
 import networkx as nx
-from utils import centralissimo, accuracy, active_learning
+from utils import centralissimo, accuracy, active_learning, normalize_adj
 from scipy.sparse import csr_matrix, save_npz, load_npz
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, f1_score
 
@@ -64,7 +64,8 @@ class ProGNN:
                                lr=1e-3, weight_decay=5e-4)
                                        
         # 不需要转为numpy
-        save_adj = g_data.adj_external(scipy_fmt='csr')        
+        save_adj = g_data.adj_external(scipy_fmt='csr').toarray()
+        save_adj = normalize_adj(save_adj)        
         # save_eidx = torch.stack(g_data.edges()).cpu().numpy()
         # np.savetxt('old_graph.csv', save_eidx, delimiter=',')  
         save_npz("old_graph.npz", save_adj)      

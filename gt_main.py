@@ -57,7 +57,7 @@ parser.add_argument('--pos_enc_dim', type=int,
 
 ####### Graph Learning #######
 parser.add_argument('--GL_epochs', type=int, 
-                             default=30, #一般设置为5或者10
+                             default=10, #一般设置为5或者10
                              help='epochs for GL')
 
 parser.add_argument('--alpha', type=float, 
@@ -84,7 +84,7 @@ parser.add_argument('--residual', action='store_true',
                              default=True, 
                              help='residual for GTModel')
 parser.add_argument('--symmetric', action='store_true', 
-                            default=False,
+                            default=True,
                             help='whether use symmetric matrix')
 parser.add_argument('--adj_training', action='store_true',
                     default=False,
