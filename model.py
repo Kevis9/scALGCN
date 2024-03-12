@@ -30,14 +30,23 @@ class SparseMHA(nn.Module):
         # [N, dh, nh]
         k = self.k_proj(h).reshape(N, self.head_dim, self.num_heads)
         # [N, dh, nh]
-        v = self.v_proj(h).reshape(N, self.head_dim, self.num_heads)
+        v = self.v_proj(h).reshape(N, self.head_dim, self.num_heads)        
         # 这里把A先当做dense matrix来看待
-        attn = torch.mul(A, torch.matmul(q, k.transpose(1, 0)))        
+        # bmm: (b, n, m) * (b, m, q) = (m, n, q)
+        # q.transpose(0, 2).transpose(1, 2) = (nh, N, dh)
+        # k.transpose(0, 2) = (nh, dh, N)
+        # attn = (nh, N, N)
+        attn = torch.mul(A, torch.bmm(q.transpose(0, 2).transpose(1, 2), k.transpose(0, 2)))        
         # attn = dglsp.bsddmm(A, q, k.transpose(1, 0))  # (sparse) [N, N, nh]
         # Sparse softmax by default applies on the last sparse dimension.
         # attn = attn.softmax()  # (sparse) [N, N, nh]
-        attn = F.softmax(attn, dim=1)
-        out = torch.mm(attn, v)        
+        attn = F.softmax(attn, dim=2)
+        # v.transpose(0, 2).transpose(1, 2) = [nh,N,dh]
+        # attn = [nh, N, N]
+        # out = [nh, N, dh]
+        out = torch.bmm(attn, v.transpose(0, 2).transpose(1, 2))        
+        # out = [N, dh, nh]
+        out = out.reshape(0, 1).transpose(1, 2)
         # out = dglsp.bspmm(attn, v)  # [N, dh, nh]
         out = self.out_proj(out.reshape(N, -1))
         return out
