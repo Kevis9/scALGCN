@@ -343,7 +343,7 @@ class ProGNN:
         output = self.model(adj, features)                
         
         save_adj = csr_matrix(adj.detach().cpu().numpy())
-        save_npz("new_grapj.npz", save_adj)
+        save_npz("new_graph.npz", save_adj)
         
         # save_eidx = edge_index.detach().cpu().numpy()
         # np.savetxt('new_graph.csv', save_eidx, delimiter=',')

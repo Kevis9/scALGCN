@@ -16,8 +16,8 @@ graph = new_graph - old_graph
 graph = graph.toarray()
 
 # 统计-1的数量，删除的边
-delete_num = np.count_nonzero(graph == -1)
-new_num = np.count_nonzero(graph == 1)
+delete_num = np.count_nonzero(graph < 0)
+new_num = np.count_nonzero(graph > 0)
 print("新增边数{:}".format(new_num))
 print("删除的边数{:}".format(delete_num))
 
