@@ -9,9 +9,9 @@ import argparse
 from prognn import ProGNN
 import pandas as pd
 import copy
-from seed_manager import setup_seed
+from utils import setup_seed
 
-setup_seed()
+# setup_seed()
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 parser = argparse.ArgumentParser()
 # data config
@@ -84,7 +84,7 @@ parser.add_argument('--batch_norm', action='store_true',
                              default=True, 
                              help='Batch norm for GTModel')
 parser.add_argument('--residual', action='store_true',
-                             default=False, 
+                             default=True, 
                              help='residual for GTModel')
 parser.add_argument('--symmetric', action='store_true', 
                             default=False,
