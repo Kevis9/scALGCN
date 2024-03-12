@@ -33,9 +33,7 @@ def setup_seed(seed=32):
         torch.cuda.manual_seed(seed)     # 当前GPU    
         # CUDA有些算法是non deterministic, 需要限制    
         os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8' # CUDA >= 10.2版本会提示设置这个环境变量
-        torch.use_deterministic_algorithms(True)
-        torch.backends.cudnn.deterministic = True
-        torch.backends.cudnn.benchmark = False
+        torch.use_deterministic_algorithms(True)        
     print("set up seed!")
 
 def capsule_pd_data_to_anndata(data, label, edge_index):
