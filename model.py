@@ -31,11 +31,14 @@ class SparseMHA(nn.Module):
         k = self.k_proj(h).reshape(N, self.head_dim, self.num_heads)
         # [N, dh, nh]
         v = self.v_proj(h).reshape(N, self.head_dim, self.num_heads)
-
-        attn = dglsp.bsddmm(A, q, k.transpose(1, 0))  # (sparse) [N, N, nh]
+        # 这里把A先当做dense matrix来看待
+        attn = torch.mul(A, torch.mm(q, k.transpose(1, 0)))        
+        # attn = dglsp.bsddmm(A, q, k.transpose(1, 0))  # (sparse) [N, N, nh]
         # Sparse softmax by default applies on the last sparse dimension.
-        attn = attn.softmax()  # (sparse) [N, N, nh]
-        out = dglsp.bspmm(attn, v)  # [N, dh, nh]
+        # attn = attn.softmax()  # (sparse) [N, N, nh]
+        attn = F.softmax(attn, dim=1)
+        out = torch.mm(attn, v)        
+        # out = dglsp.bspmm(attn, v)  # [N, dh, nh]
         out = self.out_proj(out.reshape(N, -1))
         return out
 
@@ -134,10 +137,11 @@ class GTModel(nn.Module):
     def set_state_embeddings(self, embeddings):
         self.state_embeddings = embeddings.detach()     
 
-    def forward(self, edge_index, features):
-        indices = edge_index.to(device)
-        N = features.shape[0] # N * feature_dim
-        A = dglsp.spmatrix(indices, shape=(N, N))        
+    def forward(self, A, features):
+        # A是一个dense的邻接矩阵
+        # indices = edge_index.to(device)
+        # N = features.shape[0] # N * feature_dim
+        # A = dglsp.spmatrix(indices, shape=(N, N))        
         # A = g.edges()
         h = self.h_embedding(features)            
         if self.add_pos_enc:

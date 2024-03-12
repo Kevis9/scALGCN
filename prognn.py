@@ -148,13 +148,13 @@ class ProGNN:
         # adj = adj.detach().clone()
         # # 尝试调整adj的阈值
         # adj[adj < self.args.adj_thresh] = 0              
-        edge_index = adj.nonzero().T
+        # edge_index = adj.nonzero().T
         
         t = time.time()
         self.model.train()
         self.model_optimizer.zero_grad()
         # GTModel        
-        output = self.model(edge_index, features)
+        output = self.model(adj, features)
         
         if args.is_auxilary:
             train_idx = self.data_info['auxilary_train_idx']
@@ -178,7 +178,7 @@ class ProGNN:
         # Evaluate validation set performance separately,
         # deactivates dropout during validation run.
         self.model.eval()
-        output = self.model(edge_index, features)
+        output = self.model(adj, features)
 
         loss_val = criterion(output[val_idx], labels[val_idx])
         if args.is_auxilary:
@@ -235,14 +235,14 @@ class ProGNN:
             loss_smooth_feat = 0 * loss_l1
 
         
-        edge_index = norm_adj.nonzero().T        
+        # edge_index = norm_adj.nonzero().T        
         
         if args.is_auxilary:
             criterion = torch.nn.MSELoss()            
         else:
             criterion = torch.nn.CrossEntropyLoss()    
             
-        output = self.model(edge_index, features)
+        output = self.model(norm_adj, features)
         
         loss_gcn = criterion(output[idx_train], labels[idx_train])
         
@@ -279,11 +279,12 @@ class ProGNN:
         # Evaluate validation set performance separately,
         # deactivates dropout during validation run.
         self.model.eval()
-        norm_adj = estimator.normalize()
-        edge_index = norm_adj.nonzero().T           
-        output = self.model(edge_index, features)
-
-        loss_val = criterion(output[idx_val], labels[idx_val])
+        with torch.no_grad:
+            norm_adj = estimator.normalize()
+            # edge_index = norm_adj.nonzero().T           
+            output = self.model(norm_adj, features)
+            loss_val = criterion(output[idx_val], labels[idx_val])
+        
         if args.is_auxilary:
             if loss_val < self.best_val_loss:
                 self.best_val_loss = loss_val
@@ -337,7 +338,7 @@ class ProGNN:
         # adj[adj < self.args.adj_thresh] = 0
         edge_index = adj.nonzero().T                 
         
-        output = self.model(edge_index, features)                
+        output = self.model(adj, features)                
         save_eidx = edge_index.detach().cpu().numpy()
         np.savetxt('new_graph.csv', save_eidx, delimiter=',')
 
