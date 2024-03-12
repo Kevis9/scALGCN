@@ -10,12 +10,13 @@ def get_edge_idx(df):
                   
     
 old_graph = load_npz('old_graph.npz')
-new_graph = load_npz('new_graph.npz')
+new_graph = load_npz('new_graph.npz') # 经过了normalization
+
+old_graph[old_graph > 0] = 1
+new_graph[new_graph > 0] = 1
 
 graph = new_graph - old_graph
-
 graph = graph.toarray()
-
 # 统计-1的数量，删除的边
 delete_num = np.count_nonzero(graph < 0)
 new_num = np.count_nonzero(graph > 0)

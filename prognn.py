@@ -64,9 +64,9 @@ class ProGNN:
                                lr=1e-3, weight_decay=5e-4)
                                        
         # 不需要转为numpy
-        save_adj = g_data.adj_external(scipy_fmt='csr').toarray()
-        save_adj = normalize_adj(save_adj)   
-        save_adj = csr_matrix(save_adj)     
+        save_adj = g_data.adj_external(scipy_fmt='csr')
+        # save_adj = normalize_adj(save_adj)   
+        # save_adj = csr_matrix(save_adj)     
         # save_eidx = torch.stack(g_data.edges()).cpu().numpy()
         # np.savetxt('old_graph.csv', save_eidx, delimiter=',')  
         save_npz("old_graph.npz", save_adj)      
