@@ -57,9 +57,6 @@ parser.add_argument('--pos_enc_dim', type=int,
                              help='positional encoding dim')
 
 ####### Graph Learning #######
-parser.add_argument('--adj_lr', type=float,
-                             default=1e-3, 
-                             help='learning rate for training adj')
 parser.add_argument('--alpha', type=float, 
                     default=5e-4, 
                     help='weight of l1 norm')
@@ -72,21 +69,12 @@ parser.add_argument('--gamma', type=float,
 parser.add_argument('--lambda_', type=float, 
                     default=0, 
                     help='weight of feature smoothing')
-
-# parser.add_argument('--phi', type=float, 
-#                     default=0,
-#                     help='weight of symmetric loss')
-
 parser.add_argument('--inner_steps', type=int, 
-                    default=2, 
+                    default=1, 
                     help='steps for inner optimization')
-
 parser.add_argument('--outer_steps', type=int, 
                     default=1, 
                     help='steps for outer optimization')
-parser.add_argument('--adj_thresh', type=float,
-                            default=1e-3,
-                            help='threshold for adj to turn to 0')
 
 ####### Switchs #######s
 
@@ -97,30 +85,23 @@ parser.add_argument('--batch_norm', action='store_true',
                              default=True, 
                              help='Batch norm for GTModel')
 parser.add_argument('--residual', action='store_true',
-                             default=False, 
+                             default=True, 
                              help='residual for GTModel')
-
 parser.add_argument('--symmetric', action='store_true', 
                             default=False,
                             help='whether use symmetric matrix')
-
-
 parser.add_argument('--adj_training', action='store_true',
                     default=False,
                     help='whether update the adj')
-
 parser.add_argument('--add_pos_enc', action='store_true',
                              default=False, 
                              help='whether adding postional encoding to node feature')
-
 parser.add_argument('--active_learning', action='store_true', 
                              default=False, 
                              help='active learning mode')
-
 parser.add_argument('--is_auxilary', action='store_true',
                     default=True,
                     help='is auxilari model?')
-
 parser.add_argument('--use_auxilary', action='store_true',
                     default=False,
                     help='for GTModel, whether use auxilary model')
