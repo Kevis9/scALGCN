@@ -9,6 +9,7 @@ from pgd import PGD, prox_operators
 import warnings
 import networkx as nx
 from utils import centralissimo, accuracy, active_learning
+from scipy.sparse import csr_matrix, save_npz, load_npz
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, f1_score
 
 class ProGNN:
@@ -62,9 +63,12 @@ class ProGNN:
         self.model_optimizer = optim.Adam(self.model.parameters(),
                                lr=1e-3, weight_decay=5e-4)
                                        
-        # 不需要转为numpy        
-        save_eidx = torch.stack(g_data.edges()).cpu().numpy()
-        np.savetxt('old_graph.csv', save_eidx, delimiter=',')        
+        # 不需要转为numpy
+        save_adj = g_data.adj(scipy_fmt='csr')        
+        # save_eidx = torch.stack(g_data.edges()).cpu().numpy()
+        # np.savetxt('old_graph.csv', save_eidx, delimiter=',')  
+        save_npz("old_graph.npz", save_adj)      
+        
         adj = g_data.adjacency_matrix().to_dense().to(self.device)
         estimator = EstimateAdj(adj, symmetric=args.symmetric, device=self.device).to(self.device)
         self.estimator = estimator
@@ -334,11 +338,15 @@ class ProGNN:
             adj = self.estimator.normalize()
         
         # adj[adj < self.args.adj_thresh] = 0
-        edge_index = adj.nonzero().T                 
+        # edge_index = adj.nonzero().T                 
         
         output = self.model(adj, features)                
-        save_eidx = edge_index.detach().cpu().numpy()
-        np.savetxt('new_graph.csv', save_eidx, delimiter=',')
+        
+        save_adj = csr_matrix(adj.detach().cpu().numpy())
+        save_npz("new_grapj.npz", save_adj)
+        
+        # save_eidx = edge_index.detach().cpu().numpy()
+        # np.savetxt('new_graph.csv', save_eidx, delimiter=',')
 
         loss_test = criterion(output[idx_test], labels[idx_test])
         if self.args.is_auxilary:

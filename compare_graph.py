@@ -1,6 +1,6 @@
 import pandas as pd
-
-
+from scipy.sparse import load_npz
+import numpy as np
 def get_edge_idx(df):
     # 转置DataFrame，将行变为列          
     row = map(int, df.iloc[0, :].tolist())
@@ -9,17 +9,15 @@ def get_edge_idx(df):
     return graph
                   
     
-    
-old_graph = get_edge_idx(pd.read_csv('old_graph.csv', header=None))
-new_graph = get_edge_idx(pd.read_csv('new_graph.csv', header=None))
+old_graph = load_npz('old_graph.npz')
+new_graph = load_npz('new_graph.npz')
 
-# 新增的边
-new_edge = new_graph - old_graph
-print("新增边数{:}".format(len(new_edge)))
-# print(new_edge)
+graph = new_graph - old_graph
+graph = graph.toarray()
 
-# 删除的边数
-del_edge = old_graph - new_graph
-print("删除的边数{:}".format(len(del_edge)))
-# print(del_edge)
+# 统计-1的数量，删除的边
+delete_num = np.count_nonzero(graph == -1)
+new_num = np.count_nonzero(graph == 1)
+print("新增边数{:}".format(new_num))
+print("删除的边数{:}".format(delete_num))
 
