@@ -10,9 +10,9 @@ from prognn import ProGNN
 import pandas as pd
 import copy
 from seed_manager import setup_seed
+
+setup_seed()
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-
 parser = argparse.ArgumentParser()
 
 # data config
