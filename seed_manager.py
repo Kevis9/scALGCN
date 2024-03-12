@@ -5,8 +5,7 @@ import os
 import numpy as np
 
 def setup_seed(seed=32):   
-    dgl.seed(seed)    
-    os.environ['PYTHONHASHSEED'] = str(seed) #禁止hash随机化    
+    dgl.seed(seed)        
     dgl.random.seed(seed)
     torch.manual_seed(seed)
     random.seed(seed)       

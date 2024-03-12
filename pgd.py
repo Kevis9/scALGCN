@@ -5,9 +5,7 @@ import torch
 import sklearn
 import numpy as np
 import scipy.sparse as sp
-from seed_manager import setup_seed
 
-setup_seed()
 class PGD(Optimizer):
     """Proximal gradient descent.
 
