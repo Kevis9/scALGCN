@@ -32,7 +32,7 @@ class SparseMHA(nn.Module):
         # [N, dh, nh]
         v = self.v_proj(h).reshape(N, self.head_dim, self.num_heads)
         # 这里把A先当做dense matrix来看待
-        attn = torch.mul(A, torch.mm(q, k.transpose(1, 0)))        
+        attn = torch.mul(A, torch.matmul(q, k.transpose(1, 0)))        
         # attn = dglsp.bsddmm(A, q, k.transpose(1, 0))  # (sparse) [N, N, nh]
         # Sparse softmax by default applies on the last sparse dimension.
         # attn = attn.softmax()  # (sparse) [N, N, nh]

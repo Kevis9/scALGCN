@@ -226,9 +226,9 @@ def load_data(args, use_auxilary=True):
         # 数据准备
         adata, n_ref, n_query = get_anndata(args=args)    
     
-    if not 'edge_index_knn' in adata.uns:
-        adata.uns['edge_index_knn'] = construct_graph_with_knn(adata.X.toarray(), k=5)
-        adata.write(os.path.join(args.data_dir, 'all_data.h5ad')) 
+    # if not 'edge_index_knn' in adata.uns:
+    adata.uns['edge_index_knn'] = construct_graph_with_knn(adata.X.toarray(), k=5)
+    adata.write(os.path.join(args.data_dir, 'all_data.h5ad')) 
     
     # take ref_query data into dgl data
     src, dst = adata.uns['edge_index_knn'][0], adata.uns['edge_index_knn'][1]
@@ -255,9 +255,9 @@ def load_data(args, use_auxilary=True):
         g_data.ndata['PE'] = torch.FloatTensor(adata.uns['PE'])
 
     if use_auxilary:
-        if not 'auxilary_edge_index_knn' in adata.uns:
-            adata.uns['auxilary_edge_index_knn'] = construct_graph_with_knn(adata.uns['auxilary_data'], k=5)
-            adata.write(os.path.join(args.data_dir, 'all_data.h5ad')) 
+        # if not 'auxilary_edge_index_knn' in adata.uns:
+        adata.uns['auxilary_edge_index_knn'] = construct_graph_with_knn(adata.uns['auxilary_data'], k=5)
+        adata.write(os.path.join(args.data_dir, 'all_data.h5ad')) 
         
         auxilary_g_data = get_auxilary_g_data(adata=adata)        
         
@@ -485,7 +485,7 @@ def active_learning(g_data, epoch, out_prob, norm_centrality, args, data_info):
                 print("Epoch {:}: pick up one node to the training set!".format(epoch))
 
 
-def construct_graph_with_knn(data, k=10):
+def construct_graph_with_knn(data, k=5):
     A = kneighbors_graph(data, k, mode='connectivity', include_self='auto')  
     # turn A into undirecitonal adjcent matrix        
     G = nx.from_numpy_array(A.toarray())
