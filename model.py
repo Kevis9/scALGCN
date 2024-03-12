@@ -46,7 +46,7 @@ class SparseMHA(nn.Module):
         # out = [nh, N, dh]
         out = torch.bmm(attn, v.transpose(0, 2).transpose(1, 2))        
         # out = [N, dh, nh]
-        out = out.reshape(0, 1).transpose(1, 2)
+        out = out.transpose(0, 1).transpose(1, 2)
         # out = dglsp.bspmm(attn, v)  # [N, dh, nh]
         out = self.out_proj(out.reshape(N, -1))
         return out
