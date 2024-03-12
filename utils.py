@@ -23,7 +23,7 @@ import numpy as np
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def setup_seed(seed=32):   
-    dgl.seed(seed)
+    dgl.seed(seed)    
     dgl.random.seed(seed)
     torch.manual_seed(seed)
     random.seed(seed)       
@@ -34,6 +34,8 @@ def setup_seed(seed=32):
         # CUDA有些算法是non deterministic, 需要限制    
         os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8' # CUDA >= 10.2版本会提示设置这个环境变量
         torch.use_deterministic_algorithms(True)
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
     print("set up seed!")
     
     
