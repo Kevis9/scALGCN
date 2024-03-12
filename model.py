@@ -122,15 +122,14 @@ class GTModel(nn.Module):
     def get_embeddings(self, g_data, args):
         self.eval()                
         # 这里edge_index 变成 torch.tensor([[srt...], [dst...]])                                  
-        edge_index = torch.stack(g_data.edges())
-        indices = edge_index.to(device)        
+        # edge_index = torch.stack(g_data.edges())
+        # indices = edge_index.to(device)        
+        A = g_data.adj.todense().to(device)
         features = g_data.ndata['x'].to(device)    
         if args.add_pos_enc: 
             pos_enc = g_data.ndata['PE'].to(device)
-        N = features.shape[0] # N * feature_dim
-        # A = g.edges()
-        A = dglsp.spmatrix(indices, shape=(N, N))                
-        # A = g.edges()
+        N = features.shape[0] # N * feature_dim        
+        # A = dglsp.spmatrix(indices, shape=(N, N))                        
         h = self.h_embedding(features)            
         if args.add_pos_enc:
             h = h + self.pos_linear(pos_enc)
