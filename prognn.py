@@ -105,30 +105,28 @@ class ProGNN:
                             
         for epoch in range(args.epochs):
             # auxilary model不需要GL
-            if args.adj_training and not args.is_auxilary:
-                # Update S
-                for i in range(int(args.outer_steps)):
-                    self.train_adj(epoch, node_x, adj, labels,
-                            train_idx, val_idx)
+            if args.adj_training and not args.is_auxilary and epoch < args.GL_epochs:
+                # Update S                                
+                self.train_adj(epoch, node_x, adj, labels,
+                        train_idx, val_idx)
                          
             updated_adj = self.estimator.normalize()                        
             
-            for i in range(int(args.inner_steps)):
-                prob = self.train_gnn(adj=updated_adj, 
-                                    features=node_x,                               
-                                    labels=labels,
-                                    epoch=epoch,
-                                    criterion=criterion)
-                                
-                
-                if args.active_learning and not args.is_auxilary:
-                    # will change outer data_info (the parameter is reference)
-                    active_learning(g_data=g_data,
-                                    epoch=epoch,
-                                    out_prob=prob,
-                                    norm_centrality=norm_centrality,
-                                    args=self.args,
-                                    data_info=self.data_info)
+            prob = self.train_gnn(adj=updated_adj, 
+                                features=node_x,                               
+                                labels=labels,
+                                epoch=epoch,
+                                criterion=criterion)
+                            
+            
+            if args.active_learning and not args.is_auxilary:
+                # will change outer data_info (the parameter is reference)
+                active_learning(g_data=g_data,
+                                epoch=epoch,
+                                out_prob=prob,
+                                norm_centrality=norm_centrality,
+                                args=self.args,
+                                data_info=self.data_info)
                     
                                         
 
@@ -279,7 +277,7 @@ class ProGNN:
         # Evaluate validation set performance separately,
         # deactivates dropout during validation run.
         self.model.eval()
-        with torch.no_grad:
+        with torch.no_grad():
             norm_adj = estimator.normalize()
             # edge_index = norm_adj.nonzero().T           
             output = self.model(norm_adj, features)

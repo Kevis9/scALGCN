@@ -56,6 +56,10 @@ parser.add_argument('--pos_enc_dim', type=int,
                              help='positional encoding dim')
 
 ####### Graph Learning #######
+parser.add_argument('--GL_epochs', type=int, 
+                             default=5, 
+                             help='epochs for GL')
+
 parser.add_argument('--alpha', type=float, 
                     default=5e-4, 
                     help='weight of l1 norm')
@@ -75,8 +79,7 @@ parser.add_argument('--outer_steps', type=int,
                     default=1, 
                     help='steps for outer optimization')
 
-####### Switchs #######s
-
+####### Switchs #######
 parser.add_argument('--layer_norm', action='store_true',
                              default=False, 
                              help='layer norm for GTModel')
