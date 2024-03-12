@@ -83,7 +83,7 @@ class ProxOperators():
         device = data.device
         U, S, V = np.linalg.svd(data.cpu())
         U, S, V = torch.FloatTensor(U).to(device), torch.FloatTensor(S).to(device), torch.FloatTensor(V).to(device)
-        self.nuclear_norm = S.sum()
+        self.nuclear_norm = S.sum().item()
         # print("nuclear norm: %.4f" % self.nuclear_norm)
 
         diag_S = torch.diag(torch.clamp(S-alpha, min=0))
@@ -95,7 +95,7 @@ class ProxOperators():
         tl.set_backend('pytorch')
         U, S, V = tl.truncated_svd(data.cpu(), n_eigenvecs=k)
         U, S, V = torch.FloatTensor(U).to(device), torch.FloatTensor(S).to(device), torch.FloatTensor(V).to(device)
-        self.nuclear_norm = S.sum()
+        self.nuclear_norm = S.sum().item()
         # print("nuclear norm: %.4f" % self.nuclear_norm)
 
         S = torch.clamp(S-alpha, min=0)
@@ -119,7 +119,7 @@ class ProxOperators():
         data_sparse = sp.csr_matrix((values.cpu().numpy(), indices.cpu().numpy()))
         U, S, V = sp.linalg.svds(data_sparse, k=k)
         U, S, V = torch.FloatTensor(U).to(device), torch.FloatTensor(S).to(device), torch.FloatTensor(V).to(device)
-        self.nuclear_norm = S.sum()
+        self.nuclear_norm = S.sum().item()
         diag_S = torch.diag(torch.clamp(S-alpha, min=0))
         return torch.matmul(torch.matmul(U, diag_S), V)
 
@@ -129,7 +129,7 @@ class ProxOperators():
         U, S, V = torch.svd(data)
         # self.nuclear_norm = S.sum()
         # print(f"rank = {len(S.nonzero())}")
-        self.nuclear_norm = S.sum()
+        self.nuclear_norm = S.sum().item()
         S = torch.clamp(S-alpha, min=0)
         indices = torch.tensor([range(0, U.shape[0]),range(0, U.shape[0])]).to(device)
         values = S
