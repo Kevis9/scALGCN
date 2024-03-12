@@ -227,7 +227,7 @@ def load_data(args, use_auxilary=True):
         adata, n_ref, n_query = get_anndata(args=args)    
     
     # if not 'edge_index_knn' in adata.uns:
-    adata.uns['edge_index_knn'] = construct_graph_with_knn(adata.X.toarray(), k=5)
+    adata.uns['edge_index_knn'] = construct_graph_with_knn(adata.X.toarray())
     adata.write(os.path.join(args.data_dir, 'all_data.h5ad')) 
     
     # take ref_query data into dgl data
@@ -256,7 +256,7 @@ def load_data(args, use_auxilary=True):
 
     if use_auxilary:
         # if not 'auxilary_edge_index_knn' in adata.uns:
-        adata.uns['auxilary_edge_index_knn'] = construct_graph_with_knn(adata.uns['auxilary_data'], k=5)
+        adata.uns['auxilary_edge_index_knn'] = construct_graph_with_knn(adata.uns['auxilary_data'])
         adata.write(os.path.join(args.data_dir, 'all_data.h5ad')) 
         
         auxilary_g_data = get_auxilary_g_data(adata=adata)        
@@ -485,7 +485,7 @@ def active_learning(g_data, epoch, out_prob, norm_centrality, args, data_info):
                 print("Epoch {:}: pick up one node to the training set!".format(epoch))
 
 
-def construct_graph_with_knn(data, k=5):
+def construct_graph_with_knn(data, k=3):
     A = kneighbors_graph(data, k, mode='connectivity', include_self='auto')  
     # turn A into undirecitonal adjcent matrix        
     G = nx.from_numpy_array(A.toarray())
