@@ -1,6 +1,6 @@
 import dgl
 import os
-from utils import setup_seed, load_data, train, test
+from utils import load_data
 import numpy as np
 import torch
 from model import GTModel
@@ -9,8 +9,9 @@ import argparse
 from prognn import ProGNN
 import pandas as pd
 import copy
+from seed_manager import setup_seed
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-setup_seed()
+
 
 parser = argparse.ArgumentParser()
 

@@ -1,13 +1,10 @@
 import torch
 import torch.nn.functional as F
-import dgl
-import dgl.nn as dglnn
 import dgl.sparse as dglsp
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.optim as optim
-from utils import setup_seed
+from seed_manager import setup_seed
 
 setup_seed()
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

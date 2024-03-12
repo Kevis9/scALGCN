@@ -10,7 +10,7 @@ import warnings
 import networkx as nx
 from utils import centralissimo, accuracy, active_learning
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, f1_score
-from utils import setup_seed
+from seed_manager import setup_seed
 
 setup_seed()
 class ProGNN:
