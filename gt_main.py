@@ -61,16 +61,16 @@ parser.add_argument('--GL_epochs', type=int,
                              help='epochs for GL')
 
 parser.add_argument('--alpha', type=float, 
-                    default=1, 
+                    default=5e-4, 
                     help='weight of l1 norm')
 parser.add_argument('--beta', type=float, 
-                    default=1.5, 
+                    default=2, 
                     help='weight of nuclear norm')
 parser.add_argument('--gamma', type=float, 
                     default=1, 
                     help='weight of GNN loss')
 parser.add_argument('--lambda_', type=float, 
-                    default=0, 
+                    default=5e-4, 
                     help='weight of feature smoothing')
 
 ####### Switchs #######

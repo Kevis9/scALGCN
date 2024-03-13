@@ -213,7 +213,7 @@ class ProGNN:
                         'acc_train: {:.4f}'.format(acc_train.item()),
                         'loss_val: {:.4f}'.format(loss_val.item()),
                         'acc_val: {:.4f}'.format(acc_val.item()),
-                        'acc_test{:.4f}'.format(acc_test.item()),
+                        'acc_test：{:.4f}'.format(acc_test.item()),
                         'time: {:.4f}s'.format(time.time() - t))
                 
 
@@ -289,27 +289,20 @@ class ProGNN:
             output = self.model(norm_adj, features)
             loss_val = criterion(output[idx_val], labels[idx_val])
         
-        if args.is_auxilary:
-            if loss_val < self.best_val_loss:
-                self.best_val_loss = loss_val
-                self.best_graph = norm_adj.detach()
-                self.weights = deepcopy(self.model.state_dict())
-                if args.debug:
-                    print(f'\t=== saving current graph/gcn, best_val_loss: %s' % self.best_val_loss.item())
-        else:
-            acc_val = accuracy(output[idx_val], labels[idx_val])                
-            print('Epoch: {:04d}'.format(epoch+1),
-                'acc_train: {:.4f}'.format(acc_train.item()),
-                'loss_val: {:.4f}'.format(loss_val.item()),
-                'acc_val: {:.4f}'.format(acc_val.item()),
-                'time: {:.4f}s'.format(time.time() - t))
-            
-            if acc_val > self.best_val_acc:
-                self.best_val_acc = acc_val
-                self.best_graph = norm_adj.detach()
-                self.weights = deepcopy(self.model.state_dict())
-                if args.debug:
-                    print(f'\t=== saving current graph/gcn, best_val_acc: %s' % self.best_val_acc.item())            
+        
+        acc_val = accuracy(output[idx_val], labels[idx_val])                
+        print('Epoch: {:04d}'.format(epoch+1),
+            'acc_train: {:.4f}'.format(acc_train.item()),
+            'loss_val: {:.4f}'.format(loss_val.item()),
+            'acc_val: {:.4f}'.format(acc_val.item()),
+            'time: {:.4f}s'.format(time.time() - t))
+        
+        if acc_val > self.best_val_acc:
+            self.best_val_acc = acc_val
+            self.best_graph = norm_adj.detach()
+            self.weights = deepcopy(self.model.state_dict())
+            if args.debug:
+                print(f'\t=== saving current graph/gcn, best_val_acc: %s' % self.best_val_acc.item())            
 
         if args.debug:
             if epoch % 1 == 0:

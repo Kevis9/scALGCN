@@ -12,8 +12,15 @@ def get_edge_idx(df):
 old_graph = load_npz('old_graph.npz')
 new_graph = load_npz('new_graph.npz') # 经过了normalization
 
+
+print("new_graph的L1: ", new_graph.sum())
+print("old_graph的L1：",old_graph.sum())
+
 old_graph[old_graph > 0] = 1
 new_graph[new_graph > 0] = 1
+
+print("new_graph的L1: ", new_graph.sum())
+print("old_graph的L1：",old_graph.sum())
 
 graph = new_graph - old_graph
 graph = graph.toarray()
