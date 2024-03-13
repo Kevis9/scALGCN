@@ -64,12 +64,12 @@ class ProGNN:
                                lr=1e-3, weight_decay=5e-4)
                                        
         # 不需要转为numpy
-        save_adj = g_data.adj_external(scipy_fmt='csr')
+        # save_adj = g_data.adj_external(scipy_fmt='csr')
         # save_adj = normalize_adj(save_adj)   
         # save_adj = csr_matrix(save_adj)     
         # save_eidx = torch.stack(g_data.edges()).cpu().numpy()
         # np.savetxt('old_graph.csv', save_eidx, delimiter=',')  
-        save_npz("old_graph.npz", save_adj)      
+        # save_npz(os.path.join(, "old_graph.npz"), save_adj)      
         
         adj = g_data.adjacency_matrix().to_dense().to(self.device)
         estimator = EstimateAdj(adj, symmetric=args.symmetric, device=self.device).to(self.device)
@@ -341,8 +341,8 @@ class ProGNN:
         
         output = self.model(adj, features)                
         
-        save_adj = csr_matrix(adj.detach().cpu().numpy())
-        save_npz("new_graph.npz", save_adj)
+        new_adj = csr_matrix(adj.detach().cpu().numpy())
+        # save_npz("new_graph.npz", save_adj)
         
         # save_eidx = edge_index.detach().cpu().numpy()
         # np.savetxt('new_graph.csv', save_eidx, delimiter=',')
@@ -366,7 +366,7 @@ class ProGNN:
             print("\tTest set results:",
                 "loss= {:.4f}".format(loss_test.item()),
                 "accuracy= {:.4f}".format(acc_test.item()))
-            return acc_test.item(), macrof1_test, torch.argmax(output[idx_test], dim=1).detach().cpu().numpy() 
+            return acc_test.item(), macrof1_test, torch.argmax(output[idx_test], dim=1).detach().cpu().numpy(), new_adj
         
 
     def feature_smoothing(self, adj, X):

@@ -10,6 +10,7 @@ from prognn import ProGNN
 import pandas as pd
 import copy
 from utils import setup_seed
+from scipy.sparse import csr_matrix, save_npz, load_npz
 
 setup_seed()
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -94,7 +95,7 @@ parser.add_argument('--adj_training', action='store_true',
                     default=False,
                     help='whether update the adj')
 parser.add_argument('--add_pos_enc', action='store_true',
-                             default=False, 
+                             default=True, 
                              help='whether adding postional encoding to node feature')
 parser.add_argument('--active_learning', action='store_true', 
                              default=False, 
@@ -162,6 +163,8 @@ test_res = prognn.test(features=g_data.ndata['x'].to(device),
 
 print("acc is {:.3f}".format(test_res[0]))
 
+old_adj = g_data.adj_external(scipy_fmt='csr')
+new_adj = test_res[3]
 
 # save config
 ref_proj = proj.split('-')[0]
@@ -175,8 +178,6 @@ with open('config/{:}-{:}-{:}_acc_{:.3f}.json'.format(ref_proj, query_proj, auxi
     json.dump(vars(args), f)
     
 second_key = 'GT'
-if args.add_pos_enc:
-    second_key += ' + pos'
 
 if args.active_learning:
     second_key += ' + AL'
@@ -209,6 +210,10 @@ query_predict_df = pd.DataFrame(query_predict, columns=['cell_type'])
 exp_save_path = os.path.join('result', first_key + '_' + second_key)
 if not os.path.exists(exp_save_path):
     os.makedirs(exp_save_path)
+
+save_npz(os.path.join(exp_save_path, "old_graph.npz"), old_adj)  
+save_npz(os.path.join(exp_save_path, "new_graph.npz"), new_adj)  
+
 
 ref_true_df.to_csv(os.path.join(exp_save_path, 'ref_true.csv'), index=False)
 query_true_df.to_csv(os.path.join(exp_save_path, 'query_true.csv'), index=False)
