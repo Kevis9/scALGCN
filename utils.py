@@ -309,6 +309,7 @@ def get_data_info(args, adata, n_ref, n_query):
     auxilary_val_idx = idxs[int(auxilary_train_size * auxilary_train_num):]                
         
     data_info['val_idx'] = val_idx
+    data_info['auxilary_train_idx'] = auxilary_train_idx
     data_info['auxilary_val_idx'] = auxilary_val_idx
     data_info['test_idx'] = [i + n_ref for i in range(n_query)]
     
