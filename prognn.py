@@ -117,11 +117,7 @@ class ProGNN:
                         train_idx, val_idx)
                          
             updated_adj = self.estimator.normalize()                        
-            
-            if epoch >= args.GL_epochs:
-                # 无法在adj_train的过程中进行截断, 所以选择在adj_train结束之后截断
-                updated_adj[updated_adj < args.adj_thresh] = 0
-            
+                                   
             prob = self.train_gnn(adj=updated_adj, 
                                 features=node_x,                               
                                 labels=labels,

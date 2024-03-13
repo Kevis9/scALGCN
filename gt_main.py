@@ -57,11 +57,11 @@ parser.add_argument('--pos_enc_dim', type=int,
 
 ####### Graph Learning #######
 parser.add_argument('--GL_epochs', type=int, 
-                             default=5 , #一般设置为5或者10
+                             default=5 , #一般设置为5或者10 <epochs最好
                              help='epochs for GL')
 
 parser.add_argument('--alpha', type=float, 
-                    default=0.5, 
+                    default=2, 
                     help='weight of l1 norm')
 parser.add_argument('--beta', type=float, 
                     default=1.5, 
@@ -72,9 +72,7 @@ parser.add_argument('--gamma', type=float,
 parser.add_argument('--lambda_', type=float, 
                     default=5e-4, 
                     help='weight of feature smoothing')
-parser.add_argument('--adj_thresh', type=float, 
-                    default=1e-3, # < 1e-3 会被标记为0
-                    help='weight of nuclear norm')
+
 
 
 ####### Switchs #######
