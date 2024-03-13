@@ -298,7 +298,7 @@ def get_data_info(args, adata, n_ref, n_query):
     # 按照论文，train label一开始每个类别设置成4个, 剩余的training node作为label budget里面的一部分
     train_idx_for_active_learning = random_stratify_sample_with_train_idx(ref_label,
                                                                 train_idx=train_idx,
-                                                                train_class_num=args.init_num_per_class)        
+                                                                init_num_per_class=args.init_num_per_class)        
     
     auxilary_label = adata.uns['auxilary_label']
     idxs = [i for i in range(auxilary_label.shape[0])]
