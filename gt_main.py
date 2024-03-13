@@ -72,6 +72,10 @@ parser.add_argument('--gamma', type=float,
 parser.add_argument('--lambda_', type=float, 
                     default=5e-4, 
                     help='weight of feature smoothing')
+parser.add_argument('--adj_thresh', type=float, 
+                    default=1e-3, # < 1e-3 会被标记为0
+                    help='weight of nuclear norm')
+
 
 ####### Switchs #######
 parser.add_argument('--layer_norm', action='store_true',
