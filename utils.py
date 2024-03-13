@@ -171,11 +171,11 @@ def random_stratify_sample(ref_labels, train_size):
     return train_idx, val_idx
 
 
-def random_stratify_sample_with_train_idx(ref_labels, train_idx, train_class_num):
+def random_stratify_sample_with_train_idx(ref_labels, train_idx, init_num_per_class):
     '''
     paramters:
         train_idx: 训练集下标
-        train_class_num: 训练数据集中类别的数目
+        init_num_per_class: 针对每一个类选取一定初始数目节点
     '''
     label_set = list(set(list(ref_labels.squeeze())))
     label_set.sort()
@@ -183,10 +183,10 @@ def random_stratify_sample_with_train_idx(ref_labels, train_idx, train_class_num
     for c in label_set:
         idx = np.array(train_idx)[np.where(ref_labels[train_idx] == c)[0]]
         np.random.seed(20)
-        if len(idx) < train_class_num:
+        if len(idx) < init_num_per_class:
             random_nodes = list(np.random.choice(idx, len(idx), replace=False))
         else:
-            random_nodes = list(np.random.choice(idx, train_class_num, replace=False))
+            random_nodes = list(np.random.choice(idx, init_num_per_class, replace=False))
         new_train_idx += random_nodes
     return new_train_idx
 
@@ -298,7 +298,7 @@ def get_data_info(args, adata, n_ref, n_query):
     # 按照论文，train label一开始每个类别设置成4个, 剩余的training node作为label budget里面的一部分
     train_idx_for_active_learning = random_stratify_sample_with_train_idx(ref_label,
                                                                 train_idx=train_idx,
-                                                                train_class_num=args.init_train_num)        
+                                                                train_class_num=args.init_num_per_class)        
     
     auxilary_label = adata.uns['auxilary_label']
     idxs = [i for i in range(auxilary_label.shape[0])]
@@ -307,21 +307,18 @@ def get_data_info(args, adata, n_ref, n_query):
     auxilary_train_num = auxilary_label.shape[0]
     auxilary_train_idx = idxs[:int(auxilary_train_size * auxilary_train_num)]        
     auxilary_val_idx = idxs[int(auxilary_train_size * auxilary_train_num):]                
-    auxilary_train_idxs = auxilary_train_idx.copy()
-    random.shuffle(auxilary_train_idxs)
-    auxilary_train_idx_for_active_learning = auxilary_train_idxs[:args.init_train_num]
-    
+        
     data_info['val_idx'] = val_idx
     data_info['auxilary_val_idx'] = auxilary_val_idx
     data_info['test_idx'] = [i + n_ref for i in range(n_query)]
+    
     if args.active_learning:
-        data_info['train_idx'] = train_idx_for_active_learning
-        data_info['auxilary_train_idx'] = auxilary_train_idx_for_active_learning
+        data_info['train_idx'] = train_idx_for_active_learning        
     else:
-        data_info['train_idx'] = train_idx
-        data_info['auxilary_train_idx'] = auxilary_train_idx
+        data_info['train_idx'] = train_idx        
 
     data_info['class_num'] = len(np.unique(adata.obs['cell_type'].to_numpy()))
+    # 回归任务也需要知道label的dim
     data_info['auxilary_class_num'] = adata.uns['auxilary_label'].shape[1]
     
     return data_info            
@@ -472,7 +469,7 @@ def accuracy(output, labels):
     correct = correct.sum()
     return correct / len(labels)
 
-def active_learning(g_data, epoch, out_prob, norm_centrality, args, data_info):    
+def active_learning(g_data, epoch, out_prob, norm_centrality, args, data_info):
     gamma = np.random.beta(1, 1.005 - args.basef ** epoch)
     alpha = beta = (1 - gamma) / 2
     prob = out_prob
