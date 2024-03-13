@@ -472,11 +472,12 @@ def accuracy(output, labels):
     correct = correct.sum()
     return correct / len(labels)
 
-def active_learning(g_data, epoch, out_prob, norm_centrality, args, data_info):
+def active_learning(g_data, epoch, out_prob, norm_centrality, args, data_info):    
     gamma = np.random.beta(1, 1.005 - args.basef ** epoch)
     alpha = beta = (1 - gamma) / 2
     prob = out_prob
     if args.active_learning and len(data_info['train_idx']) < data_info['max_nodes_num']:
+        print("Active learning!")
         entropy = scipy.stats.entropy(prob.T)
         kmeans = KMeans(n_clusters=data_info['class_num'], random_state=0).fit(prob)
         ed_score = euclidean_distances(prob, kmeans.cluster_centers_)
