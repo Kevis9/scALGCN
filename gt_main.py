@@ -191,13 +191,13 @@ if args.use_auxilary:
     first_key += ('-' + auxilary_proj)
 
 print("experimens {:}_{:} finished".format(first_key, second_key))
-acc_data = pd.read_csv('result/acc_2.csv', index_col=0)
+acc_data = pd.read_csv('result/acc.csv', index_col=0)
 acc_data.loc[first_key][second_key] = test_res[0]
-acc_data.to_csv('result/acc_2.csv')
+acc_data.to_csv('result/acc.csv')
 
-f1_data = pd.read_csv('result/macro-f1_2.csv', index_col=0)
+f1_data = pd.read_csv('result/macro-f1.csv', index_col=0)
 f1_data.loc[first_key][second_key] = test_res[1]
-f1_data.to_csv('result/macro-f1_2.csv')
+f1_data.to_csv('result/macro-f1.csv')
 
 # save query_true.csv, query_predict.csv
 ref_true = data_info['label_encoder'].inverse_transform(g_data.ndata['y_true'].numpy()[:adata.uns['n_ref']])
