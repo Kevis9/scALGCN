@@ -28,10 +28,10 @@ parser.add_argument('--k_select', type=int,
                              help='num of nodes to select for every iteration')
 
 parser.add_argument('--init_num_per_class', type=int, 
-                             default=30, 
+                             default=100, 
                              help='for active learning, we will pick some initial nodes for every class')
 parser.add_argument('--max_per_class', type=int, 
-                             default=50, 
+                             default=130, 
                              help='max number of nodes for each class')
 
 ####### GT Model #######
@@ -63,7 +63,7 @@ parser.add_argument('--GL_epochs', type=int,
                              help='epochs for GL')
 
 parser.add_argument('--alpha', type=float, 
-                    default=0.5, 
+                    default=5e-3, 
                     help='weight of l1 norm')
 parser.add_argument('--beta', type=float, 
                     default=1.5, 
@@ -75,7 +75,7 @@ parser.add_argument('--lambda_', type=float,
                     default=5e-4, 
                     help='weight of feature smoothing')
 parser.add_argument('--adj_thresh', type=float, 
-                    default=5e-3, # <  会被标记为0
+                    default=0, # <  会被标记为0
                     help='weight of nuclear norm')
 
 
@@ -191,13 +191,13 @@ if args.use_auxilary:
     first_key += ('-' + auxilary_proj)
 
 print("experimens {:}_{:} finished".format(first_key, second_key))
-acc_data = pd.read_csv('result/acc.csv', index_col=0)
+acc_data = pd.read_csv('result/acc_2.csv', index_col=0)
 acc_data.loc[first_key][second_key] = test_res[0]
-acc_data.to_csv('result/acc.csv')
+acc_data.to_csv('result/acc_2.csv')
 
-f1_data = pd.read_csv('result/macro-f1.csv', index_col=0)
+f1_data = pd.read_csv('result/macro-f1_2.csv', index_col=0)
 f1_data.loc[first_key][second_key] = test_res[1]
-f1_data.to_csv('result/macro-f1.csv')
+f1_data.to_csv('result/macro-f1_2.csv')
 
 # save query_true.csv, query_predict.csv
 ref_true = data_info['label_encoder'].inverse_transform(g_data.ndata['y_true'].numpy()[:adata.uns['n_ref']])
