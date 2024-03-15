@@ -283,7 +283,7 @@ def load_data(args, use_auxilary=True):
             auxilary_g_data.ndata['PE'] = torch.FloatTensor(adata.uns['auxilary_PE'])
     
     
-    return g_data, auxilary_g_data if auxilary_g_data else None, adata, data_info
+    return g_data, None if auxilary_g_data is None else auxilary_g_data, adata, data_info
 
 def get_data_info(args, adata, n_ref, n_query):
     '''
