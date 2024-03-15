@@ -267,6 +267,7 @@ def load_data(args, use_auxilary=True):
     else:
         g_data.ndata['PE'] = torch.FloatTensor(adata.uns['PE'])
 
+    auxilary_g_data = None
     if use_auxilary:
         # if not 'auxilary_edge_index_knn' in adata.uns:
         adata.uns['auxilary_edge_index_knn'] = construct_graph_with_knn(adata.uns['auxilary_data'])
@@ -283,6 +284,7 @@ def load_data(args, use_auxilary=True):
             auxilary_g_data.ndata['PE'] = torch.FloatTensor(adata.uns['auxilary_PE'])
     
     
+
     return g_data, None if auxilary_g_data is None else auxilary_g_data, adata, data_info
 
 def get_data_info(args, adata, n_ref, n_query):
