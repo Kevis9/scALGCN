@@ -146,7 +146,7 @@ if args.use_auxilary:
 args.is_auxilary = False
 type_model = GTModel(args=args,                
                 class_num=data_info['class_num'],
-                in_dim=auxilary_g_data.ndata['x'].shape[1],
+                in_dim=g_data.ndata['x'].shape[1],
                 pos_enc=g_data.ndata['PE'].to(device) if args.add_pos_enc else None).to(device)
 
 if args.use_auxilary:
