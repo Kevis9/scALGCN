@@ -138,7 +138,7 @@ if args.use_auxilary:
     auxilary_model_prognn = ProGNN(auxilary_model, data_info=data_info, args=auxilary_args, device=device)
     auxilary_model_prognn.fit(g_data=auxilary_g_data)
 
-# 对照实验组，验证state_embeddings的有效性，排除residual的影响
+# ========================对照实验组，验证state_embeddings的有效性，排除residual的影响========================================
 args.is_auxilary = False # 保证是type-model
 control_model = GTModel(args=args,                
                 class_num=data_info['class_num'],
@@ -147,7 +147,7 @@ control_model = GTModel(args=args,
 control_prognn = ProGNN(control_model, data_info=data_info, args=args, device=device)
 control_prognn.fit(g_data=g_data)
 auxilary_embeddings = control_model.get_embeddings(g_data=g_data, args=args)
-
+# ========================================================================================
 
 
 
@@ -163,6 +163,10 @@ type_model = GTModel(args=args,
 if args.use_auxilary:
     auxilary_embeddings = auxilary_model.get_embeddings(g_data=g_data, args=args)
     type_model.set_state_embeddings(auxilary_embeddings)
+
+# =========对照组实验=========
+type_model.set_state_embeddings(auxilary_embeddings)
+# ===========================================
 
 prognn = ProGNN(type_model, data_info=data_info, args=args, device=device)
 prognn.fit(g_data=g_data)

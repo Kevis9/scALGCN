@@ -158,6 +158,9 @@ class GTModel(nn.Module):
         for layer in self.layers:
             h = layer(A, h)        
         
+        # =========对照组实验=========
+        h = h + self.state_embeddings
+        # ==========================
         if not self.is_auxilary and self.use_auxilary:
             h = h + self.state_embeddings
                                                                 
