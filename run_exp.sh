@@ -62,8 +62,8 @@ projects2=(
 
 for i in ${projects2[@]}; do
     # ref_query
-    CUDA_VISIBLE_DEVICES=0 python gt_main.py --adj_training --active_learning --data_dir=./experiments/$i
-    CUDA_VISIBLE_DEVICES=0 python gt_main.py --adj_training --data_dir=./experiments/$i
-    CUDA_VISIBLE_DEVICES=0 python gt_main.py --active_learning --data_dir=./experiments/$i
-    CUDA_VISIBLE_DEVICES=0 python gt_main.py --data_dir=./experiments/$i
+    CUDA_VISIBLE_DEVICES=1 python gt_main.py --adj_training --active_learning --data_dir=./experiments/$i
+    CUDA_VISIBLE_DEVICES=1 python gt_main.py --adj_training --data_dir=./experiments/$i
+    CUDA_VISIBLE_DEVICES=1 python gt_main.py --active_learning --data_dir=./experiments/$i
+    CUDA_VISIBLE_DEVICES=1 python gt_main.py --data_dir=./experiments/$i
 done
