@@ -140,6 +140,10 @@ if args.use_auxilary:
 
 # ========================对照实验组，验证state_embeddings的有效性，排除residual的影响========================================
 args.is_auxilary = False # 保证是type-model
+adj_training = args.adj_training
+active_learning = args.active_learning
+args.adj_training = False
+args.active_learning = False
 control_model = GTModel(args=args,                
                 class_num=data_info['class_num'],
                 in_dim=g_data.ndata['x'].shape[1],
@@ -155,6 +159,10 @@ auxilary_embeddings = control_model.get_embeddings(g_data=g_data, args=args)
  ========= For cell type prediction ========= 
 '''
 args.is_auxilary = False
+# ========================对照实验组========================
+args.adj_training = adj_training
+args.active_learning = active_learning
+# ========================对照实验组========================
 type_model = GTModel(args=args,                
                 class_num=data_info['class_num'],
                 in_dim=g_data.ndata['x'].shape[1],
