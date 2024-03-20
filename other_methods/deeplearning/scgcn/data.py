@@ -18,7 +18,7 @@ def input_data(DataDir,Rgraph=True):
     DataPath2 = '{}/Data2.csv'.format(DataDir)
     LabelsPath1 = '{}/Label1.csv'.format(DataDir)
     LabelsPath2 = '{}/Label2.csv'.format(DataDir)
-
+    
     #' read the data
     data1 = pd.read_csv(DataPath1, index_col=0, sep=',')
     data2 = pd.read_csv(DataPath2, index_col=0, sep=',')
