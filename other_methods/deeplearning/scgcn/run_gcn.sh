@@ -11,36 +11,40 @@ dir_name=(
     "pcp1_6000-bcp1_6000-exp0013" \
     "mp1_6000-bcp1_6000-exp0013" \
     "bcp1_6000-bcp3_6000-exp0013" \
-    "celseq_10xv3" \
-    "celseq_dropseq" \
-    "celseq_indrop" \
-    "celseq_seqwell" \
-    "celseq_smartseq" \
-    "10xv3_celseq" \
-    "10xv3_dropseq" \
-    "10xv3_indrop" \
-    "10xv3_seqwell" \
-    "10xv3_smartseq" \
-    "dropseq_celseq" \
-    "dropseq_10xv3" \
-    "dropseq_indrop" \
-    "dropseq_seqwell" \
-    "dropseq_smartseq" \
-    "indrop_celseq" \
-    "indrop_10xv3" \
-    "indrop_dropseq" \
-    "indrop_seqwell" \
-    "indrop_smartseq" \
-    "seqwell_celseq" \
-    "seqwell_10xv3" \
-    "seqwell_dropseq" \
-    "seqwell_indrop" \
-    "seqwell_smartseq" \
-    "smartseq_celseq" \
-    "smartseq_10xv3" \
-    "smartseq_dropseq" \
-    "smartseq_indrop" \
-    "smartseq_seqwell"
+    "celseq-10xv3" \
+    "celseq-dropseq" \
+    "celseq-indrop" \
+    "celseq-seqwell" \
+    "celseq-smartseq" \
+    "10xv3-celseq" \
+    "10xv3-dropseq" \
+    "10xv3-indrop" \
+    "10xv3-seqwell" \
+    "10xv3-smartseq" \
+    "dropseq-celseq" \
+    "dropseq-10xv3" \
+    "dropseq-indrop" \
+    "dropseq-seqwell" \
+    "dropseq-smartseq" \
+    "indrop-celseq" \
+    "indrop-10xv3" \
+    "indrop-dropseq" \
+    "indrop-seqwell" \
+    "indrop-smartseq" \
+    "seqwell-celseq" \
+    "seqwell-10xv3" \
+    "seqwell-dropseq" \
+    "seqwell-indrop" \
+    "seqwell-smartseq" \
+    "smartseq-celseq" \
+    "smartseq-10xv3" \
+    "smartseq-dropseq" \
+    "smartseq-indrop" \
+    "smartseq-seqwell" \
+    "mouse-human" \
+    "human-mouse" \
+    "mouse-humancombine" \
+    "humancombine-mouse"
     
 )
 
@@ -55,41 +59,44 @@ projs=(
     "pcp1_6000-bcp1_6000" \
     "mp1_6000-bcp1_6000" \
     "bcp1_6000-bcp3_6000" \
-    "celseq_10xv3" \
-    "celseq_dropseq" \
-    "celseq_indrop" \
-    "celseq_seqwell" \
-    "celseq_smartseq" \
-    "10xv3_celseq" \
-    "10xv3_dropseq" \
-    "10xv3_indrop" \
-    "10xv3_seqwell" \
-    "10xv3_smartseq" \
-    "dropseq_celseq" \
-    "dropseq_10xv3" \
-    "dropseq_indrop" \
-    "dropseq_seqwell" \
-    "dropseq_smartseq" \
-    "indrop_celseq" \
-    "indrop_10xv3" \
-    "indrop_dropseq" \
-    "indrop_seqwell" \
-    "indrop_smartseq" \
-    "seqwell_celseq" \
-    "seqwell_10xv3" \
-    "seqwell_dropseq" \
-    "seqwell_indrop" \
-    "seqwell_smartseq" \
-    "smartseq_celseq" \
-    "smartseq_10xv3" \
-    "smartseq_dropseq" \
-    "smartseq_indrop" \
-    "smartseq_seqwell"
+    "celseq-10xv3" \
+    "celseq-dropseq" \
+    "celseq-indrop" \
+    "celseq-seqwell" \
+    "celseq-smartseq" \
+    "10xv3-celseq" \
+    "10xv3-dropseq" \
+    "10xv3-indrop" \
+    "10xv3-seqwell" \
+    "10xv3-smartseq" \
+    "dropseq-celseq" \
+    "dropseq-10xv3" \
+    "dropseq-indrop" \
+    "dropseq-seqwell" \
+    "dropseq-smartseq" \
+    "indrop-celseq" \
+    "indrop-10xv3" \
+    "indrop-dropseq" \
+    "indrop-seqwell" \
+    "indrop-smartseq" \
+    "seqwell-celseq" \
+    "seqwell-10xv3" \
+    "seqwell-dropseq" \
+    "seqwell-indrop" \
+    "seqwell-smartseq" \
+    "smartseq-celseq" \
+    "smartseq-10xv3" \
+    "smartseq-dropseq" \
+    "smartseq-indrop" \
+    "smartseq-seqwell" \
+    "mouse-human" \
+    "human-mouse" \
+    "mouse-humancombine" \
+    "humancombine-mouse"
 )
 
 # 获取数组长度
 length=${#projs[@]}
-length=$((length - 30))
 export rgraph=FALSE
 export basepath="/home/hwl/scALGCN/experiments"
 

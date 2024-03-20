@@ -139,18 +139,18 @@ if args.use_auxilary:
     auxilary_model_prognn.fit(g_data=auxilary_g_data)
 
 # ========================对照实验组，验证state_embeddings的有效性，排除residual的影响========================================
-args.is_auxilary = False # 保证是type-model
-adj_training = args.adj_training
-active_learning = args.active_learning
-args.adj_training = False
-args.active_learning = False
-control_model = GTModel(args=args,                
-                class_num=data_info['class_num'],
-                in_dim=g_data.ndata['x'].shape[1],
-                pos_enc=g_data.ndata['PE'].to(device) if args.add_pos_enc else None).to(device)
-control_prognn = ProGNN(control_model, data_info=data_info, args=args, device=device)
-control_prognn.fit(g_data=g_data)
-auxilary_embeddings = control_model.get_embeddings(g_data=g_data, args=args)
+# args.is_auxilary = False # 保证是type-model
+# adj_training = args.adj_training
+# active_learning = args.active_learning
+# args.adj_training = False
+# args.active_learning = False
+# control_model = GTModel(args=args,                
+#                 class_num=data_info['class_num'],
+#                 in_dim=g_data.ndata['x'].shape[1],
+#                 pos_enc=g_data.ndata['PE'].to(device) if args.add_pos_enc else None).to(device)
+# control_prognn = ProGNN(control_model, data_info=data_info, args=args, device=device)
+# control_prognn.fit(g_data=g_data)
+# auxilary_embeddings = control_model.get_embeddings(g_data=g_data, args=args)
 # ========================================================================================
 
 
@@ -160,8 +160,8 @@ auxilary_embeddings = control_model.get_embeddings(g_data=g_data, args=args)
 '''
 args.is_auxilary = False
 # ========================对照实验组========================
-args.adj_training = adj_training
-args.active_learning = active_learning
+# args.adj_training = adj_training
+# args.active_learning = active_learning
 # ========================对照实验组========================
 type_model = GTModel(args=args,                
                 class_num=data_info['class_num'],
@@ -173,7 +173,7 @@ if args.use_auxilary:
     type_model.set_state_embeddings(auxilary_embeddings)
 
 # =========对照组实验=========
-type_model.set_state_embeddings(auxilary_embeddings)
+# type_model.set_state_embeddings(auxilary_embeddings)
 # ===========================================
 
 prognn = ProGNN(type_model, data_info=data_info, args=args, device=device)
@@ -214,13 +214,13 @@ if args.use_auxilary:
     first_key += ('-' + auxilary_proj)
 
 print("experimens {:}_{:} finished".format(first_key, second_key))
-acc_data = pd.read_csv('result/acc_3.csv', index_col=0)
+acc_data = pd.read_csv('result/acc_4.csv', index_col=0)
 acc_data.loc[first_key][second_key] = test_res[0]
-acc_data.to_csv('result/acc_3.csv')
+acc_data.to_csv('result/acc_4.csv')
 
-f1_data = pd.read_csv('result/macro-f1_3.csv', index_col=0)
+f1_data = pd.read_csv('result/macro-f1_4.csv', index_col=0)
 f1_data.loc[first_key][second_key] = test_res[1]
-f1_data.to_csv('result/macro-f1_3.csv')
+f1_data.to_csv('result/macro-f1_4.csv')
 
 # save query_true.csv, query_predict.csv
 ref_true = data_info['label_encoder'].inverse_transform(g_data.ndata['y_true'].numpy()[:adata.uns['n_ref']])
