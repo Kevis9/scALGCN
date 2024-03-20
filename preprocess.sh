@@ -43,6 +43,6 @@ projects=(
 
 for i in ${projects[@]}; do        
     python preprocess/h5ad2seurat_adaptor.py --dir_name=experiments/$i
-    Rscript preprocess/preprocess.R experiments/$i
+    Rscript preprocess/preprocess.R experiments/$i FALSE
     python preprocess/seurat2h5ad_adaptor.py --dir_name=experiments/$i
 done
