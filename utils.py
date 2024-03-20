@@ -220,7 +220,7 @@ def get_anndata(args):
     adata.var_names = ref_data_h5.var_names
     adata.obs['cell_type'] = label        
     adata.uns['edge_index'] = edge_index
-    if auxilary_data_h5 is not None:
+    if args.use_auxilary:
     # take auxilary data all into all_data        
         adata.uns['auxilary_data'] = auxilary_data_h5.X.toarray()
         adata.uns['auxilary_label'] = auxilary_data_h5.obsm['label']
