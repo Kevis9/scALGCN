@@ -197,7 +197,8 @@ def get_anndata(args):
     ref_data_h5 = ad.read(os.path.join(data_dir, 'ref_data.h5ad'))
     query_data_h5 = ad.read(os.path.join(data_dir, 'query_data.h5ad'))
 
-    auxilary_data_h5 = ad.read(os.path.join(data_dir, 'auxilary_data.h5ad'))
+    if args.use_auxilary:
+        auxilary_data_h5 = ad.read(os.path.join(data_dir, 'auxilary_data.h5ad'))
     
     ref_data = ref_data_h5.X.toarray()
     query_data = query_data_h5.X.toarray()
@@ -219,10 +220,11 @@ def get_anndata(args):
     adata.var_names = ref_data_h5.var_names
     adata.obs['cell_type'] = label        
     adata.uns['edge_index'] = edge_index
+    if auxilary_data_h5 is not None:
     # take auxilary data all into all_data        
-    adata.uns['auxilary_data'] = auxilary_data_h5.X.toarray()
-    adata.uns['auxilary_label'] = auxilary_data_h5.obsm['label']
-    adata.uns['auxilary_edge_index'] = auxilary_edge_index                                        
+        adata.uns['auxilary_data'] = auxilary_data_h5.X.toarray()
+        adata.uns['auxilary_label'] = auxilary_data_h5.obsm['label']
+        adata.uns['auxilary_edge_index'] = auxilary_edge_index                                        
     adata.uns['n_ref'] = ref_data_h5.n_obs
     adata.uns['n_query'] = query_data_h5.n_obs        
     
@@ -302,17 +304,19 @@ def get_data_info(args, adata, n_ref, n_query):
                                                                 train_idx=train_idx,
                                                                 init_num_per_class=args.init_num_per_class)        
     
-    auxilary_label = adata.uns['auxilary_label']
-    idxs = [i for i in range(auxilary_label.shape[0])]
-    random.shuffle(idxs)
-    auxilary_train_size = 0.8
-    auxilary_train_num = auxilary_label.shape[0]
-    auxilary_train_idx = idxs[:int(auxilary_train_size * auxilary_train_num)]        
-    auxilary_val_idx = idxs[int(auxilary_train_size * auxilary_train_num):]                
+    if args.use_auxilary:
+        auxilary_label = adata.uns['auxilary_label']
+        idxs = [i for i in range(auxilary_label.shape[0])]
+        random.shuffle(idxs)
+        auxilary_train_size = 0.8
+        auxilary_train_num = auxilary_label.shape[0]
+        auxilary_train_idx = idxs[:int(auxilary_train_size * auxilary_train_num)]        
+        auxilary_val_idx = idxs[int(auxilary_train_size * auxilary_train_num):]                
+        data_info['auxilary_train_idx'] = auxilary_train_idx
+        data_info['auxilary_val_idx'] = auxilary_val_idx
+
         
     data_info['val_idx'] = val_idx
-    data_info['auxilary_train_idx'] = auxilary_train_idx
-    data_info['auxilary_val_idx'] = auxilary_val_idx
     data_info['test_idx'] = [i + n_ref for i in range(n_query)]
     
     if args.active_learning:
@@ -322,7 +326,8 @@ def get_data_info(args, adata, n_ref, n_query):
 
     data_info['class_num'] = len(np.unique(adata.obs['cell_type'].to_numpy()))
     # 回归任务也需要知道label的dim
-    data_info['auxilary_class_num'] = adata.uns['auxilary_label'].shape[1]
+    if args.use_auxilary:
+        data_info['auxilary_class_num'] = adata.uns['auxilary_label'].shape[1]
     
     return data_info            
 
