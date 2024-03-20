@@ -89,7 +89,7 @@ projs=(
 
 # 获取数组长度
 length=${#projs[@]}
-export rgraph=False
+export rgraph=FALSE
 export basepath="/home/hwl/scALGCN/experiments"
 
 for ((i = 0; i < length; i++)); do

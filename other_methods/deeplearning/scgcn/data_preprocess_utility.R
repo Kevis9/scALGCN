@@ -129,8 +129,8 @@ normalize_data <- function(count.list){
         norm.list[[i]] <- as.matrix(Seurat:::NormalizeData.default(count.list[[i]],verbose=F))
         #' select variable features
         hvf.info <- Seurat:::FindVariableFeatures.default(count.list[[i]],selection.method='vst',verbose=F)
-        hvf.info <- hvf.info[which(x = hvf.info[, 1, drop = TRUE] != 0), ]
-        hvf.info <- hvf.info[order(hvf.info$vst.variance.standardized, decreasing = TRUE), , drop = FALSE]
+        hvf.info <- hvf.info[which(x = hvf.info[, 1, drop = TRUE] != 0), ]                
+        hvf.info <- hvf.info[order(hvf.info$variance.standardized, decreasing = TRUE), , drop = FALSE]
         var.features[[i]] <- head(rownames(hvf.info), n = 2000)
     }
     #' select variable features
@@ -266,8 +266,7 @@ save_processed_data <- function(count.list,label.list,Rgraph=TRUE,check_unknown=
         #' use python generated graph
         # if (!dir.exists('results')){dir.create('results')}
 
-#         dir.create('results')
-        print("Use python graph: from R")
+#         dir.create('results')        
         #' @param norm.list normalized data
         res1 <- normalize_data(count.list)
         norm.list <- res1[[1]]; hvg.features <- res1[[2]];
