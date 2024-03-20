@@ -176,10 +176,10 @@ print("silhoutte score is {:.3f}".format(sil))
 print("ARI is {:.3f}".format(ari))
 
 scgcn_res = pd.read_csv('scgcn_res.csv', index_col=0)
-scgcn_res[FLAGS.proj]['acc'] = acc
-scgcn_res[FLAGS.proj]['f1'] = macrof1
-scgcn_res[FLAGS.proj]['sil'] = sil
-scgcn_res[FLAGS.proj]['ari'] = ari
+scgcn_res.loc[FLAGS.proj]['acc'] = acc
+scgcn_res.loc[FLAGS.proj]['f1'] = macrof1
+scgcn_res.loc[FLAGS.proj]['sil'] = sil
+scgcn_res.loc[FLAGS.proj]['ari'] = ari
 scgcn_res.to_csv('scgcn_res.csv')
 
 
