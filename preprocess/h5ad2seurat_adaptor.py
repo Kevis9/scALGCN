@@ -17,7 +17,9 @@ args = parser.parse_args()
 dir_name = args.dir_name
 ref_data_h5 = ad.read_h5ad(os.path.join(dir_name, 'raw_data', 'ref_data.h5ad'))
 query_data_h5 = ad.read_h5ad(os.path.join(dir_name, 'raw_data', 'query_data.h5ad'))
-auxilary_data_h5 = ad.read_h5ad(os.path.join(dir_name, 'raw_data', 'auxilary_data.h5ad'))
+auxilary_data = None
+if os.path.exists(os.path.join(dir_name, 'raw_data', 'auxilary_data.h5ad')):
+    auxilary_data_h5 = ad.read_h5ad(os.path.join(dir_name, 'raw_data', 'auxilary_data.h5ad'))
 
 ref_obs_names = ref_data_h5.obs_names.to_numpy()
 query_obs_names = query_data_h5.obs_names.to_numpy()
@@ -46,11 +48,13 @@ query_data = query_data[query_idx, :]
 # But need to provide original gene information for ref and query
 ref_gene = pd.DataFrame(ref_data_h5.var_names, columns=['gene_name'])
 query_gene = pd.DataFrame(query_data_h5.var_names, columns=['gene_name'])
-auxilary_gene = pd.DataFrame(auxilary_data_h5.var_names, columns=['gene_name'])
+if auxilary_data is not None:
+    auxilary_gene = pd.DataFrame(auxilary_data_h5.var_names, columns=['gene_name'])
 
 ref_gene.to_csv(os.path.join(dir_name, 'raw_data', 'ref_gene_middle.csv'), index=False)
 query_gene.to_csv(os.path.join(dir_name, 'raw_data', 'query_gene_middle.csv'), index=False)
-auxilary_gene.to_csv(os.path.join(dir_name, 'raw_data', 'auxilary_gene_middle.csv'), index=False)
+if auxilary_data is not None:
+    auxilary_gene.to_csv(os.path.join(dir_name, 'raw_data', 'auxilary_gene_middle.csv'), index=False)
 
 
 
@@ -69,7 +73,8 @@ query_obs_names.to_csv(os.path.join(dir_name, 'raw_data', 'query_name_middle.csv
 
 mmwrite(os.path.join(dir_name, 'raw_data', 'ref_data_middle.mtx'), ref_data)
 mmwrite(os.path.join(dir_name, 'raw_data', 'query_data_middle.mtx'), query_data)
-mmwrite(os.path.join(dir_name, 'raw_data', 'auxilary_data_middle.mtx'), auxilary_data)
+if auxilary_data is not None:
+    mmwrite(os.path.join(dir_name, 'raw_data', 'auxilary_data_middle.mtx'), auxilary_data)
 
 
 

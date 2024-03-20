@@ -32,11 +32,15 @@ dir_name = args.dir_name
 
 norm_ref_data = mmread(os.path.join(dir_name, 'data', 'afterNorm_ref_data_middle.mtx')).tocsr()
 norm_query_data = mmread(os.path.join(dir_name, 'data', 'afterNorm_query_data_middle.mtx')).tocsr()
-norm_auxilary_data = mmread(os.path.join(dir_name, 'data', 'afterNorm_auxilary_data_middle.mtx')).tocsr()
+norm_auxilary_data = None
+if os.path.exists(os.path.join(dir_name, 'data', 'afterNorm_auxilary_data_middle.mtx')):
+    norm_auxilary_data = mmread(os.path.join(dir_name, 'data', 'afterNorm_auxilary_data_middle.mtx')).tocsr()
 
 ref_data = ad.read_h5ad(os.path.join(dir_name, 'raw_data', 'ref_data.h5ad'))
 query_data = ad.read_h5ad(os.path.join(dir_name, 'raw_data', 'query_data.h5ad'))
-auxilary_data = ad.read_h5ad(os.path.join(dir_name, 'raw_data', 'auxilary_data.h5ad'))
+
+if norm_auxilary_data is not None:
+    auxilary_data = ad.read_h5ad(os.path.join(dir_name, 'raw_data', 'auxilary_data.h5ad'))
 
 genes_df = pd.read_csv(os.path.join(dir_name, 'data', 'selected_genes_middle.csv'), index_col=0)
 genes = genes_df.iloc[:, 0].tolist()
@@ -50,11 +54,14 @@ query_label = pd.read_csv(os.path.join(dir_name, 'raw_data', 'query_label_middle
 
 new_ref_data = create_adata(norm_ref_data.transpose(), ref_name['cell_name'].tolist(), genes, ref_label['cell_type'].tolist(), False)
 new_query_data = create_adata(norm_query_data.transpose(), query_name['cell_name'].tolist(), genes, query_label['cell_type'].tolist(), False)
-new_auxilary_data = create_adata(norm_auxilary_data.transpose(), auxilary_data.obs_names.tolist(), genes, auxilary_data.obsm['label'], True)
+if norm_auxilary_data is not None:
+    new_auxilary_data = create_adata(norm_auxilary_data.transpose(), auxilary_data.obs_names.tolist(), genes, auxilary_data.obsm['label'], True)
 
 new_ref_data.write(os.path.join(dir_name, 'data', 'ref_data.h5ad'))
 new_query_data.write(os.path.join(dir_name, 'data', 'query_data.h5ad'))
-new_auxilary_data.write(os.path.join(dir_name, 'data', 'auxilary_data.h5ad'))
+
+if norm_auxilary_data is not None:
+    new_auxilary_data.write(os.path.join(dir_name, 'data', 'auxilary_data.h5ad'))
 
 # delete middle files
 def delete_files_with_pattern(root_folder, pattern):
