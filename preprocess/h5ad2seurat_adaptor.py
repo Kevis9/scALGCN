@@ -17,7 +17,7 @@ args = parser.parse_args()
 dir_name = args.dir_name
 ref_data_h5 = ad.read_h5ad(os.path.join(dir_name, 'raw_data', 'ref_data.h5ad'))
 query_data_h5 = ad.read_h5ad(os.path.join(dir_name, 'raw_data', 'query_data.h5ad'))
-auxilary_data = None
+auxilary_data_h5 = None
 if os.path.exists(os.path.join(dir_name, 'raw_data', 'auxilary_data.h5ad')):
     auxilary_data_h5 = ad.read_h5ad(os.path.join(dir_name, 'raw_data', 'auxilary_data.h5ad'))
 
@@ -27,7 +27,8 @@ query_obs_names = query_data_h5.obs_names.to_numpy()
 # First ref and query do cell intersection
 ref_data = ref_data_h5.X
 query_data = query_data_h5.X
-auxilary_data = auxilary_data_h5.X
+if auxilary_data_h5 is not None:
+    auxilary_data = auxilary_data_h5.X
 ref_cell_types = np.array(ref_data_h5.obs['cell_type'].tolist())
 query_cell_types = np.array(query_data_h5.obs['cell_type'].tolist())
 
@@ -48,12 +49,12 @@ query_data = query_data[query_idx, :]
 # But need to provide original gene information for ref and query
 ref_gene = pd.DataFrame(ref_data_h5.var_names, columns=['gene_name'])
 query_gene = pd.DataFrame(query_data_h5.var_names, columns=['gene_name'])
-if auxilary_data is not None:
+if auxilary_data_h5 is not None:
     auxilary_gene = pd.DataFrame(auxilary_data_h5.var_names, columns=['gene_name'])
 
 ref_gene.to_csv(os.path.join(dir_name, 'raw_data', 'ref_gene_middle.csv'), index=False)
 query_gene.to_csv(os.path.join(dir_name, 'raw_data', 'query_gene_middle.csv'), index=False)
-if auxilary_data is not None:
+if auxilary_data_h5 is not None:
     auxilary_gene.to_csv(os.path.join(dir_name, 'raw_data', 'auxilary_gene_middle.csv'), index=False)
 
 
