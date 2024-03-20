@@ -75,7 +75,7 @@ def graph_construct(outputdir):
     graph2.to_csv('./input/intra_graph.csv')
 
     label1 = label_list[0]
-    label1.to_csv('./input/Label1.csv', index=False)
+    label1.to_csv('./input/ref_label.csv', index=False)
 
     label2 = label_list[1]
-    label2.to_csv('./input/Label2.csv', index=False)
+    label2.to_csv('./input/query_label.csv', index=False)

@@ -76,7 +76,10 @@ def runCCA(data_use1, data_use2, features, count_names, num_cc):
                                 left_index=True,
                                 right_index=True,
                                 how='inner')
-    new_data1 = combined_data.loc[count_names, ].dropna()
+    # 源代码这里有问题
+    # new_data1 = combined_data.loc[count_names, ].dropna()
+    # 修改为下面的
+    new_data1 = combined_data.loc[combined_data.index.intersection(count_names),].dropna()
     # loadings=loadingDim(new.data1,cell.embeddings)
     loadings = pd.DataFrame(np.matmul(np.matrix(new_data1), cell_embeddings))
     loadings.index = new_data1.index
@@ -223,6 +226,7 @@ def generate_graph(count_list, norm_list, scale_list, features, combine, k_filte
         scale_data1 = scale_list[i]
         scale_data2 = scale_list[j]
         rowname = counts1.index
+
         #' @param data_use1 pandas data frame
         #' @param data_use2 pandas data frame
         #' @export feature loadings and embeddings (pandas data frame)

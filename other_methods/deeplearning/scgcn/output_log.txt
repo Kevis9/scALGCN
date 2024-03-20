@@ -1,0 +1,1516 @@
+R graph
+cel_seq_smart_seq, 0.892
+cel_seq_drop_seq, 0.870
+cel_seq_10x, 0.855
+seq_well_smart_seq, 0.886
+seq_well_drop_seq, 0.846
+seq_well_10x, 0.875
+indrop_drop_seq, 0.856
+indrop_10x, 0.874
+drop_seq_10x, 0.875
+drop_seq_smart_seq, 0.901
+84133_5061, 0.964
+84133_85241, 0.978
+84133_81608, 0.996
+gse\mouse_human, 0.939
+gse\human_mouse, 0.952
+gse_emtab\mouse_human, 0.857
+gse_emtab\human_mouse, 0.909
+
+Python graph
+cel_seq_smart_seq, 0.800
+cel_seq_drop_seq, 0.529
+cel_seq_10x, 0.540
+seq_well_smart_seq, 0.812
+seq_well_drop_seq, 0.831
+seq_well_10x, 0.852
+indrop_drop_seq, 0.792
+indrop_10x, 0.797
+drop_seq_10x, 0.841
+drop_seq_smart_seq, 0.745
+84133_5061, 0.914
+84133_85241, 0.960
+84133_81608, 0.994
+gse\mouse_human, 0.932
+gse\human_mouse, 0.926
+gse_emtab\mouse_human, 0.966
+gse_emtab\human_mouse, 0.944
+
+python graph wihtin dataset
+
+10x_v3, 0.908
+cel_seq, 0.764
+dropseq, 0.890
+emtab5061, 0.970
+gse81608, 0.936
+gse84133_human, 0.968
+gse84133_mouse, 0.961
+indrop, 0.852
+seq_well, 0.820
+smart_seq, 0.863
+mouse_combine, 0.958
+
+Cross-Speices
+gse\mouse_human
+pred's shape is (7568,)
+acc is 0.932
+f1 score is 0.794
+silhoutte score is 0.479
+ARI is 0.883
+
+gse\human_mouse
+pred's shape is (1868,)
+acc is 0.926
+f1 score is 0.711
+silhoutte score is 0.701
+ARI is 0.946
+
+gse_emtab\mouse_human
+pred's shape is (1869,)
+acc is 0.966
+f1 score is 0.956
+silhoutte score is 0.691
+ARI is 0.948
+
+gse_emtab\human_mouse
+pred's shape is (1758,)
+acc is 0.944
+f1 score is 0.921
+silhoutte score is 0.724
+ARI is 0.936
+
+mca_gse84133
+pred's shape is (2362,)
+acc is 0.251
+f1 score is 0.374
+silhoutte score is 0.417
+ARI is 0.182
+
+cel_seq_10x_v3
+pred's shape is (2362,)
+acc is 0.251
+f1 score is 0.374
+silhoutte score is 0.417
+ARI is 0.182
+cel_seq_10x_v3
+pred's shape is (3184,)
+acc is 0.737
+f1 score is 0.557
+silhoutte score is 0.402
+ARI is 0.596
+seq_well_10x_v3
+pred's shape is (2930,)
+acc is 0.710
+f1 score is 0.650
+silhoutte score is 0.402
+ARI is 0.647
+
+
+indrop_10x_v3
+pred's shape is (3222,)
+acc is 0.833
+f1 score is 0.593
+silhoutte score is 0.302
+ARI is 0.792
+
+
+indrop_smart_seq
+pred's shape is (526,)
+acc is 0.797
+f1 score is 0.798
+silhoutte score is 0.343
+ARI is 0.851
+
+drop_seq_indrop
+pred's shape is (6584,)
+acc is 0.637
+f1 score is 0.470
+silhoutte score is 0.280
+ARI is 0.615
+
+drop_seq_10x_v3
+pred's shape is (3222,)
+acc is 0.723
+f1 score is 0.627
+silhoutte score is 0.413
+ARI is 0.707
+
+
+10x_v3_cel_seq
+pred's shape is (526,)
+acc is 0.508
+f1 score is 0.474
+silhoutte score is 0.431
+ARI is 0.696
+
+10x_v3_drop_seq
+pred's shape is (6556,)
+acc is 0.657
+f1 score is 0.592
+silhoutte score is 0.322
+ARI is 0.462
+
+10x_v3_indrop
+pred's shape is (6542,)
+acc is 0.660
+f1 score is 0.593
+silhoutte score is 0.284
+ARI is 0.533
+
+10x_v3_seq_well
+pred's shape is (3701,)
+acc is 0.480
+f1 score is 0.471
+silhoutte score is 0.353
+ARI is 0.344
+
+smart_seq_seq_well
+pred's shape is (458,)
+acc is 0.812
+f1 score is 0.822
+silhoutte score is 0.447
+ARI is 0.793
+
+
+smart_seq_indrop
+pred's shape is (6394,)
+acc is 0.581
+f1 score is 0.377
+silhoutte score is 0.279
+ARI is 0.329
+
+smart_seq_drop_seq
+pred's shape is (6510,)
+acc is 0.519
+f1 score is 0.354
+silhoutte score is 0.417
+ARI is 0.262
+smart_seq_10x_v3
+pred's shape is (3184,)
+acc is 0.665
+f1 score is 0.446
+silhoutte score is 0.385
+ARI is 0.457
+seq_well_smart_seq
+pred's shape is (458,)
+acc is 0.812
+f1 score is 0.822
+silhoutte score is 0.447
+ARI is 0.793
+5061_84133
+pred's shape is (8037,)
+acc is 0.942
+f1 score is 0.822
+silhoutte score is 0.692
+ARI is 0.917
+84133_combine
+pred's shape is (5171,)
+acc is 0.930
+f1 score is 0.846
+silhoutte score is 0.696
+ARI is 0.948
+combine_84133
+pred's shape is (8037,)
+acc is 0.936
+f1 score is 0.816
+silhoutte score is 0.741
+ARI is 0.931
+
+mouse_combine
+pred's shape is (12318,)
+acc is 0.944
+f1 score is 0.828
+silhoutte score is 0.482
+ARI is 0.900
+
+combine_mouse
+pred's shape is (1868,)
+acc is 0.926
+f1 score is 0.728
+silhoutte score is 0.697
+ARI is 0.957
+mouse_combine
+pred's shape is (1868,)
+acc is 0.926
+f1 score is 0.728
+silhoutte score is 0.697
+ARI is 0.957
+
+gse\mouse_human
+pred's shape is (7568,)
+acc is 0.932
+f1 score is 0.794
+silhoutte score is 0.479
+ARI is 0.883
+
+gse\human_mouse
+pred's shape is (1868,)
+acc is 0.926
+f1 score is 0.711
+silhoutte score is 0.701
+ARI is 0.946
+
+gse_emtab\mouse_human
+pred's shape is (1869,)
+acc is 0.966
+f1 score is 0.956
+silhoutte score is 0.691
+ARI is 0.948
+mouse_combine
+pred's shape is (12318,)
+acc is 0.927
+f1 score is 0.823
+silhoutte score is 0.461
+ARI is 0.862
+gsemouse_gse85241
+pred's shape is (1474,)
+acc is 0.938
+f1 score is 0.476
+silhoutte score is 0.574
+ARI is 0.914
+gsemouse_gse85241
+pred's shape is (1474,)
+acc is 0.930
+f1 score is 0.380
+silhoutte score is 0.613
+ARI is 0.909
+gsemouse_emtab_leftjoin
+pred's shape is (1869,)
+acc is 0.957
+f1 score is 0.948
+silhoutte score is 0.628
+ARI is 0.929
+gse_emtab\mouse_human
+pred's shape is (1869,)
+acc is 0.857
+f1 score is 0.876
+silhoutte score is 0.628
+ARI is 0.783
+gse_emtab\mouse_human
+pred's shape is (1869,)
+acc is 0.966
+f1 score is 0.956
+silhoutte score is 0.691
+ARI is 0.948
+lung
+pred's shape is (4103,)
+acc is 0.267
+f1 score is 0.214
+silhoutte score is 0.236
+ARI is 0.189
+
+Cao_2020_stomach
+pred's shape is (6054,)
+acc is 0.982
+f1 score is 0.966
+silhoutte score is 0.633
+ARI is 0.975
+
+GSE72056
+pred's shape is (2324,)
+acc is 0.901
+f1 score is 0.549
+silhoutte score is 0.633
+ARI is 0.780
+
+GSE98638
+pred's shape is (2535,)
+acc is 0.688
+f1 score is 0.487
+silhoutte score is 0.105
+ARI is 0.599
+
+GSE99254
+pred's shape is (6175,)
+acc is 0.631
+f1 score is 0.492
+silhoutte score is 0.108
+ARI is 0.511
+
+GSE108989
+pred's shape is (5571,)
+acc is 0.729
+f1 score is 0.457
+silhoutte score is 0.161
+ARI is 0.617
+
+GSE115746
+pred's shape is (11057,)
+acc is 0.999
+f1 score is 0.998
+silhoutte score is 0.856
+ARI is 0.998
+
+GSM3271044
+pred's shape is (5365,)
+acc is 0.807
+f1 score is 0.657
+silhoutte score is 0.315
+ARI is 0.653
+
+MacParland
+pred's shape is (4228,)
+acc is 0.900
+f1 score is 0.620
+silhoutte score is 0.555
+ARI is 0.906
+Guo
+pred's shape is (3248,)
+acc is 0.958
+f1 score is 0.909
+silhoutte score is 0.558
+ARI is 0.922
+
+He_Calvarial_Bone
+pred's shape is (3648,)
+acc is 0.908
+f1 score is 0.915
+silhoutte score is 0.355
+ARI is 0.820
+
+
+Enge
+pred's shape is (1143,)
+acc is 0.983
+f1 score is 0.980
+silhoutte score is 0.769
+ARI is 0.962
+
+Hu
+pred's shape is (1214,)
+acc is 0.807
+f1 score is 0.664
+silhoutte score is 0.254
+ARI is 0.860
+
+Wu_human
+pred's shape is (2152,)
+acc is 0.871
+f1 score is 0.860
+silhoutte score is 0.332
+ARI is 0.786
+
+Loo_E14.5
+pred's shape is (5471,)
+acc is 0.786
+f1 score is 0.709
+silhoutte score is 0.195
+ARI is 0.657
+Guo
+pred's shape is (3234,)
+acc is 0.961
+f1 score is 0.962
+silhoutte score is 0.568
+ARI is 0.920
+Guo
+pred's shape is (3074,)
+acc is 0.964
+f1 score is 0.968
+silhoutte score is 0.593
+ARI is 0.922
+Guo
+pred's shape is (2636,)
+acc is 0.982
+f1 score is 0.978
+silhoutte score is 0.725
+ARI is 0.974
+He_Calvarial_Bone
+pred's shape is (2892,)
+acc is 0.951
+f1 score is 0.962
+silhoutte score is 0.460
+ARI is 0.886
+GSE108989
+pred's shape is (5571,)
+acc is 0.729
+f1 score is 0.457
+silhoutte score is 0.161
+ARI is 0.617
+GSE108989
+pred's shape is (1781,)
+acc is 0.904
+f1 score is 0.887
+silhoutte score is 0.362
+ARI is 0.855
+GSE108989
+pred's shape is (1781,)
+acc is 0.889
+f1 score is 0.881
+silhoutte score is 0.356
+ARI is 0.773
+GSE98638
+pred's shape is (791,)
+acc is 0.906
+f1 score is 0.911
+silhoutte score is 0.458
+ARI is 0.853
+
+GSE98638
+pred's shape is (791,)
+acc is 0.906
+f1 score is 0.911
+silhoutte score is 0.458
+ARI is 0.853
+
+GSE99254
+pred's shape is (1904,)
+acc is 0.874
+f1 score is 0.744
+silhoutte score is 0.347
+ARI is 0.841
+GSE72056_GSE103322
+pred's shape is (3948,)
+acc is 0.421
+f1 score is 0.544
+silhoutte score is 0.319
+ARI is 0.403
+GSE72056_GSE103322
+pred's shape is (3948,)
+acc is 0.421
+f1 score is 0.544
+silhoutte score is 0.319
+ARI is 0.403
+GSE72056_GSE103322
+pred's shape is (3948,)
+acc is 0.421
+f1 score is 0.544
+silhoutte score is 0.319
+ARI is 0.403
+GSE72056_GSE103322
+pred's shape is (3948,)
+acc is 0.421
+f1 score is 0.544
+silhoutte score is 0.319
+ARI is 0.403
+GSE72056_GSE103322
+pred's shape is (3948,)
+acc is 0.421
+f1 score is 0.544
+silhoutte score is 0.319
+ARI is 0.403
+GSE72056_GSE103322
+pred's shape is (3948,)
+acc is 0.423
+f1 score is 0.463
+silhoutte score is 0.309
+ARI is 0.430
+GSE118056_GSE117988
+pred's shape is (10082,)
+acc is 0.220
+f1 score is 0.203
+silhoutte score is 0.319
+ARI is 0.759
+Haber
+pred's shape is (9384,)
+acc is 0.730
+f1 score is 0.793
+silhoutte score is 0.371
+ARI is 0.539
+mouse_combine
+pred's shape is (12318,)
+acc is 0.927
+f1 score is 0.823
+silhoutte score is 0.461
+ARI is 0.862
+combine_mouse
+pred's shape is (1868,)
+acc is 0.926
+f1 score is 0.728
+silhoutte score is 0.697
+ARI is 0.957
+
+gse\mouse_human
+pred's shape is (7568,)
+acc is 0.932
+f1 score is 0.794
+silhoutte score is 0.479
+ARI is 0.883
+
+gse\human_mouse
+pred's shape is (1868,)
+acc is 0.926
+f1 score is 0.711
+silhoutte score is 0.701
+ARI is 0.946
+
+mouse_combine
+pred's shape is (12318,)
+acc is 0.927
+f1 score is 0.823
+silhoutte score is 0.461
+ARI is 0.862
+
+combine_mouse
+pred's shape is (1868,)
+acc is 0.926
+f1 score is 0.728
+silhoutte score is 0.697
+ARI is 0.957
+seq_well_10x_v3
+pred's shape is (1868,)
+acc is 0.926
+f1 score is 0.728
+silhoutte score is 0.697
+ARI is 0.957
+seq_well_10x_v3
+pred's shape is (1868,)
+acc is 0.926
+f1 score is 0.728
+silhoutte score is 0.697
+ARI is 0.957
+seq_well_10x_v3
+pred's shape is (2930,)
+acc is 0.710
+f1 score is 0.650
+silhoutte score is 0.402
+ARI is 0.647
+seq_well_10x_v3
+pred's shape is (2930,)
+acc is 0.834
+f1 score is 0.768
+silhoutte score is 0.390
+ARI is 0.722
+seq_well_10x_v3
+pred's shape is (2930,)
+acc is 0.710
+f1 score is 0.650
+silhoutte score is 0.402
+ARI is 0.647
+cel_seq_indrop
+pred's shape is (2930,)
+acc is 0.710
+f1 score is 0.650
+silhoutte score is 0.402
+ARI is 0.647
+cel_seq_drop_seq
+pred's shape is (6510,)
+acc is 0.870
+f1 score is 0.854
+silhoutte score is 0.411
+ARI is 0.717
+gsemouse_gsehuman
+pred's shape is (7548,)
+acc is 0.903
+f1 score is 0.874
+silhoutte score is 0.501
+ARI is 0.832
+
+gsehuman_gsemouse
+pred's shape is (1855,)
+acc is 0.937
+f1 score is 0.886
+silhoutte score is 0.698
+ARI is 0.953
+
+mouse_combine
+pred's shape is (12298,)
+acc is 0.915
+f1 score is 0.890
+silhoutte score is 0.476
+ARI is 0.837
+
+combine_mouse
+pred's shape is (1855,)
+acc is 0.933
+f1 score is 0.906
+silhoutte score is 0.699
+ARI is 0.960
+gsehuman_gsemouse
+pred's shape is (1855,)
+acc is 0.933
+f1 score is 0.906
+silhoutte score is 0.699
+ARI is 0.960
+mouse_combine
+pred's shape is (12318,)
+acc is 0.927
+f1 score is 0.823
+silhoutte score is 0.461
+ARI is 0.862
+combine_mouse
+pred's shape is (1868,)
+acc is 0.926
+f1 score is 0.728
+silhoutte score is 0.697
+ARI is 0.957
+GSE72056_GSE103322_B_cell
+pred's shape is (1868,)
+acc is 0.926
+f1 score is 0.728
+silhoutte score is 0.697
+ARI is 0.957
+GSE72056_GSE103322_Endothelial
+pred's shape is (1868,)
+acc is 0.926
+f1 score is 0.728
+silhoutte score is 0.697
+ARI is 0.957
+GSE72056_GSE103322_Macrophage
+pred's shape is (1868,)
+acc is 0.926
+f1 score is 0.728
+silhoutte score is 0.697
+ARI is 0.957
+GSE72056_GSE103322_malignant
+pred's shape is (1868,)
+acc is 0.926
+f1 score is 0.728
+silhoutte score is 0.697
+ARI is 0.957
+GSE72056_GSE103322_T_cell
+pred's shape is (1868,)
+acc is 0.926
+f1 score is 0.728
+silhoutte score is 0.697
+ARI is 0.957
+combine_mouse
+pred's shape is (1868,)
+acc is 0.926
+f1 score is 0.728
+silhoutte score is 0.697
+ARI is 0.957
+GSE72056_GSE103322_B_cell
+pred's shape is (1868,)
+acc is 0.926
+f1 score is 0.728
+silhoutte score is 0.697
+ARI is 0.957
+GSE72056_GSE103322_B_cell
+pred's shape is (4272,)
+acc is 0.946
+f1 score is 0.758
+silhoutte score is 0.734
+ARI is 0.925
+GSE72056_GSE103322_Endothelial
+pred's shape is (4272,)
+acc is 0.899
+f1 score is 0.688
+silhoutte score is 0.744
+ARI is 0.884
+GSE72056_GSE103322_Macrophage
+pred's shape is (4272,)
+acc is 0.938
+f1 score is 0.701
+silhoutte score is 0.716
+ARI is 0.925
+GSE72056_GSE103322_malignant
+pred's shape is (4272,)
+acc is 0.387
+f1 score is 0.619
+silhoutte score is 0.370
+ARI is 0.365
+GSE72056_GSE103322_T_cell
+pred's shape is (4272,)
+acc is 0.692
+f1 score is 0.606
+silhoutte score is 0.674
+ARI is 0.861
+
+GSE84133_EMTAB5061_alpha
+pred's shape is (1467,)
+acc is 0.387
+f1 score is 0.486
+silhoutte score is 0.634
+ARI is 0.733
+
+GSE84133_EMTAB5061_beta
+pred's shape is (1467,)
+acc is 0.801
+f1 score is 0.604
+silhoutte score is 0.790
+ARI is 0.923
+
+GSE84133_EMTAB5061_delta
+pred's shape is (1467,)
+acc is 0.890
+f1 score is 0.679
+silhoutte score is 0.806
+ARI is 0.936
+
+GSE84133_EMTAB5061_gamma
+pred's shape is (1467,)
+acc is 0.840
+f1 score is 0.661
+silhoutte score is 0.801
+ARI is 0.921
+GSE103322_GSE72056_malignant
+pred's shape is (4026,)
+acc is 0.560
+f1 score is 0.397
+silhoutte score is 0.691
+ARI is 0.705
+GSE103322_GSE72056_malignant2
+pred's shape is (3961,)
+acc is 0.554
+f1 score is 0.275
+silhoutte score is 0.602
+ARI is 0.608
+GSE103322_GSE72056_malignant2
+pred's shape is (3961,)
+acc is 0.554
+f1 score is 0.275
+silhoutte score is 0.602
+ARI is 0.608
+
+GSE72056_GSE103322_malignant
+pred's shape is (4272,)
+acc is 0.387
+f1 score is 0.619
+silhoutte score is 0.370
+ARI is 0.365
+
+mouse_combine
+pred's shape is (12318,)
+acc is 0.927
+f1 score is 0.823
+silhoutte score is 0.461
+ARI is 0.862
+
+combine_mouse
+pred's shape is (1868,)
+acc is 0.926
+f1 score is 0.728
+silhoutte score is 0.697
+ARI is 0.957
+
+gse\mouse_human
+pred's shape is (7568,)
+acc is 0.932
+f1 score is 0.794
+silhoutte score is 0.479
+ARI is 0.883
+
+gse\human_mouse
+pred's shape is (1868,)
+acc is 0.926
+f1 score is 0.711
+silhoutte score is 0.701
+ARI is 0.946
+
+gse\mouse_human
+pred's shape is (7568,)
+acc is 0.932
+f1 score is 0.794
+silhoutte score is 0.482
+ARI is 0.862
+
+gse\human_mouse
+pred's shape is (1868,)
+acc is 0.926
+f1 score is 0.711
+silhoutte score is 0.625
+ARI is 0.853
+
+mouse_combine
+pred's shape is (12318,)
+acc is 0.927
+f1 score is 0.823
+silhoutte score is 0.446
+ARI is 0.849
+
+combine_mouse
+pred's shape is (1868,)
+acc is 0.926
+f1 score is 0.728
+silhoutte score is 0.622
+ARI is 0.846
+seq_well_10x_v3
+pred's shape is (2930,)
+acc is 0.834
+f1 score is 0.768
+silhoutte score is 0.439
+ARI is 0.604
+seq_well_10x_v3
+pred's shape is (2930,)
+acc is 0.710
+f1 score is 0.650
+silhoutte score is 0.387
+ARI is 0.513
+
+cel_seq_smart_seq
+pred's shape is (526,)
+acc is 0.892
+f1 score is 0.895
+silhoutte score is 0.488
+ARI is 0.740
+
+cel_seq_10x
+pred's shape is (12758,)
+acc is 0.855
+f1 score is 0.835
+silhoutte score is 0.402
+ARI is 0.682
+
+seq_well_smart_seq
+pred's shape is (458,)
+acc is 0.886
+f1 score is 0.902
+silhoutte score is 0.496
+ARI is 0.715
+
+seq_well_drop_seq
+pred's shape is (5902,)
+acc is 0.846
+f1 score is 0.746
+silhoutte score is 0.366
+ARI is 0.634
+
+seq_well_10x
+pred's shape is (11863,)
+acc is 0.875
+f1 score is 0.787
+silhoutte score is 0.426
+ARI is 0.700
+
+smart_seq_10x_v3
+pred's shape is (3184,)
+acc is 0.894
+f1 score is 0.900
+silhoutte score is 0.459
+ARI is 0.723
+
+indrop_drop_seq
+pred's shape is (6584,)
+acc is 0.856
+f1 score is 0.659
+silhoutte score is 0.349
+ARI is 0.714
+
+indrop_10x_v3
+pred's shape is (3222,)
+acc is 0.870
+f1 score is 0.827
+silhoutte score is 0.404
+ARI is 0.684
+
+drop_seq_smart_seq
+pred's shape is (526,)
+acc is 0.901
+f1 score is 0.903
+silhoutte score is 0.535
+ARI is 0.767
+
+drop_seq_10x_v3
+pred's shape is (3222,)
+acc is 0.870
+f1 score is 0.750
+silhoutte score is 0.449
+ARI is 0.727
+
+cel_seq_10x_v3
+pred's shape is (3184,)
+acc is 0.894
+f1 score is 0.863
+silhoutte score is 0.440
+ARI is 0.773
+
+seq_well_10x_v3
+pred's shape is (2930,)
+acc is 0.834
+f1 score is 0.768
+silhoutte score is 0.439
+ARI is 0.604
+
+indrop_smart_seq
+pred's shape is (526,)
+acc is 0.913
+f1 score is 0.910
+silhoutte score is 0.490
+ARI is 0.793
+
+gse\mouse_human
+pred's shape is (7568,)
+acc is 0.939
+f1 score is 0.852
+silhoutte score is 0.592
+ARI is 0.836
+
+gse\human_mouse
+pred's shape is (1868,)
+acc is 0.952
+f1 score is 0.748
+silhoutte score is 0.614
+ARI is 0.915
+
+mouse_combine
+pred's shape is (12318,)
+acc is 0.979
+f1 score is 0.897
+silhoutte score is 0.583
+ARI is 0.959
+
+combine_mouse
+pred's shape is (1868,)
+acc is 0.942
+f1 score is 0.738
+silhoutte score is 0.609
+ARI is 0.899
+gse\mouse_human
+pred's shape is (7568,)
+acc is 0.955
+f1 score is 0.932
+silhoutte score is 0.596
+ARI is 0.892
+
+gse\human_mouse
+pred's shape is (1868,)
+acc is 0.953
+f1 score is 0.740
+silhoutte score is 0.624
+ARI is 0.922
+
+mouse_combine
+pred's shape is (12318,)
+acc is 0.978
+f1 score is 0.903
+silhoutte score is 0.576
+ARI is 0.958
+
+combine_mouse
+pred's shape is (1868,)
+acc is 0.950
+f1 score is 0.723
+silhoutte score is 0.623
+ARI is 0.921
+
+gse\mouse_human
+pred's shape is (7568,)
+acc is 0.967
+f1 score is 0.867
+silhoutte score is 0.611
+ARI is 0.921
+
+gse\human_mouse
+pred's shape is (1868,)
+acc is 0.950
+f1 score is 0.752
+silhoutte score is 0.557
+ARI is 0.907
+
+mouse_combine
+pred's shape is (12318,)
+acc is 0.981
+f1 score is 0.862
+silhoutte score is 0.587
+ARI is 0.966
+
+combine_mouse
+pred's shape is (1868,)
+acc is 0.946
+f1 score is 0.746
+silhoutte score is 0.545
+ARI is 0.905
+seq_well_10x_v3
+pred's shape is (2930,)
+acc is 0.710
+f1 score is 0.650
+silhoutte score is 0.387
+ARI is 0.513
+85241_5061/dropout/0
+pred's shape is (2930,)
+acc is 0.710
+f1 score is 0.650
+silhoutte score is 0.387
+ARI is 0.513
+85241_5061/dropout/0.2
+pred's shape is (2930,)
+acc is 0.710
+f1 score is 0.650
+silhoutte score is 0.387
+ARI is 0.513
+
+85241_5061/dropout/0
+pred's shape is (1478,)
+acc is 0.944
+f1 score is 0.599
+silhoutte score is 0.696
+ARI is 0.941
+
+85241_5061/dropout/0.2
+pred's shape is (1478,)
+acc is 0.944
+f1 score is 0.533
+silhoutte score is 0.674
+ARI is 0.945
+85241_5061/dropout/0.2
+pred's shape is (1478,)
+acc is 0.944
+f1 score is 0.533
+silhoutte score is 0.674
+ARI is 0.945
+85241_5061/gaussian/0.2
+pred's shape is (1478,)
+acc is 0.936
+f1 score is 0.598
+silhoutte score is 0.604
+ARI is 0.932
+85241_5061/dropout/0
+pred's shape is (1478,)
+acc is 0.944
+f1 score is 0.599
+silhoutte score is 0.696
+ARI is 0.941
+85241_5061/dropout/0.05
+pred's shape is (1478,)
+acc is 0.947
+f1 score is 0.604
+silhoutte score is 0.684
+ARI is 0.947
+85241_5061/dropout/0.1
+pred's shape is (1478,)
+acc is 0.933
+f1 score is 0.532
+silhoutte score is 0.677
+ARI is 0.916
+
+85241_5061/dropout/0.15
+pred's shape is (1478,)
+acc is 0.934
+f1 score is 0.529
+silhoutte score is 0.674
+ARI is 0.930
+
+85241_5061/dropout/0.2
+pred's shape is (1478,)
+acc is 0.944
+f1 score is 0.533
+silhoutte score is 0.674
+ARI is 0.945
+
+85241_5061/gaussian/0.05
+pred's shape is (1478,)
+acc is 0.933
+f1 score is 0.597
+silhoutte score is 0.631
+ARI is 0.923
+
+85241_5061/gaussian/0.1
+pred's shape is (1478,)
+acc is 0.932
+f1 score is 0.597
+silhoutte score is 0.602
+ARI is 0.920
+
+85241_5061/gaussian/0.15
+pred's shape is (1478,)
+acc is 0.933
+f1 score is 0.597
+silhoutte score is 0.619
+ARI is 0.920
+85241_5061/gaussian/0.2
+
+pred's shape is (1478,)
+acc is 0.936
+f1 score is 0.598
+silhoutte score is 0.604
+ARI is 0.932
+
+
+# platform_v2 reverse版本cel_seq_smart_seq
+cel_seq_smart_seq
+pred's shape is (526,)
+acc is 0.475
+f1 score is 0.256
+silhoutte score is 0.123
+ARI is 0.096
+
+cel_seq_10x_v3
+pred's shape is (526,)
+acc is 0.508
+f1 score is 0.474
+silhoutte score is 0.248
+ARI is 0.245
+
+seq_well_smart_seq
+pred's shape is (3664,)
+acc is 0.533
+f1 score is 0.544
+silhoutte score is 0.307
+ARI is 0.152
+
+seq_well_drop_seq
+pred's shape is (3727,)
+acc is 0.778
+f1 score is 0.566
+silhoutte score is 0.366
+ARI is 0.526
+
+seq_well_10x_v3
+pred's shape is (3701,)
+acc is 0.480
+f1 score is 0.471
+silhoutte score is 0.219
+ARI is 0.227
+
+smart_seq_10x_v3
+pred's shape is (526,)
+acc is 0.599
+f1 score is 0.739
+silhoutte score is 0.388
+ARI is 0.526
+
+indrop_drop_seq
+pred's shape is (6584,)
+acc is 0.637
+f1 score is 0.470
+silhoutte score is 0.138
+ARI is 0.399
+
+indrop_10x_v3
+pred's shape is (6542,)
+acc is 0.660
+f1 score is 0.593
+silhoutte score is 0.209
+ARI is 0.517
+
+indrop_smart_seq
+pred's shape is (6394,)
+acc is 0.581
+f1 score is 0.377
+silhoutte score is 0.227
+ARI is 0.304
+
+drop_seq_smart_seq
+pred's shape is (6510,)
+acc is 0.519
+f1 score is 0.354
+silhoutte score is 0.407
+ARI is 0.238
+
+
+drop_seq_10x_v3
+pred's shape is (6556,)
+acc is 0.657
+f1 score is 0.592
+silhoutte score is 0.280
+ARI is 0.381
+cel_seq_drop_seq
+pred's shape is (526,)
+acc is 0.432
+f1 score is 0.289
+silhoutte score is 0.245
+ARI is 0.265
+cel_seq_drop_seq
+pred's shape is (526,)
+acc is 0.861
+f1 score is 0.835
+silhoutte score is 0.529
+ARI is 0.696
+xxx
+pred's shape is (526,)
+acc is 0.432
+f1 score is 0.289
+silhoutte score is 0.245
+ARI is 0.265
+cel_seq_drop_seq
+pred's shape is (526,)
+acc is 0.861
+f1 score is 0.835
+silhoutte score is 0.529
+ARI is 0.696
+gse\mouse_human
+pred's shape is (526,)
+acc is 0.861
+f1 score is 0.835
+silhoutte score is 0.529
+ARI is 0.696
+gse\human_mouse
+pred's shape is (526,)
+acc is 0.861
+f1 score is 0.835
+silhoutte score is 0.529
+ARI is 0.696
+mouse_combine
+pred's shape is (526,)
+acc is 0.861
+f1 score is 0.835
+silhoutte score is 0.529
+ARI is 0.696
+combine_mouse
+pred's shape is (526,)
+acc is 0.861
+f1 score is 0.835
+silhoutte score is 0.529
+ARI is 0.696
+cel_seq_smart_seq
+pred's shape is (526,)
+acc is 0.840
+f1 score is 0.843
+silhoutte score is 0.467
+ARI is 0.630
+cel_seq_10x_v3
+pred's shape is (526,)
+acc is 0.842
+f1 score is 0.816
+silhoutte score is 0.509
+ARI is 0.655
+seq_well_smart_seq
+pred's shape is (3664,)
+acc is 0.765
+f1 score is 0.780
+silhoutte score is 0.405
+ARI is 0.489
+seq_well_drop_seq
+pred's shape is (3727,)
+acc is 0.829
+f1 score is 0.595
+silhoutte score is 0.478
+ARI is 0.640
+seq_well_10x_v3
+pred's shape is (3701,)
+acc is 0.783
+f1 score is 0.743
+silhoutte score is 0.293
+ARI is 0.551
+smart_seq_10x_v3
+pred's shape is (526,)
+acc is 0.848
+f1 score is 0.892
+silhoutte score is 0.547
+ARI is 0.626
+indrop_drop_seq
+pred's shape is (6584,)
+acc is 0.721
+f1 score is 0.540
+silhoutte score is 0.270
+ARI is 0.549
+indrop_10x_v3
+pred's shape is (6542,)
+acc is 0.766
+f1 score is 0.648
+silhoutte score is 0.270
+ARI is 0.633
+indrop_smart_seq
+pred's shape is (6394,)
+acc is 0.813
+f1 score is 0.774
+silhoutte score is 0.307
+ARI is 0.633
+drop_seq_smart_seq
+pred's shape is (6510,)
+acc is 0.875
+f1 score is 0.859
+silhoutte score is 0.391
+ARI is 0.725
+drop_seq_10x_v3
+pred's shape is (6556,)
+acc is 0.826
+f1 score is 0.710
+silhoutte score is 0.361
+ARI is 0.619
+gse\mouse_human
+pred's shape is (1868,)
+acc is 0.950
+f1 score is 0.752
+silhoutte score is 0.557
+ARI is 0.907
+gse\human_mouse
+pred's shape is (7568,)
+acc is 0.967
+f1 score is 0.867
+silhoutte score is 0.611
+ARI is 0.921
+mouse_combine
+pred's shape is (1868,)
+acc is 0.944
+f1 score is 0.742
+silhoutte score is 0.541
+ARI is 0.901
+combine_mouse
+pred's shape is (12318,)
+acc is 0.981
+f1 score is 0.878
+silhoutte score is 0.566
+ARI is 0.966
+gse\mouse_human
+pred's shape is (12318,)
+acc is 0.904
+f1 score is 0.761
+silhoutte score is 0.433
+ARI is 0.825
+gse\mouse_human
+pred's shape is (12318,)
+acc is 0.904
+f1 score is 0.761
+silhoutte score is 0.433
+ARI is 0.825
+gse\human_mouse
+pred's shape is (12318,)
+acc is 0.904
+f1 score is 0.761
+silhoutte score is 0.433
+ARI is 0.825
+gse\human_mouse
+pred's shape is (12318,)
+acc is 0.904
+f1 score is 0.761
+silhoutte score is 0.433
+ARI is 0.825
+mouse_combine
+pred's shape is (12318,)
+acc is 0.904
+f1 score is 0.761
+silhoutte score is 0.433
+ARI is 0.825
+mouse_combine
+pred's shape is (12318,)
+acc is 0.904
+f1 score is 0.761
+silhoutte score is 0.433
+ARI is 0.825
+combine_mouse
+pred's shape is (12318,)
+acc is 0.904
+f1 score is 0.761
+silhoutte score is 0.433
+ARI is 0.825
+combine_mouse
+pred's shape is (12318,)
+acc is 0.904
+f1 score is 0.761
+silhoutte score is 0.433
+ARI is 0.825
+GSE96583
+pred's shape is (14617,)
+acc is 0.385
+f1 score is 0.087
+silhoutte score is 0.162
+ARI is -0.016
+cel_seq_smart_seq
+pred's shape is (526,)
+acc is 0.475
+f1 score is 0.256
+silhoutte score is 0.123
+ARI is 0.096
+cel_seq_10x_v3
+pred's shape is (526,)
+acc is 0.508
+f1 score is 0.474
+silhoutte score is 0.248
+ARI is 0.245
+seq_well_smart_seq
+pred's shape is (3664,)
+acc is 0.533
+f1 score is 0.544
+silhoutte score is 0.307
+ARI is 0.152
+seq_well_drop_seq
+pred's shape is (3727,)
+acc is 0.778
+f1 score is 0.566
+silhoutte score is 0.366
+ARI is 0.526
+seq_well_10x_v3
+pred's shape is (3701,)
+acc is 0.480
+f1 score is 0.471
+silhoutte score is 0.219
+ARI is 0.227
+smart_seq_10x_v3
+pred's shape is (526,)
+acc is 0.599
+f1 score is 0.739
+silhoutte score is 0.388
+ARI is 0.526
+indrop_drop_seq
+pred's shape is (6584,)
+acc is 0.637
+f1 score is 0.470
+silhoutte score is 0.138
+ARI is 0.399
+indrop_10x_v3
+pred's shape is (6542,)
+acc is 0.660
+f1 score is 0.593
+silhoutte score is 0.209
+ARI is 0.517
+indrop_smart_seq
+pred's shape is (6394,)
+acc is 0.581
+f1 score is 0.377
+silhoutte score is 0.227
+ARI is 0.304
+drop_seq_smart_seq
+pred's shape is (6510,)
+acc is 0.519
+f1 score is 0.354
+silhoutte score is 0.407
+ARI is 0.237
+drop_seq_10x_v3
+pred's shape is (6556,)
+acc is 0.657
+f1 score is 0.592
+silhoutte score is 0.280
+ARI is 0.381
+cel_seq_smart_seq
+pred's shape is (526,)
+acc is 0.800
+f1 score is 0.808
+silhoutte score is 0.383
+ARI is 0.567
+cel_seq_10x_v3
+pred's shape is (3184,)
+acc is 0.737
+f1 score is 0.557
+silhoutte score is 0.412
+ARI is 0.569
+seq_well_smart_seq
+pred's shape is (458,)
+acc is 0.812
+f1 score is 0.822
+silhoutte score is 0.371
+ARI is 0.591
+seq_well_drop_seq
+pred's shape is (5902,)
+acc is 0.831
+f1 score is 0.646
+silhoutte score is 0.354
+ARI is 0.601
+seq_well_10x_v3
+pred's shape is (2930,)
+acc is 0.710
+f1 score is 0.650
+silhoutte score is 0.387
+ARI is 0.513
+smart_seq_10x_v3
+pred's shape is (3184,)
+acc is 0.665
+f1 score is 0.446
+silhoutte score is 0.409
+ARI is 0.416
+indrop_drop_seq
+pred's shape is (6584,)
+acc is 0.792
+f1 score is 0.528
+silhoutte score is 0.346
+ARI is 0.644
+indrop_10x_v3
+pred's shape is (3222,)
+acc is 0.833
+f1 score is 0.593
+silhoutte score is 0.426
+ARI is 0.672
+indrop_smart_seq
+pred's shape is (526,)
+acc is 0.797
+f1 score is 0.798
+silhoutte score is 0.271
+ARI is 0.563
+drop_seq_smart_seq
+pred's shape is (526,)
+acc is 0.745
+f1 score is 0.717
+silhoutte score is 0.282
+ARI is 0.491
+drop_seq_10x_v3
+pred's shape is (3222,)
+acc is 0.723
+f1 score is 0.627
+silhoutte score is 0.372
+ARI is 0.504
+GSE96583
+pred's shape is (14439,)
+acc is 0.248
+f1 score is 0.128
+silhoutte score is 0.417
+ARI is -0.002

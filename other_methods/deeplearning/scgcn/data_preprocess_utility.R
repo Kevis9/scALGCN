@@ -9,6 +9,7 @@
 #' @examples: first load count.list and label.list from folder "example_data" and run 'data_preprocess.R'
 #' then run 'metrics(dat1,lab1,dat2,lab2,inter_graph,cluster)'
 
+
 suppressMessages(library(Seurat)); suppressMessages(library(entropy))
 
 metrics <- function(lab1,inter_graph,clusters){
@@ -72,13 +73,16 @@ GenerateGraph <- function(Dat1,Dat2,Lab1,K,check.unknown){
     objects <- list(object1,object2)    
     objects1 <- lapply(objects,function(obj){
         obj <- NormalizeData(obj,verbose=F)
-        obj <- FindVariableFeatures(obj,
-                                       selection.method = "vst",
-                                       nfeatures = 2000,verbose=F)
-          obj <- ScaleData(obj,features=rownames(obj),verbose=FALSE)
-          obj <- RunPCA(obj, features=rownames(obj), verbose = FALSE)
+
+	obj <- FindVariableFeatures(obj,
+                                      selection.method = "vst",
+                                      nfeatures = 2000,verbose=F)
+	obj <- ScaleData(obj,features=rownames(obj),verbose=FALSE)
+# 	这句RunPCA可要可不要，反正不会用到
+    obj <- RunPCA(obj, features=rownames(obj), verbose = FALSE)
         return(obj)})
-    #'  Inter-data graph  
+    #'  Inter-data graph
+    # 这个函数默认使用cca
     object.nn <- FindIntegrationAnchors(object.list = objects1,k.anchor=K,verbose=F)
     arc=object.nn@anchors
     d1.arc1=cbind(arc[arc[,4]==1,1],arc[arc[,4]==1,2],arc[arc[,4]==1,3]) 
@@ -95,11 +99,20 @@ GenerateGraph <- function(Dat1,Dat2,Lab1,K,check.unknown){
     }
     #'  Intra-data graph  
     d2.list <- list(objects1[[2]],objects1[[2]])
-    d2.nn <- FindIntegrationAnchors(object.list =d2.list,k.anchor=K,verbose=F)    
+    d2.nn <- FindIntegrationAnchors(object.list =d2.list,k.anchor=K,verbose=F)
     d2.arc=d2.nn@anchors
     d2.arc1=cbind(d2.arc[d2.arc[,4]==1,1],d2.arc[d2.arc[,4]==1,2],d2.arc[d2.arc[,4]==1,3])
     d2.grp=d2.arc1[d2.arc1[,3]>0,1:2]-1
     final <- list(inteG=grp1,intraG=d2.grp)
+
+    # 尝试构造一下reference内部的图
+#     d3.list <- list(objects1[[1]],objects1[[1]])
+#     d3.nn <- FindIntegrationAnchors(object.list =d3.list,k.anchor=K,verbose=F)
+#     d3.arc=d3.nn@anchors
+#     d3.arc1=cbind(d3.arc[d3.arc[,4]==1,1],d3.arc[d3.arc[,4]==1,2],d3.arc[d3.arc[,4]==1,3])
+#     d3.grp=d3.arc1[d3.arc1[,3]>0,1:2]-1
+#     final <- list(inteG=grp1,intraG=d2.grp, intraG2=d3.grp)
+
     return (final)
 }
 
@@ -177,7 +190,7 @@ selectHVFeature <- function(count.list,var.features,nfeatures = 2000){
     return(features)
 }
 
-#' This functions takes refrence data and labels to identify variable gene features
+#' This functions takes reference data and labels to identify variable gene features
 #' @param data reference data; rows are genes and columns are cells
 #' @param label data frame with rownames identical with colnames of data; the first column is cell type
 #' @param nf number of variable features
@@ -204,11 +217,20 @@ select_feature <- function(data,label,nf=2000){
 #' @export
 #' @examples
 #' pre_process(count_list,label_list)
-pre_process <- function(count_list,label_list){
+pre_process <- function(count_list, label_list){
     sel.features <- select_feature(count_list[[1]],label_list[[1]])
+    print(dim(count_list[[2]]))
     count_list_new <- list(count_list[[1]][sel.features,],count_list[[2]][sel.features,])
     return (count_list_new)
 }
+
+
+# pre_process <- function(data1, data2, label1){
+#     sel.features <- select_feature(data1,label1)
+#     count_list_new <- list(data1[sel.features,],data2[sel.features,])
+#     return (count_list_new)
+# }
+
 
 #' This functions takes raw counts and labels of reference/query set to generate scGCN training input
 #' @param count.list list of reference data and query data; rows are genes and columns are cells
@@ -220,17 +242,21 @@ pre_process <- function(count_list,label_list){
 save_processed_data <- function(count.list,label.list,Rgraph=TRUE,check_unknown=FALSE){
     count.list <- pre_process(count_list=count.list,label_list=label.list)
     #' save counts data to certain path: 'input'
-    dir.create('input'); 
+
+    if (!dir.exists('input')){dir.create('input')}
+
     write.csv(t(count.list[[1]]),file='input/Data1.csv',quote=F,row.names=T)
     write.csv(t(count.list[[2]]),file='input/Data2.csv',quote=F,row.names=T)
+    write.csv(label.list[[1]],file='input/label1.csv',quote=F,row.names=F)
+    write.csv(label.list[[2]],file='input/label2.csv',quote=F,row.names=F)
 
     #' optional graph: R genreated graph has minor differnce with python, user can choose the one with better performance
     if (Rgraph){
         #' use R generated graph
         new.dat1 <- count.list[[1]]; new.dat2 <- count.list[[2]]
         new.lab1 <- label.list[[1]]; new.lab2 <- label.list[[2]]
-        graphs <- suppressWarnings(GenerateGraph(Dat1=new.dat1,Dat2=new.dat2,
-                                                 Lab1=new.lab1,K=5,
+	    graphs <- suppressWarnings(GenerateGraph(Dat1=new.dat1,Dat2=new.dat2,
+                                                 Lab1=new.lab1,K=10,
                                                  check.unknown=check_unknown))
         write.csv(graphs[[1]],file='input/inter_graph.csv',quote=F,row.names=T)
         write.csv(graphs[[2]],file='input/intra_graph.csv',quote=F,row.names=T)
@@ -238,13 +264,17 @@ save_processed_data <- function(count.list,label.list,Rgraph=TRUE,check_unknown=
         write.csv(new.lab2,file='input/label2.csv',quote=F,row.names=F)        
     } else {
         #' use python generated graph
-        dir.create('results')
+        if (!dir.exists('results')){dir.create('results')}
+
+#         dir.create('results')
         #' @param norm.list normalized data
         res1 <- normalize_data(count.list)
         norm.list <- res1[[1]]; hvg.features <- res1[[2]];
         #' @param scale.list scaled data
         scale.list <- scale_data(count.list,norm.list,hvg.features)
-        outputdir <- 'process_data'; dir.create(outputdir)
+        outputdir <- 'process_data';
+        if (!dir.exists(outputdir)){dir.create(outputdir)}
+
         write.csv(hvg.features,file=paste0(outputdir,'/sel_features.csv'),quote=F,row.names=F)
         N <- length(count.list)
         for (i in 1:N){
@@ -276,3 +306,46 @@ save_processed_data <- function(count.list,label.list,Rgraph=TRUE,check_unknown=
         }
     }
 }
+
+# main <- function(path){
+#
+#     print(path)
+#     data1 = t(as.data.frame(read.csv(paste(path, 'ref_raw_data.csv', sep='/'), row.names=1))) # 变为gene * cell
+#     data2 = t(as.data.frame(read.csv(paste(path, 'query_raw_data.csv', sep='/'), row.names=1)))
+#     label1 = as.data.frame(read.csv(paste(path, 'ref_label.csv', sep='/')))
+#
+#
+#     print(dim(data1))
+#     print(dim(data2))
+#
+#     rownames(label1) = colnames(data1)
+#
+#     # 加入pre_process来筛选前2000个基因
+#     data = pre_process(data1, data2, label1)
+#
+#
+#     new.data1 = data[[1]]
+#     new.data2 = data[[2]]
+#
+#     write.csv(t(new.data1), file=paste(path, 'ref_data.csv', sep='\\'), quote=FALSE, row.names=T)
+#     write.csv(t(new.data2), file=paste(path, 'query_data.csv', sep='\\'), quote=FALSE, row.names=T)
+#     # options是解决之前出现的内存limit问题
+#     options(future.globals.maxSize = 8000 * 1024^2)
+#     print(dim(new.data1))
+#     print(dim(new.data2))
+#     graphs <- suppressWarnings(GenerateGraph(Dat1=new.data1,Dat2=new.data2,
+#                                                  Lab1=label1,K=5,
+#                                                  check.unknown=FALSE))
+#     print('finish graph')
+#
+#     write.csv(graphs[[1]],file=paste(path, 'inter_graph.csv', sep='\\'),quote=F,row.names=T)
+#     write.csv(graphs[[2]],file=paste(path, 'intra_graph.csv', sep='\\'),quote=F,row.names=T)
+#     print("Finish saving data")
+#         # write.csv(new.lab1,file='input/label1.csv',quote=F,row.names=F)
+#         # write.csv(new.lab2,file='input/label2.csv',quote=F,row.names=F)
+# }
+# main('experiment2/species/task4')
+# main('experiment/platform/10x_all/indrop')
+# main('experiment/platform/10x_all/seq_well')
+# main('experiment/platform/10x_all/smart_seq')
+# main('experiment/platform/10x_all/dropseq')

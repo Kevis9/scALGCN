@@ -12,7 +12,7 @@ sys.stdout = open("output_log.txt", "w")
 import warnings
 warnings.filterwarnings("ignore")
 #' del_all_flags(FLAGS)
-
+tf.compat.v1.disable_eager_execution()
 # Set random seed
 seed = 123
 np.random.seed(seed)
@@ -129,6 +129,12 @@ for epoch in range(FLAGS.epochs):
         break
 
 print("Finished Training....")
+#ref_activation_output = sess.run(model.activations, feed_dict=feed_dict_all)[1]
+
+#print("ref_activation_output")
+#print(type(ref_activation_output))
+#print(ref_activation_output.shape)
+
 
 #'  outputs 
 all_mask = np.array([True] * len(train_mask))
@@ -138,8 +144,48 @@ feed_dict_all = construct_feed_dict(features, support, labels_binary_all,
                                     all_mask, placeholders)
 feed_dict_all.update({placeholders['dropout']: FLAGS.dropout})
 
+# Embeddings
 activation_output = sess.run(model.activations, feed_dict=feed_dict_all)[1]
+#label = ['rna' for i in range(3260)] + ['atac' for i in range(3260)]
+#import umap
+#import seaborn as sns
+#import pandas as pd
+#import matplotlib.pyplot as plt
+#from sklearn.metrics import silhouette_score
+
+umap_model = umap.UMAP(random_state=0)
+data_2d = umap_model.fit_transform(activation_output)
+#rna_label = pd.read_csv('input/ref_label.csv')['treatment_time'].tolist()
+#atac_label = pd.read_csv('input/query_label.csv')['treatment_time'].tolist()
+#label = rna_label + atac_label
 predict_output = sess.run(model.outputs, feed_dict=feed_dict_all)
+ab = sess.run(tf.nn.softmax(predict_output))
+all_prediction = sess.run(tf.argmax(ab, 1))
+label = list(all_prediction)
+s_score = silhouette_score(activation_output, label)
+print('Silhoutte score is {:.3f}'.format(s_score))
+data = {
+        'x':data_2d[:,0],
+        'y':data_2d[:,1],
+        'label':label
+    }
+df = pd.DataFrame(data=data)
+plt.figure(figsize=(8, 6))
+sns.scatterplot(data=df, x='x', y='y', hue='label', palette='deep', s=3)
+plt.legend(loc=3, bbox_to_anchor=(1, 0)) # 设置图例位置
+plt.xlabel('UMAP1')
+plt.ylabel('UMAP2')
+plt.title("embeddings of rna atac with label")    
+plt.savefig('rna_atac.png', bbox_inches='tight') # dpi可以设置
+print("finish")
+exit()
+predict_output = sess.run(model.outputs, feed_dict=feed_dict_all)
+
+#print(predict_output.shape)
+#print("activation_output")
+#print(type(activation_output))
+#print(activation_output.shape)
+
 
 #' accuracy on all masks
 ab = sess.run(tf.nn.softmax(predict_output))
@@ -152,6 +198,7 @@ acc_train = np.sum(all_prediction[train_mask]) / np.sum(train_mask)
 acc_test = np.sum(all_prediction[test_mask]) / np.sum(test_mask)
 acc_val = np.sum(all_prediction[val_mask]) / np.sum(val_mask)
 acc_pred = np.sum(all_prediction[pred_mask]) / np.sum(pred_mask)
+print(all_prediction[pred_mask].shape)
 print('Checking train/test/val set accuracy: {}, {}, {}'.format(
     acc_train, acc_test, acc_val))
 print('Checking pred set accuracy: {}'.format(acc_pred))

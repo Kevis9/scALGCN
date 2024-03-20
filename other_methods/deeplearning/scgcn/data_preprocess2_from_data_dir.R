@@ -7,10 +7,9 @@
 #' save_processed_data(count.list,label.list)
 
 source('data_preprocess_utility.R')
-suppressPackageStartupMessages(library(Matrix))
 read_data <- function(path) {
-    # return matrix    
-    data = as(readMM(path), 'matrix') # cell * gene    
+    # return matrix
+    data = as.matrix(read.csv(path, row.names=1))
     return (data)
 }
 
@@ -19,53 +18,27 @@ read_label <- function(path) {
     label = as.matrix(read.csv(path))
     return (label)
 }
-read_gene <- function(path) {    
-    gene = as.matrix(read.csv(path))
-    return (gene)
-}
-read_name <- function(path) {
-    name = as.matrix(read.csv(path))
-    return (name)
-}
 
 args = commandArgs(trailingOnly = TRUE)
-path = args[[1]]
+base_path = args[[1]]
 args.rgraph = args[[2]]
 if(args.rgraph == "True"){
     rgraph = TRUE
 } else {
     rgraph = FALSE
 }
+ref_data_path = paste(base_path, 'data' ,'ref', 'data_1.csv', sep='/')
+query_data_path = paste(base_path, 'data', 'query', 'data_1.csv', sep='/')
+ref_label_path = paste(base_path, 'data', 'ref', 'label_1.csv', sep='/')
+query_label_path = paste(base_path, 'data', 'query', 'label_1.csv', sep='/')
 
-ref_data_path = paste(path, 'ref_data_middle.mtx', sep='/')            
-ref_label_path = paste(path, 'ref_label_middle.csv', sep='/')            
-ref_gene_path = paste(path, 'ref_gene_middle.csv', sep='/')
-ref_name_path = paste(path, 'ref_name_middle.csv', sep='/')
-
-query_data_path = paste(path, 'query_data_middle.mtx', sep='/')            
-query_label_path = paste(path, 'query_label_middle.csv', sep='/')            
-query_gene_path = paste(path, 'query_gene_middle.csv', sep='/')
-query_name_path = paste(path, 'query_name_middle.csv', sep='/')
-
-
-ref_data = t(read_data(ref_data_path)) # gene x cell
+ref_data = t(read_data(ref_data_path))
+query_data = t(read_data(query_data_path))
 ref_label = read_label(ref_label_path)
-ref_gene = read_gene(ref_gene_path)
-ref_name = read_name(ref_name_path)
-
-
-query_data = t(read_data(query_data_path)) # gene x cell
 query_label = read_label(query_label_path)
-query_gene = read_gene(query_gene_path)
-query_name = read_name(query_name_path)
 
-ref_label[ref_label == "Unassigned"] <- "unassigned"
-query_label[query_label == "Unassigned"] <- "unassigned"
-
-rownames(ref_data) = ref_gene
-rownames(query_data) = query_gene
-colnames(ref_data) = ref_name
-colnames(query_data) = query_name
+rownames(ref_label) = colnames(ref_data)
+rownames(query_label) = colnames(query_data)
 colnames(ref_label) = c('type')
 colnames(query_label) = c('type')
 

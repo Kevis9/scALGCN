@@ -7,7 +7,7 @@ import networkx as nx
 from data import *
 from collections import defaultdict
 from scipy.stats import uniform
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 
 #' -------- convert graph to specific format -----------
 
@@ -51,13 +51,22 @@ def load_data(datadir,rgraph=True):
     data_train1, data_test1, data_val1, label_train1, label_test1, label_val1, lab_data2, lab_label2, types = tuple(
         objects)
 
+    # data_test1.columns = data_train1.columns.tolist()
+    # data_val1.columns = data_train1.columns.tolist()
+    # lab_data2.columns = data_train1.columns.tolist()
+    # print('data_train1 shape', data_train1.shape)
+
+    # print('lab_data2 shape', lab_data2.shape)
+
     train2 = pd.concat([data_train1, lab_data2])
+    # print(train2.shape)
     lab_train2 = pd.concat([label_train1, lab_label2])
 
     datas_train = np.array(train2)
     datas_test = np.array(data_test1)
     datas_val = np.array(data_val1)
-
+    # print('train data shape', datas_train.shape)
+    # print('test data shape', datas_test.shape)
     index_guide = np.concatenate(
         (label_train1.index, lab_label2.index * (-1) - 1, label_val1.index,
          label_test1.index))
@@ -67,9 +76,9 @@ def load_data(datadir,rgraph=True):
     labels_val = np.array(label_val1).flatten()
 
     #' convert pandas data frame to csr_matrix format
-    datas_tr = scipy.sparse.csr_matrix(datas_train.astype('Float64'))
-    datas_va = scipy.sparse.csr_matrix(datas_val.astype('Float64'))
-    datas_te = scipy.sparse.csr_matrix(datas_test.astype('Float64'))
+    datas_tr = scipy.sparse.csr_matrix(datas_train.astype(np.float64))
+    datas_va = scipy.sparse.csr_matrix(datas_val.astype(np.float64))
+    datas_te = scipy.sparse.csr_matrix(datas_test.astype(np.float64))
 
     #' 3) set the unlabeled data in training set
 
@@ -77,6 +86,8 @@ def load_data(datadir,rgraph=True):
     M = len(data_train1)
 
     #' 4) get the feature object by combining training, test, valiation sets
+    print(datas_tr.shape)
+    print(datas_va.shape)
 
     features = sp.vstack((sp.vstack((datas_tr, datas_va)), datas_te)).tolil()
     features = preprocess_features(features)
@@ -91,6 +102,7 @@ def load_data(datadir,rgraph=True):
     Labels = pd.DataFrame(labels)
 
     true_label = Labels
+
     #' convert list to binary matrix
     uniq = np.unique(Labels.values)
 
@@ -123,7 +135,10 @@ def load_data(datadir,rgraph=True):
     pred_mask = sample_mask(idx_pred, new_label.shape[0])
     val_mask = sample_mask(idx_val, new_label.shape[0])
     test_mask = sample_mask(idx_test, new_label.shape[0])
-
+    print('train shape', idx_train)
+    print('pred  shape', idx_pred)
+    print('val shape', idx_val)
+    print('test shape', idx_test)
     labels_binary_train = np.zeros(new_label.shape)
     labels_binary_val = np.zeros(new_label.shape)
     labels_binary_test = np.zeros(new_label.shape)
@@ -189,12 +204,15 @@ def load_data(datadir,rgraph=True):
     adj = nx.adjacency_matrix(nx.from_dict_of_lists(adj))
 
     print("assign input coordinatly....")
-    return adj, features, labels_binary_train, labels_binary_val, labels_binary_test, train_mask, pred_mask, val_mask, test_mask, new_label, true_label, index_guide
+    return adj, features, labels_binary_train, labels_binary_val, \
+           labels_binary_test, train_mask, pred_mask, val_mask, test_mask, \
+           new_label, true_label, index_guide, types
 
 
 def preprocess_features(features):
     """Row-normalize feature matrix and convert to tuple representation"""
     rowsum = np.array(features.sum(1))
+
     r_inv = np.power(rowsum, -1).flatten()
     r_inv[np.isinf(r_inv)] = 0.
     r_mat_inv = sp.diags(r_inv)
