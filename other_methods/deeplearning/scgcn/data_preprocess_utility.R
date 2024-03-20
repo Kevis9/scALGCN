@@ -264,9 +264,10 @@ save_processed_data <- function(count.list,label.list,Rgraph=TRUE,check_unknown=
         write.csv(new.lab2,file='input/label2.csv',quote=F,row.names=F)        
     } else {
         #' use python generated graph
-        if (!dir.exists('results')){dir.create('results')}
+        # if (!dir.exists('results')){dir.create('results')}
 
 #         dir.create('results')
+        print("Use python graph: from R")
         #' @param norm.list normalized data
         res1 <- normalize_data(count.list)
         norm.list <- res1[[1]]; hvg.features <- res1[[2]];
@@ -274,7 +275,7 @@ save_processed_data <- function(count.list,label.list,Rgraph=TRUE,check_unknown=
         scale.list <- scale_data(count.list,norm.list,hvg.features)
         outputdir <- 'process_data';
         if (!dir.exists(outputdir)){dir.create(outputdir)}
-
+        
         write.csv(hvg.features,file=paste0(outputdir,'/sel_features.csv'),quote=F,row.names=F)
         N <- length(count.list)
         for (i in 1:N){
