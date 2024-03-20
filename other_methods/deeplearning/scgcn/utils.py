@@ -30,7 +30,7 @@ def sample_mask(idx, l):
     """Create mask."""
     mask = np.zeros(l)
     mask[idx] = 1
-    return np.array(mask, dtype=np.bool)
+    return np.array(mask, dtype=np.bool_)
 
 # convert nested lists to a flat list
 output = []
