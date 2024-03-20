@@ -211,8 +211,8 @@ def get_anndata(args):
                                             n_nodes_ref=ref_data.shape[0],
                                             n_nodes_query=query_data.shape[0])
     
-    
-    auxilary_edge_index = get_auxilary_graph(auxilary_graph_path=os.path.join(data_dir, 'auxilary_graph.csv'), n_nodes=auxilary_data_h5.n_obs)            
+    if args.use_auxilary:
+        auxilary_edge_index = get_auxilary_graph(auxilary_graph_path=os.path.join(data_dir, 'auxilary_graph.csv'), n_nodes=auxilary_data_h5.n_obs)            
 
     adata = ad.AnnData(csr_matrix(data, dtype=float), dtype=float)
     
