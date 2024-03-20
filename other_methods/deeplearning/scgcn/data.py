@@ -16,8 +16,8 @@ def input_data(DataDir,Rgraph=True):
 
     DataPath1 = '{}/Data1.csv'.format(DataDir)
     DataPath2 = '{}/Data2.csv'.format(DataDir)
-    LabelsPath1 = '{}/Label1.csv'.format(DataDir)
-    LabelsPath2 = '{}/Label2.csv'.format(DataDir)
+    LabelsPath1 = '{}/label1.csv'.format(DataDir)
+    LabelsPath2 = '{}/label2.csv'.format(DataDir)
 
 
     # DataPath1 = '{}/ref_data.csv'.format(DataDir)
