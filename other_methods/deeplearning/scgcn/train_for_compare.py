@@ -159,9 +159,6 @@ trues = sess.run(tf.argmax(labels_binary_all, 1))
     保存结果
 '''
 from sklearn.metrics import silhouette_score, f1_score, adjusted_rand_score, accuracy_score
-import umap
-import matplotlib.pyplot as plt
-import seaborn as sns
 from sklearn.preprocessing import LabelEncoder
 #这里要把pred和true做一个inverse，转到之前的类型上去
 enc = LabelEncoder()
