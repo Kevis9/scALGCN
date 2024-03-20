@@ -74,7 +74,7 @@ query_obs_names.to_csv(os.path.join(dir_name, 'raw_data', 'query_name_middle.csv
 
 mmwrite(os.path.join(dir_name, 'raw_data', 'ref_data_middle.mtx'), ref_data)
 mmwrite(os.path.join(dir_name, 'raw_data', 'query_data_middle.mtx'), query_data)
-if auxilary_data is not None:
+if auxilary_data_h5 is not None:
     mmwrite(os.path.join(dir_name, 'raw_data', 'auxilary_data_middle.mtx'), auxilary_data)
 
 
