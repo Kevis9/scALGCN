@@ -220,7 +220,7 @@ class ProGNN:
                         'acc_test：{:.4f}'.format(acc_test.item()),
                         'time: {:.4f}s'.format(time.time() - t))
                 
-
+        self.model_optimizer.zero_grad() # 清除缓存
         return prob
 
     def train_adj(self, epoch, features, original_adj, labels, idx_train, idx_val):        
@@ -232,7 +232,7 @@ class ProGNN:
         t = time.time()
         estimator.train()
         self.model_optimizer_adj.zero_grad()
-
+        
         loss_l1 = torch.norm(estimator.estimated_adj, 1)
         loss_fro = torch.norm(estimator.estimated_adj - original_adj, p='fro')        
         norm_adj = estimator.normalize() # 其实norm_adj和estimated_adj在这边没有什么差别
