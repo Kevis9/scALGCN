@@ -150,7 +150,8 @@ class GTModel(nn.Module):
         # N = features.shape[0] # N * feature_dim
         # A = dglsp.spmatrix(indices, shape=(N, N))        
         # A = g.edges()
-        h = self.h_embedding(features)            
+        h = self.h_embedding(features)   
+        h1 = h         
         if self.add_pos_enc:
             h = h + self.pos_linear(self.pos_enc)
         
@@ -161,8 +162,10 @@ class GTModel(nn.Module):
         # if self.state_embeddings is not None:
         #     h = h + self.state_embeddings
         # ==========================
-        if not self.is_auxilary and self.use_auxilary:
-            h = h + self.state_embeddings
+        if self.residual:
+            h = h1 + h
+        # if not self.is_auxilary and self.use_auxilary:
+        #     h = h + self.state_embeddings
                                                                 
         h = self.predictor(h)        
         return h
