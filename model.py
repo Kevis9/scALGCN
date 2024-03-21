@@ -164,8 +164,9 @@ class GTModel(nn.Module):
         # ==========================
         if self.residual:
             h = h1 + h
-        # if not self.is_auxilary and self.use_auxilary:
-        #     h = h + self.state_embeddings
+        
+        if not self.is_auxilary and self.use_auxilary:
+            h = h + self.state_embeddings
                                                                 
         h = self.predictor(h)        
         return h
