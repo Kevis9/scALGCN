@@ -66,7 +66,7 @@ class GTLayer(nn.Module):
 
     def forward(self, A, h):
         # attention-layer
-        # h1 = h
+        h1 = h
         h = self.MHA(A, h)
         
         if self.residual:
