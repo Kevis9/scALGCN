@@ -193,9 +193,9 @@ new_adj = test_res[3]
 # save config
 ref_proj = proj.split('-')[0]
 query_proj = proj.split('-')[1]
-auxilary_proj = proj.split('-')[2]
-
-if not args.use_auxilary:
+if args.use_auxilary:
+    auxilary_proj = proj.split('-')[2]
+else:
     auxilary_proj = ''
 
 with open('config/{:}-{:}-{:}_acc_{:.3f}.json'.format(ref_proj, query_proj, auxilary_proj, test_res[0]), 'w') as f:
