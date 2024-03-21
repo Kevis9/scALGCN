@@ -69,8 +69,8 @@ class GTLayer(nn.Module):
         # h1 = h
         h = self.MHA(A, h)
         
-        # if self.residual:
-        #     h = h + h1  
+        if self.residual:
+            h = h + h1  
 
         h = self.batchnorm1(h)
 
