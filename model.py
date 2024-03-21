@@ -61,7 +61,7 @@ class GTLayer(nn.Module):
         self.MHA = SparseMHA(hidden_dim=hidden_dim, num_heads=num_heads)
         self.batchnorm1 = nn.BatchNorm1d(hidden_dim)
         self.batchnorm2 = nn.BatchNorm1d(hidden_dim)
-                
+        self.dropout = nn.Dropout(p=0.3)
         self.FFN1 = nn.Linear(hidden_dim, hidden_dim * 2)
         self.FFN2 = nn.Linear(hidden_dim * 2, hidden_dim)
 
@@ -77,8 +77,11 @@ class GTLayer(nn.Module):
 
         h2 = h
         # two-layer FNN
-        h = self.FFN2(F.relu(self.FFN1(h)))        
-
+        h = self.FFN1(h)
+        h = F.relu(h)
+        h = self.dropout(h)
+        h = self.FFN2(h)        
+        
         if self.residual:      
             h = h2 + h
         h = self.batchnorm2(h)
