@@ -157,11 +157,7 @@ class GTModel(nn.Module):
         
         for layer in self.layers:
             h = layer(A, h)        
-        
-        # =========对照组实验=========
-        # if self.state_embeddings is not None:
-        #     h = h + self.state_embeddings
-        # ==========================
+               
         if self.residual:
             h = h1 + h
         

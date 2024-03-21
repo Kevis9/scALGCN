@@ -24,14 +24,14 @@ parser.add_argument('--basef', type=float,
                              default=0.8, 
                              help='base factor for active learning')
 parser.add_argument('--k_select', type=int, 
-                             default=1, 
+                             default=2, 
                              help='num of nodes to select for every iteration')
 
 parser.add_argument('--init_num_per_class', type=int, 
-                             default=100, 
+                             default=200, 
                              help='for active learning, we will pick some initial nodes for every class')
 parser.add_argument('--max_per_class', type=int, 
-                             default=130, 
+                             default=230, 
                              help='max number of nodes for each class')
 
 ####### GT Model #######
@@ -51,7 +51,7 @@ parser.add_argument('--n_heads', type=int,
                              default=2, 
                              help='num of heads for GTModel')
 parser.add_argument('--n_layers', type=int, 
-                             default=3, 
+                             default=5, 
                              help='num of layers for GTModel')
 parser.add_argument('--pos_enc_dim', type=int,
                              default=8, 
@@ -59,7 +59,7 @@ parser.add_argument('--pos_enc_dim', type=int,
 
 ####### Graph Learning #######
 parser.add_argument('--GL_epochs', type=int, 
-                             default=5 , #一般设置为5或者10 <epochs最好
+                             default=10 , #一般设置为5或者10 <epochs最好
                              help='epochs for GL')
 
 parser.add_argument('--alpha', type=float, 
@@ -75,7 +75,7 @@ parser.add_argument('--lambda_', type=float,
                     default=5e-4, 
                     help='weight of feature smoothing')
 parser.add_argument('--adj_thresh', type=float, 
-                    default=0, # <  会被标记为0
+                    default=1e-3, # <  会被标记为0
                     help='weight of nuclear norm')
 
 
@@ -138,31 +138,11 @@ if args.use_auxilary:
     auxilary_model_prognn = ProGNN(auxilary_model, data_info=data_info, args=auxilary_args, device=device)
     auxilary_model_prognn.fit(g_data=auxilary_g_data)
 
-# ========================对照实验组，验证state_embeddings的有效性，排除residual的影响========================================
-# args.is_auxilary = False # 保证是type-model
-# adj_training = args.adj_training
-# active_learning = args.active_learning
-# args.adj_training = False
-# args.active_learning = False
-# control_model = GTModel(args=args,                
-#                 class_num=data_info['class_num'],
-#                 in_dim=g_data.ndata['x'].shape[1],
-#                 pos_enc=g_data.ndata['PE'].to(device) if args.add_pos_enc else None).to(device)
-# control_prognn = ProGNN(control_model, data_info=data_info, args=args, device=device)
-# control_prognn.fit(g_data=g_data)
-# auxilary_embeddings = control_model.get_embeddings(g_data=g_data, args=args)
-# ========================================================================================
-
-
 
 '''
  ========= For cell type prediction ========= 
 '''
 args.is_auxilary = False
-# ========================对照实验组========================
-# args.adj_training = adj_training
-# args.active_learning = active_learning
-# ========================对照实验组========================
 type_model = GTModel(args=args,                
                 class_num=data_info['class_num'],
                 in_dim=g_data.ndata['x'].shape[1],
@@ -172,9 +152,6 @@ if args.use_auxilary:
     auxilary_embeddings = auxilary_model.get_embeddings(g_data=g_data, args=args)
     type_model.set_state_embeddings(auxilary_embeddings)
 
-# =========对照组实验=========
-# type_model.set_state_embeddings(auxilary_embeddings)
-# ===========================================
 
 prognn = ProGNN(type_model, data_info=data_info, args=args, device=device)
 prognn.fit(g_data=g_data)
@@ -190,7 +167,12 @@ print("acc is {:.3f}".format(test_res[0]))
 old_adj = g_data.adj_external(scipy_fmt='csr')
 new_adj = test_res[3]
 
-# save config
+'''
+ ======== save =========
+'''
+acc_file = 'stable_acc.csv'
+f1_file = 'stable_macro-f1.csv'
+
 ref_proj = proj.split('-')[0]
 query_proj = proj.split('-')[1]
 if args.use_auxilary:
@@ -214,13 +196,13 @@ if args.use_auxilary:
     first_key += ('-' + auxilary_proj)
 
 print("experimens {:}_{:} finished".format(first_key, second_key))
-acc_data = pd.read_csv('result/acc_4.csv', index_col=0)
+acc_data = pd.read_csv(os.path.join('result', acc_file), index_col=0)
 acc_data.loc[first_key][second_key] = test_res[0]
-acc_data.to_csv('result/acc_4.csv')
+acc_data.to_csv(os.path.join('result', acc_file))
 
-f1_data = pd.read_csv('result/macro-f1_4.csv', index_col=0)
+f1_data = pd.read_csv(os.path.join('result', f1_file), index_col=0)
 f1_data.loc[first_key][second_key] = test_res[1]
-f1_data.to_csv('result/macro-f1_4.csv')
+f1_data.to_csv(os.path.join('result', f1_file))
 
 # save query_true.csv, query_predict.csv
 ref_true = data_info['label_encoder'].inverse_transform(g_data.ndata['y_true'].numpy()[:adata.uns['n_ref']])
