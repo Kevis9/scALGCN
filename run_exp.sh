@@ -88,29 +88,28 @@ projects3=(
 )
 
 
-# for i in ${projects[@]}; do
-#     # ref_query_auxilary
-#     CUDA_VISIBLE_DEVICES=1 python gt_main.py --adj_training --active_learning --data_dir=./experiments/$i --use_auxilary
-#     CUDA_VISIBLE_DEVICES=1 python gt_main.py --adj_training --data_dir=./experiments/$i --use_auxilary
-#     CUDA_VISIBLE_DEVICES=1 python gt_main.py --active_learning --data_dir=./experiments/$i --use_auxilary
-#     CUDA_VISIBLE_DEVICES=1 python gt_main.py --data_dir=./experiments/$i --use_auxilary
+for i in ${projects[@]}; do
+    # ref_query_auxilary
+    CUDA_VISIBLE_DEVICES=1 python gt_main.py --adj_training --active_learning --data_dir=./experiments/$i --use_auxilary
+    CUDA_VISIBLE_DEVICES=1 python gt_main.py --adj_training --data_dir=./experiments/$i --use_auxilary
+    CUDA_VISIBLE_DEVICES=1 python gt_main.py --active_learning --data_dir=./experiments/$i --use_auxilary
+    CUDA_VISIBLE_DEVICES=1 python gt_main.py --data_dir=./experiments/$i --use_auxilary
         
-# done
+done
 
-# for i in ${projects2[@]}; do
-#     # ref_query
-#     CUDA_VISIBLE_DEVICES=1 python gt_main.py --adj_training --active_learning --data_dir=./experiments/$i
-#     CUDA_VISIBLE_DEVICES=1 python gt_main.py --adj_training --data_dir=./experiments/$i
-#     CUDA_VISIBLE_DEVICES=1 python gt_main.py --active_learning --data_dir=./experiments/$i
-#     CUDA_VISIBLE_DEVICES=1 python gt_main.py --data_dir=./experiments/$i
-# done
+for i in ${projects2[@]}; do
+    # ref_query
+    CUDA_VISIBLE_DEVICES=1 python gt_main.py --adj_training --active_learning --data_dir=./experiments/$i
+    CUDA_VISIBLE_DEVICES=1 python gt_main.py --adj_training --data_dir=./experiments/$i
+    CUDA_VISIBLE_DEVICES=1 python gt_main.py --active_learning --data_dir=./experiments/$i
+    CUDA_VISIBLE_DEVICES=1 python gt_main.py --data_dir=./experiments/$i
+done
 
 # crossplatform species
 for i in ${projects3[@]}; do
     # ref_query
-    # CUDA_VISIBLE_DEVICES=1 python gt_main.py --adj_training --active_learning --data_dir=./experiments/$i
-    # CUDA_VISIBLE_DEVICES=1 python gt_main.py --adj_training --data_dir=./experiments/$i
-    # CUDA_VISIBLE_DEVICES=1 python gt_main.py --active_learning --data_dir=./experiments/$i
-    CUDA_VISIBLE_DEVICES=1 python gt_main.py --data_dir=./experiments/$i
-    exit 0
+    CUDA_VISIBLE_DEVICES=1 python gt_main.py --adj_training --active_learning --data_dir=./experiments/$i
+    CUDA_VISIBLE_DEVICES=1 python gt_main.py --adj_training --data_dir=./experiments/$i
+    CUDA_VISIBLE_DEVICES=1 python gt_main.py --active_learning --data_dir=./experiments/$i
+    CUDA_VISIBLE_DEVICES=1 python gt_main.py --data_dir=./experiments/$i    
 done
