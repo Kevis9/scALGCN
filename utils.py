@@ -246,7 +246,11 @@ def load_data(args, use_auxilary=True):
     adata.write(os.path.join(args.data_dir, 'all_data.h5ad')) 
     
     # take ref_query data into dgl data
-    src, dst = adata.uns['edge_index_knn'][0], adata.uns['edge_index_knn'][1]
+    if args.graph_method == 'knn':
+        src, dst = adata.uns['edge_index_knn'][0], adata.uns['edge_index_knn'][1]
+    elif args.graph_method == 'mnn':
+        src, dst = adata.uns['edge_index'][0], adata.uns['edge_index'][1]
+    
     g_data = dgl.graph((src, dst), num_nodes=adata.n_obs)                
     y_true = adata.obs['cell_type'].to_numpy()    
     
@@ -499,9 +503,9 @@ def active_learning(g_data, epoch, out_prob, norm_centrality, args, data_info):
         for node_idx in select_arr:
             data_info['train_idx'].append(node_idx)
             # 注意y_predict是tensor
-            g_data.ndata['y_predict'][node_idx] = g_data.ndata['y_true'][node_idx]
+            # g_data.ndata['y_predict'][node_idx] = g_data.ndata['y_true'][node_idx]
             if (args.debug):
-                print("Epoch {:}: pick up one node to the training set!".format(epoch))
+                print("Epoch {:}: pick up {:} node to the training set!".format(epoch, args.k_select))
 
 
 def construct_graph_with_knn(data, k=3):

@@ -107,6 +107,9 @@ parser.add_argument('--is_auxilary', action='store_true',
 parser.add_argument('--use_auxilary', action='store_true',
                     default=False,
                     help='for GTModel, whether use auxilary model')
+parser.add_argument('--graph_method', type=str,
+                    default='knn',
+                    help='graph contruction method: knn or mnn')
 
 
 args = parser.parse_args()
