@@ -10,6 +10,7 @@ def get_edge_idx(df):
     graph = set(tuple(zip(row, col)))    
     return graph
                   
+
 parser = argparse.ArgumentParser()
 # data config
 parser.add_argument('--res_path', type=str, 

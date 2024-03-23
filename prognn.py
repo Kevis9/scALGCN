@@ -440,6 +440,8 @@ class EstimateAdj(nn.Module):
         '''
         edge_probs = self.estimated_adj
         adj = torch.distributions.Bernoulli(edge_probs).sample()        
+        if self.symmetric:
+            adj = (adj + adj.t()) / 2
         # STE
         adj = (adj - edge_probs).detach() + edge_probs                
         return adj
