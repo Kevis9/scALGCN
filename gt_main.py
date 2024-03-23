@@ -59,7 +59,7 @@ parser.add_argument('--pos_enc_dim', type=int,
 
 ####### Graph Learning #######
 parser.add_argument('--GL_epochs', type=int, 
-                             default=10 , #一般设置为5或者10 <epochs最好
+                             default=30 , #一般设置为5或者10 <epochs最好
                              help='epochs for GL')
 
 parser.add_argument('--alpha', type=float, 

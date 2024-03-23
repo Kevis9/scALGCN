@@ -111,7 +111,7 @@ class ProGNN:
                             
         for epoch in range(args.epochs):                                              
             
-            prob = self.train_gnn(adj=self.estimator.sample(), 
+            prob = self.train_gnn(adj=self.estimator.normalize(), 
                                 features=node_x,                               
                                 labels=labels,
                                 epoch=epoch,
@@ -231,7 +231,7 @@ class ProGNN:
         
         loss_l1 = torch.norm(estimator.estimated_adj, 1)
         loss_fro = torch.norm(estimator.estimated_adj - original_adj, p='fro')        
-        norm_adj = estimator.sample() # 其实norm_adj和estimated_adj在这边没有什么差别
+        norm_adj = estimator.normalize() # 其实norm_adj和estimated_adj在这边没有什么差别
         
         if args.lambda_:
             loss_smooth_feat = self.feature_smoothing(estimator.estimated_adj, features)
@@ -285,7 +285,7 @@ class ProGNN:
         # deactivates dropout during validation run.
         self.model.eval()
         with torch.no_grad():
-            norm_adj = estimator.sample()
+            norm_adj = estimator.normalize()
             # edge_index = norm_adj.nonzero().T           
             output = self.model(norm_adj, features)
             loss_val = criterion(output[idx_val], labels[idx_val])
