@@ -438,15 +438,10 @@ class EstimateAdj(nn.Module):
     def sample(self):
         '''
             采用伯努利采样来进行0-1映射
-        '''
-        adj = self.estimated_adj
-        if self.symmetric:
-            adj = (adj + adj.t()) / 2
-        return adj
+        '''        
         edge_probs = self.estimated_adj
         adj = torch.distributions.Bernoulli(edge_probs).sample()        
         if self.symmetric:
             adj = (adj + adj.t()) / 2
-        # STE
-        adj = (adj - edge_probs).detach() + edge_probs                
-        return adj
+        # STE                    
+        return (adj - edge_probs).detach() + edge_probs
