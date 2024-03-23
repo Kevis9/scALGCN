@@ -109,20 +109,9 @@ class ProGNN:
             graph = nx.Graph(adj.detach().cpu().numpy())
             norm_centrality = centralissimo(graph)
                             
-        for epoch in range(args.epochs):
-            # auxilary model不需要GL
-            if args.adj_training and not args.is_auxilary and epoch < args.GL_epochs:
-                # Update S                                
-                self.train_adj(epoch, node_x, adj, labels,
-                        train_idx, val_idx)
-                         
-            updated_adj = self.estimator.normalize()                        
+        for epoch in range(args.epochs):                                              
             
-            if epoch >= args.GL_epochs:
-                # 无法在adj_train的过程中进行截断, 所以选择在adj_train结束之后截断
-                updated_adj[updated_adj < args.adj_thresh] = 0
-            
-            prob = self.train_gnn(adj=updated_adj, 
+            prob = self.train_gnn(adj=self.estimator.sample(), 
                                 features=node_x,                               
                                 labels=labels,
                                 epoch=epoch,
@@ -138,6 +127,13 @@ class ProGNN:
                                 args=self.args,
                                 data_info=self.data_info)
                     
+            # auxilary model不需要GL
+            if args.adj_training and not args.is_auxilary and epoch < args.GL_epochs:
+                # Update S                                
+                self.train_adj(epoch, node_x, adj, labels,
+                        train_idx, val_idx)
+                         
+            # updated_adj = self.estimator.normalize()  
                                         
 
         print("Optimization Finished!")
@@ -235,7 +231,7 @@ class ProGNN:
         
         loss_l1 = torch.norm(estimator.estimated_adj, 1)
         loss_fro = torch.norm(estimator.estimated_adj - original_adj, p='fro')        
-        norm_adj = estimator.normalize() # 其实norm_adj和estimated_adj在这边没有什么差别
+        norm_adj = estimator.sample() # 其实norm_adj和estimated_adj在这边没有什么差别
         
         if args.lambda_:
             loss_smooth_feat = self.feature_smoothing(estimator.estimated_adj, features)
@@ -262,7 +258,8 @@ class ProGNN:
         #                 - estimator.estimated_adj.t(), p="fro")
         
         # for loss that are diffiential
-        loss_diffiential =  loss_fro + args.gamma * loss_gcn + args.lambda_ * loss_smooth_feat
+        # loss_fro不需要
+        loss_diffiential =  0 * loss_fro + args.gamma * loss_gcn + args.lambda_ * loss_smooth_feat
         loss_diffiential.backward()
         self.model_optimizer_adj.step()  # 更新adj的参数, 这部分是可微分的参数
         
@@ -288,7 +285,7 @@ class ProGNN:
         # deactivates dropout during validation run.
         self.model.eval()
         with torch.no_grad():
-            norm_adj = estimator.normalize()
+            norm_adj = estimator.sample()
             # edge_index = norm_adj.nonzero().T           
             output = self.model(norm_adj, features)
             loss_val = criterion(output[idx_val], labels[idx_val])
@@ -425,3 +422,14 @@ class EstimateAdj(nn.Module):
         mx = r_mat_inv @ mx
         mx = mx @ r_mat_inv
         return mx
+    
+    def sample(self):
+        '''
+            采用伯努利采样来进行0-1映射
+        '''
+        edge_probs = self.normalize()
+        adj = torch.distributions.Bernoulli(edge_probs).sample()        
+        # STE
+        adj = (adj - edge_probs).detach() + edge_probs
+
+        return adj
