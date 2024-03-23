@@ -344,28 +344,33 @@ class ProGNN:
         loss_test = 0
         acc_test = 0
         best_acc = 0
+        best_macro_f1 = 0
         best_output = None
         macrof1_test = 0
         new_adj = None
-        for i in range(5):
-            adj = self.estimator.sample(detach=True)
-            output = self.model(adj, features)                
-            
-            # save_npz("new_graph.npz", save_adj)            
-            # save_eidx = edge_index.detach().cpu().numpy()
-            # np.savetxt('new_graph.csv', save_eidx, delimiter=',')
-            loss_test += criterion(output[idx_test], labels[idx_test])                              
-            acc_test += accuracy(output[idx_test], labels[idx_test])          
-            if acc_test > best_acc:
-                best_acc = acc_test
-                best_output = output
-                new_adj = new_adj = csr_matrix(adj.detach().cpu().numpy())
-            
-            macrof1_test += f1_score(torch.argmax(output[idx_test], dim=1).cpu().numpy(), labels[idx_test].detach().cpu().numpy(), average='macro')
+        with torch.no_grad():
+            for i in range(5):
+                adj = self.estimator.sample(detach=True)
+                output = self.model(adj, features)                
+                
+                # save_npz("new_graph.npz", save_adj)            
+                # save_eidx = edge_index.detach().cpu().numpy()
+                # np.savetxt('new_graph.csv', save_eidx, delimiter=',')
+                loss_test += criterion(output[idx_test], labels[idx_test])                              
+                acc_tmp += accuracy(output[idx_test], labels[idx_test])          
+                acc_test += acc_tmp            
+                if acc_tmp > best_acc:
+                    best_acc = acc_tmp
+                    best_output = output
+                    new_adj = new_adj = csr_matrix(adj.detach().cpu().numpy())
+                
+                macrof1_test += f1_score(torch.argmax(output[idx_test], dim=1).cpu().numpy(), labels[idx_test].detach().cpu().numpy(), average='macro')
             
         acc_test /= 5
         macrof1_test /= 5
         loss_test /= 5            
+        
+        acc_test = best_acc
         
         print("\tTest set results:",
                 "loss= {:.4f}".format(loss_test.item()),
