@@ -75,7 +75,7 @@ class ProGNN:
         estimator = EstimateAdj(adj, symmetric=args.symmetric, device=self.device).to(self.device)
         self.estimator = estimator
         self.model_optimizer_adj = optim.SGD(estimator.parameters(),
-                              momentum=0.9, lr=1e-2)
+                              momentum=0.9, lr=1e-1)
 
         self.model_optimizer_l1 = PGD(estimator.parameters(),
                         proxs=[prox_operators.prox_l1],
@@ -270,9 +270,7 @@ class ProGNN:
             loss_nuclear = prox_operators.nuclear_norm # 内部计算好了nulcear_norm, 这里只是为了展示
 
         self.model_optimizer_l1.zero_grad()
-        self.model_optimizer_l1.step()
-        print("test for update adj:测试检查adj的更新")
-        print(norm_adj)
+        self.model_optimizer_l1.step()                
         total_loss = loss_fro \
                     + args.gamma * loss_gcn \
                     + args.alpha * loss_l1 \

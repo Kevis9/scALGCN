@@ -28,10 +28,10 @@ parser.add_argument('--k_select', type=int,
                              help='num of nodes to select for every iteration')
 
 parser.add_argument('--init_num_per_class', type=int, 
-                             default=200, 
+                             default=100, 
                              help='for active learning, we will pick some initial nodes for every class')
 parser.add_argument('--max_per_class', type=int, 
-                             default=230, 
+                             default=150, 
                              help='max number of nodes for each class')
 
 ####### GT Model #######
