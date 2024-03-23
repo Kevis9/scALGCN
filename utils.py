@@ -509,7 +509,10 @@ def active_learning(g_data, epoch, out_prob, norm_centrality, args, data_info):
 
 
 def construct_graph_with_knn(data, k=3):
-    A = kneighbors_graph(data, k, mode='connectivity', include_self='auto')  
+    A = kneighbors_graph(data, k, mode='connectivity', include_self='auto') 
+    print("邻接矩阵！")
+    print(A)
+    exit()
     # turn A into undirecitonal adjcent matrix        
     G = nx.from_numpy_array(A.toarray())
     edges = []    

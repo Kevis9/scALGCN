@@ -362,16 +362,15 @@ class ProGNN:
                 if acc_tmp > best_acc:
                     best_acc = acc_tmp
                     best_output = output
-                    new_adj = new_adj = csr_matrix(adj.detach().cpu().numpy())
+                    print("save new adj")
+                    new_adj = csr_matrix(adj.detach().cpu().numpy())
                 
                 macrof1_test += f1_score(torch.argmax(output[idx_test], dim=1).cpu().numpy(), labels[idx_test].detach().cpu().numpy(), average='macro')
             
         acc_test /= 5
         macrof1_test /= 5
         loss_test /= 5            
-        
-        acc_test = best_acc
-        
+                
         print("\tTest set results:",
                 "loss= {:.4f}".format(loss_test.item()),
                 "accuracy= {:.4f}".format(acc_test.item()))

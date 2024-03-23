@@ -13,7 +13,7 @@ def get_edge_idx(df):
 parser = argparse.ArgumentParser()
 # data config
 parser.add_argument('--res_path', type=str, 
-                             default='/home/hwl/scALGCN/result/bcp1_6000-bcp2_6000-exp0013_GT', 
+                             default='/home/hwl/scALGCN/result/bcp1_6000-bcp2_6000-exp0013_GT + GL', 
                              help='data directory')
 args = parser.parse_args()
 
