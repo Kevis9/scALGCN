@@ -350,7 +350,7 @@ class ProGNN:
         new_adj = None
         with torch.no_grad():
             for i in range(5):
-                adj = self.estimator.sample(detach=True)
+                adj = self.estimator.sample()
                 output = self.model(adj, features)                
                 
                 # save_npz("new_graph.npz", save_adj)            
@@ -435,16 +435,12 @@ class EstimateAdj(nn.Module):
         mx = mx @ r_mat_inv
         return mx
     
-    def sample(self, detach=False):
+    def sample(self):
         '''
             采用伯努利采样来进行0-1映射
         '''
         edge_probs = self.estimated_adj
         adj = torch.distributions.Bernoulli(edge_probs).sample()        
         # STE
-        adj = (adj - edge_probs).detach() + edge_probs
-        if detach:
-            adj = adj.detach()
-        # Norm
-        adj = self._normalize(adj + torch.eye(adj.shape[0]).to(self.device))        
+        adj = (adj - edge_probs).detach() + edge_probs                
         return adj
