@@ -110,7 +110,7 @@ class ProGNN:
             norm_centrality = centralissimo(graph)
                             
         for epoch in range(args.epochs):                                              
-            new_adj = self.estimator.sample().detach()
+            new_adj = self.estimator.sample()
             prob = self.train_gnn(adj=new_adj, 
                                 features=node_x,                               
                                 labels=labels,
@@ -271,7 +271,8 @@ class ProGNN:
 
         self.model_optimizer_l1.zero_grad()
         self.model_optimizer_l1.step()
-
+        print("test for update adj:测试检查adj的更新")
+        print(norm_adj)
         total_loss = loss_fro \
                     + args.gamma * loss_gcn \
                     + args.alpha * loss_l1 \
