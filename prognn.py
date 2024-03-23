@@ -331,8 +331,7 @@ class ProGNN:
         else:
             criterion = torch.nn.CrossEntropyLoss()                    
                 
-        self.model.eval()
-        self.estimator.eval()
+        self.model.eval()        
 
         adj = self.best_graph
         if self.best_graph is None:
@@ -349,7 +348,7 @@ class ProGNN:
         macrof1_test = 0
         new_adj = None
         for i in range(5):
-            adj = self.estimator.sample()
+            adj = self.estimator.sample().detach()
             output = self.model(adj, features)                
             
             # save_npz("new_graph.npz", save_adj)            
@@ -435,9 +434,10 @@ class EstimateAdj(nn.Module):
         '''
             采用伯努利采样来进行0-1映射
         '''
-        edge_probs = self.normalize()
+        edge_probs = self.estimated_adj
         adj = torch.distributions.Bernoulli(edge_probs).sample()        
         # STE
         adj = (adj - edge_probs).detach() + edge_probs
-
+        # Norm
+        adj = self._normalize(adj + torch.eye(adj.shape[0]).to(self.device))        
         return adj
