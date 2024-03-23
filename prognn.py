@@ -357,7 +357,7 @@ class ProGNN:
                 # save_eidx = edge_index.detach().cpu().numpy()
                 # np.savetxt('new_graph.csv', save_eidx, delimiter=',')
                 loss_test += criterion(output[idx_test], labels[idx_test])                              
-                acc_tmp += accuracy(output[idx_test], labels[idx_test])          
+                acc_tmp = accuracy(output[idx_test], labels[idx_test])          
                 acc_test += acc_tmp            
                 if acc_tmp > best_acc:
                     best_acc = acc_tmp
