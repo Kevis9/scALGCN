@@ -1,6 +1,8 @@
 import pandas as pd
 from scipy.sparse import load_npz
 import numpy as np
+import argparse
+import os
 def get_edge_idx(df):
     # 转置DataFrame，将行变为列          
     row = map(int, df.iloc[0, :].tolist())
@@ -8,9 +10,17 @@ def get_edge_idx(df):
     graph = set(tuple(zip(row, col)))    
     return graph
                   
-    
-old_graph = load_npz('old_graph.npz')
-new_graph = load_npz('new_graph.npz') # 经过了normalization
+parser = argparse.ArgumentParser()
+# data config
+parser.add_argument('--res_path', type=str, 
+                             default='/home/hwl/scALGCN/result/bcp1_6000-bcp2_6000-exp0013_GT', 
+                             help='data directory')
+args = parser.parse_args()
+
+res_path = args.res_path
+
+old_graph = load_npz(os.path.join(res_path, 'old_graph.npz'))
+new_graph = load_npz(os.path.join(res_path, 'new_graph.npz')) # 经过了normalization
 
 
 print("new_graph的L1: ", new_graph.sum())
