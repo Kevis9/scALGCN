@@ -110,8 +110,8 @@ class ProGNN:
             norm_centrality = centralissimo(graph)
                             
         for epoch in range(args.epochs):                                              
-            
-            prob = self.train_gnn(adj=self.estimator.normalize(), 
+            new_adj = self.estimator.sample().detach()
+            prob = self.train_gnn(adj=new_adj, 
                                 features=node_x,                               
                                 labels=labels,
                                 epoch=epoch,
@@ -132,8 +132,7 @@ class ProGNN:
                 # Update S                                
                 self.train_adj(epoch, node_x, adj, labels,
                         train_idx, val_idx)
-                         
-            # updated_adj = self.estimator.normalize()  
+                                     
                                         
 
         print("Optimization Finished!")
@@ -188,7 +187,7 @@ class ProGNN:
         if args.is_auxilary:
             if loss_val < self.best_val_loss:
                 self.best_val_loss = loss_val
-                self.best_graph = adj.detach()
+                self.best_graph = adj
                 self.weights = deepcopy(self.model.state_dict())
                 if self.args.debug:
                     print(f'saving current graph/gcn, best_val_loss: %s' % self.best_val_loss.item())
@@ -197,7 +196,7 @@ class ProGNN:
             acc_test = accuracy(output[test_idx], labels[test_idx])
             if acc_val > self.best_val_acc:
                 self.best_val_acc = acc_val
-                self.best_graph = adj.detach()
+                self.best_graph = adj
                 self.weights = deepcopy(self.model.state_dict())
                 if self.args.debug:
                     print(f'saving current model and graph, best_val_acc: %s' % self.best_val_acc.item())
@@ -231,7 +230,7 @@ class ProGNN:
         
         loss_l1 = torch.norm(estimator.estimated_adj, 1)
         loss_fro = torch.norm(estimator.estimated_adj - original_adj, p='fro')        
-        norm_adj = estimator.normalize() # 其实norm_adj和estimated_adj在这边没有什么差别
+        norm_adj = estimator.sample() # 其实norm_adj和estimated_adj在这边没有什么差别
         
         if args.lambda_:
             loss_smooth_feat = self.feature_smoothing(estimator.estimated_adj, features)
@@ -285,11 +284,15 @@ class ProGNN:
         # deactivates dropout during validation run.
         self.model.eval()
         with torch.no_grad():
-            norm_adj = estimator.normalize()
-            # edge_index = norm_adj.nonzero().T           
-            output = self.model(norm_adj, features)
-            loss_val = criterion(output[idx_val], labels[idx_val])
-        
+            # 进行五次采样
+            loss_val = 0
+            for i in range(5):
+                norm_adj = estimator.sample()
+                # edge_index = norm_adj.nonzero().T           
+                output = self.model(norm_adj, features)
+                loss_val += criterion(output[idx_val], labels[idx_val])
+            loss_val /= 5
+            
         
         acc_val = accuracy(output[idx_val], labels[idx_val])                
         print('Epoch: {:04d}'.format(epoch+1),
@@ -329,41 +332,46 @@ class ProGNN:
             criterion = torch.nn.CrossEntropyLoss()                    
                 
         self.model.eval()
+        self.estimator.eval()
+
         adj = self.best_graph
         if self.best_graph is None:
+            # 一般就是GSL没有使用的时候
             adj = self.estimator.normalize()
         
         # adj[adj < self.args.adj_thresh] = 0
         # edge_index = adj.nonzero().T                 
-        
-        output = self.model(adj, features)                
-        
-        new_adj = csr_matrix(adj.detach().cpu().numpy())
-        # save_npz("new_graph.npz", save_adj)
-        
-        # save_eidx = edge_index.detach().cpu().numpy()
-        # np.savetxt('new_graph.csv', save_eidx, delimiter=',')
-
-        loss_test = criterion(output[idx_test], labels[idx_test])
-        if self.args.is_auxilary:
-            print("\tTest set results:",
-                "loss= {:.4f}".format(loss_test.item())
-                )
-            y_pred = output[idx_test].detach().cpu().numpy()
-            y_true = labels[idx_test].detach().cpu().numpy()
-            mse = mean_squared_error(y_pred, y_true)
-            mae = mean_absolute_error(y_pred, y_true)
-            r2 = r2_score(y_pred, y_true)
-            print("scALGT regression mse: {:.3f}, mae: {:.3f}, r2: {:.3f}".format(mse, mae, r2))            
-            return loss_test.item()
-        else:            
-            acc_test = accuracy(output[idx_test], labels[idx_test])            
-            macrof1_test = f1_score(torch.argmax(output[idx_test], dim=1).cpu().numpy(), labels[idx_test].detach().cpu().numpy(), average='macro')
+        # 采样5次
+        loss_test = 0
+        acc_test = 0
+        best_acc = 0
+        best_output = None
+        macrof1_test = 0
+        new_adj = None
+        for i in range(5):
+            adj = self.estimator.sample()
+            output = self.model(adj, features)                
             
-            print("\tTest set results:",
+            # save_npz("new_graph.npz", save_adj)            
+            # save_eidx = edge_index.detach().cpu().numpy()
+            # np.savetxt('new_graph.csv', save_eidx, delimiter=',')
+            loss_test += criterion(output[idx_test], labels[idx_test])                              
+            acc_test += accuracy(output[idx_test], labels[idx_test])          
+            if acc_test > best_acc:
+                best_acc = acc_test
+                best_output = output
+                new_adj = new_adj = csr_matrix(adj.detach().cpu().numpy())
+            
+            macrof1_test += f1_score(torch.argmax(output[idx_test], dim=1).cpu().numpy(), labels[idx_test].detach().cpu().numpy(), average='macro')
+            
+        acc_test /= 5
+        macrof1_test /= 5
+        loss_test /= 5            
+        
+        print("\tTest set results:",
                 "loss= {:.4f}".format(loss_test.item()),
                 "accuracy= {:.4f}".format(acc_test.item()))
-            return acc_test.item(), macrof1_test, torch.argmax(output[idx_test], dim=1).detach().cpu().numpy(), new_adj
+        return acc_test.item(), macrof1_test, torch.argmax(best_output[idx_test], dim=1).detach().cpu().numpy(), new_adj
         
 
     def feature_smoothing(self, adj, X):
