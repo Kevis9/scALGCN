@@ -24,7 +24,7 @@ parser.add_argument('--basef', type=float,
                              default=0.8, 
                              help='base factor for active learning')
 parser.add_argument('--k_select', type=int, 
-                             default=2, 
+                             default=1, 
                              help='num of nodes to select for every iteration')
 
 parser.add_argument('--init_num_per_class', type=int, 
@@ -36,7 +36,7 @@ parser.add_argument('--max_per_class', type=int,
 
 ####### GT Model #######
 parser.add_argument('--epochs', type=int, 
-                             default=30, 
+                             default=50, 
                              help='epochs for training')
 
 
