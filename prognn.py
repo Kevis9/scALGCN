@@ -246,7 +246,9 @@ class ProGNN:
             criterion = torch.nn.CrossEntropyLoss()    
             
         output = self.model(norm_adj, features)
-        
+        print("norm adj 1")
+        print(norm_adj)
+        print(norm_adj.grad)
         loss_gcn = criterion(output[idx_train], labels[idx_train])
         
         if not args.is_auxilary:
@@ -261,7 +263,9 @@ class ProGNN:
         loss_diffiential =  0 * loss_fro + args.gamma * loss_gcn + args.lambda_ * loss_smooth_feat
         loss_diffiential.backward()
         self.model_optimizer_adj.step()  # 更新adj的参数, 这部分是可微分的参数
-        
+        print("norm adj 2")
+        print(norm_adj)
+        print(norm_adj.grad)
         # 这部分不重要 loss_nuclear 和 loss_l1，这部分的更新直接看ProxOperator部分
         loss_nuclear =  0 * loss_fro
         if args.beta != 0:
