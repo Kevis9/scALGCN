@@ -322,8 +322,8 @@ def get_data_info(args, adata, n_ref, n_query):
     # 对val_idx再做一个split
     random.shuffle(val_idx)
     ration = 0.5
-    data_info['val_idx'] = val_idx[:len(val_idx) * 0.5]
-    data_info['gt_idx'] = val_idx[len(val_idx) * 0.5:]
+    data_info['val_idx'] = val_idx[:int(len(val_idx) * 0.5)]
+    data_info['gt_idx'] = val_idx[int(len(val_idx) * 0.5):]
     
     data_info['test_idx'] = [i + n_ref for i in range(n_query)]
     
