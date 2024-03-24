@@ -319,8 +319,12 @@ def get_data_info(args, adata, n_ref, n_query):
         data_info['auxilary_train_idx'] = auxilary_train_idx
         data_info['auxilary_val_idx'] = auxilary_val_idx
 
-        
-    data_info['val_idx'] = val_idx
+    # 对val_idx再做一个split
+    random.shuffle(val_idx)
+    ration = 0.5
+    data_info['val_idx'] = val_idx[:len(val_idx) * 0.5]
+    data_info['gt_idx'] = val_idx[len(val_idx) * 0.5:]
+    
     data_info['test_idx'] = [i + n_ref for i in range(n_query)]
     
     if args.active_learning:
@@ -508,7 +512,7 @@ def active_learning(g_data, epoch, out_prob, norm_centrality, args, data_info):
                 print("Epoch {:}: pick up {:} node to the training set!".format(epoch, args.k_select))
 
 
-def construct_graph_with_knn(data, k=3):
+def construct_graph_with_knn(data, k=5):
     A = kneighbors_graph(data, k, mode='connectivity', include_self='auto')     
     # turn A into undirecitonal adjcent matrix        
     G = nx.from_numpy_array(A.toarray())

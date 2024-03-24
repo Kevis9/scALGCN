@@ -128,10 +128,12 @@ class ProGNN:
                                 data_info=self.data_info)
                     
             # auxilary model不需要GL
-            if args.adj_training and not args.is_auxilary and epoch < args.GL_epochs:
-                # Update S                                
-                self.train_adj(epoch, node_x, adj, labels,
-                        train_idx, val_idx)
+            if args.adj_training and not args.is_auxilary:
+                if epoch % args.gt_interval == 0 or args.gt_interval == 0:
+                    # Update S       
+                    train_idx = self.data_info['gt_idx']                    
+                    self.train_adj(epoch, node_x, adj, labels,
+                            train_idx, val_idx)
                                      
                                         
 
@@ -148,10 +150,6 @@ class ProGNN:
         if args.debug:
             print("\n=== train_gnn ===")                
         
-        # adj = adj.detach().clone()
-        # # 尝试调整adj的阈值
-        # adj[adj < self.args.adj_thresh] = 0              
-        # edge_index = adj.nonzero().T
         
         t = time.time()
         self.model.train()
@@ -175,7 +173,7 @@ class ProGNN:
         
         loss_train.backward()
         self.model_optimizer.step()
-        
+
         prob = F.softmax(output.detach(), dim=1).cpu().numpy()                        
                 
         # Evaluate validation set performance separately,
@@ -245,10 +243,7 @@ class ProGNN:
         else:
             criterion = torch.nn.CrossEntropyLoss()    
             
-        output = self.model(norm_adj, features)
-        print("norm adj 1")
-        print(norm_adj)
-        print(norm_adj.grad)
+        output = self.model(norm_adj, features)        
         loss_gcn = criterion(output[idx_train], labels[idx_train])
         
         if not args.is_auxilary:
@@ -261,11 +256,9 @@ class ProGNN:
         # for loss that are diffiential
         # loss_fro不需要
         loss_diffiential =  0 * loss_fro + args.gamma * loss_gcn + args.lambda_ * loss_smooth_feat
-        loss_diffiential.backward()
+        loss_diffiential.backward()               
         self.model_optimizer_adj.step()  # 更新adj的参数, 这部分是可微分的参数
-        print("norm adj 2")
-        print(norm_adj)
-        print(norm_adj.grad)
+        
         # 这部分不重要 loss_nuclear 和 loss_l1，这部分的更新直接看ProxOperator部分
         loss_nuclear =  0 * loss_fro
         if args.beta != 0:
@@ -341,7 +334,6 @@ class ProGNN:
             # 一般就是GSL没有使用的时候
             adj = self.estimator.normalize()
         
-        # adj[adj < self.args.adj_thresh] = 0
         # edge_index = adj.nonzero().T                 
         # 采样5次
         loss_test = 0
@@ -442,8 +434,8 @@ class EstimateAdj(nn.Module):
             采用伯努利采样来进行0-1映射
         '''        
         edge_probs = self.estimated_adj
-        adj = torch.distributions.Bernoulli(edge_probs).sample()        
-        if self.symmetric:
-            adj = (adj + adj.t()) / 2
+        adj = torch.distributions.Bernoulli(edge_probs).sample()                
         # STE                    
-        return (adj - edge_probs).detach() + edge_probs
+        adj = (adj - edge_probs).detach() + edge_probs
+        # Normalize要比不norm稍微好点
+        return self._normalize(adj + torch.eye(adj.shape[0]).to(self.device))
