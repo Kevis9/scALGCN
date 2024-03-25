@@ -437,5 +437,7 @@ class EstimateAdj(nn.Module):
         adj = torch.distributions.Bernoulli(edge_probs).sample()                
         # STE                    
         adj = (adj - edge_probs).detach() + edge_probs
+        if self.symmetric:
+            adj = (adj + adj.t())/2
         # Normalize要比不norm稍微好点
         return self._normalize(adj + torch.eye(adj.shape[0]).to(self.device))
