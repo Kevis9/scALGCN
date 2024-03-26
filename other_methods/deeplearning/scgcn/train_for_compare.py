@@ -121,7 +121,7 @@ for epoch in range(FLAGS.epochs):
                                    val_mask, placeholders)
     # Test
     pred_labels = np.zeros(new_label.shape[0])
-    pred_labels[pred_mask, :] = new_label[pred_mask, :]    
+    pred_labels[pred_mask] = new_label[pred_mask]    
     test_cost, test_acc, test_duration = evaluate(features, support, pred_labels,
                                    pred_mask, placeholders)
     val_loss.append(cost)
