@@ -35,6 +35,10 @@ parser.add_argument('--max_per_class', type=int,
                              help='max number of nodes for each class')
 
 ####### GT Model #######
+parser.add_argument('--auxilary_epochs', type=int, 
+                             default=50, 
+                             help='epochs for training')
+
 parser.add_argument('--epochs', type=int, 
                              default=50, 
                              help='epochs for training')

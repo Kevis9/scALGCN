@@ -108,8 +108,12 @@ class ProGNN:
         if args.al and not args.is_auxilary:
             graph = nx.Graph(adj.detach().cpu().numpy())
             norm_centrality = centralissimo(graph)
-                            
-        for epoch in range(args.epochs):                                              
+        if args.is_auxilary:
+            epochs = args.auxilary_epochs
+        else:
+            epochs = args.epochs
+            
+        for epoch in range(epochs):                                              
             new_adj = self.estimator.sample()
             prob = self.train_gnn(adj=new_adj, 
                                 features=node_x,                               
