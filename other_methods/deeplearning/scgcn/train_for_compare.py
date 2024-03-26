@@ -122,15 +122,15 @@ for epoch in range(FLAGS.epochs):
     # Test
     pred_labels = np.zeros(new_label.shape[0])
     pred_labels[pred_mask, :] = new_label[pred_mask, :]    
-    test_cost, test_acc, test_duration = evaluate(features, support, pred_mask,
+    test_cost, test_acc, test_duration = evaluate(features, support, pred_labels,
                                    pred_mask, placeholders)
     val_loss.append(cost)
     val_accuracy.append(acc)
-    test_cost, test_acc, test_duration = evaluate(features, support,
-                                                  labels_binary_test,
-                                                  test_mask, placeholders)
-    test_accuracy.append(test_acc)
-    test_loss.append(test_cost)
+    # test_cost, test_acc, test_duration = evaluate(features, support,
+    #                                               labels_binary_test,
+    #                                               test_mask, placeholders)
+    # test_accuracy.append(test_acc)
+    # test_loss.append(test_cost)
     saver.save(sess=sess, save_path=save_path)
     print("Epoch:", '%04d' % (epoch + 1), "train_loss=",
           "{:.5f}".format(outs[1]), "train_acc=", "{:.5f}".format(outs[2]),
