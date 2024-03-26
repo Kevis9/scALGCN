@@ -140,7 +140,7 @@ def load_data(datadir,rgraph=True):
     print('test shape', len(test_mask))
     labels_binary_train = np.zeros(new_label.shape)
     labels_binary_val = np.zeros(new_label.shape)
-    labels_binary_test = np.zeros(new_label.shape)
+    labels_binary_test = np.zeros(new_label.shape)    
     labels_binary_train[train_mask, :] = new_label[train_mask, :]
     labels_binary_val[val_mask, :] = new_label[val_mask, :]
     labels_binary_test[test_mask, :] = new_label[test_mask, :]

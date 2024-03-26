@@ -119,6 +119,11 @@ for epoch in range(FLAGS.epochs):
     # Validation
     cost, acc, duration = evaluate(features, support, labels_binary_val,
                                    val_mask, placeholders)
+    # Test
+    pred_labels = np.zeros(new_label.shape[0])
+    pred_labels[pred_mask, :] = new_label[pred_mask, :]    
+    test_cost, test_acc, test_duration = evaluate(features, support, pred_mask,
+                                   pred_mask, placeholders)
     val_loss.append(cost)
     val_accuracy.append(acc)
     test_cost, test_acc, test_duration = evaluate(features, support,
@@ -130,6 +135,7 @@ for epoch in range(FLAGS.epochs):
     print("Epoch:", '%04d' % (epoch + 1), "train_loss=",
           "{:.5f}".format(outs[1]), "train_acc=", "{:.5f}".format(outs[2]),
           "val_loss=", "{:.5f}".format(cost), "val_acc=", "{:.5f}".format(acc),
+          "test_acc=", "{:.5f}".format(test_acc), "test_loss=, ", "{:.5f}".format(test_cost),
           "time=", "{:.5f}".format(time.time() - t))
     if epoch > FLAGS.early_stopping and val_loss[-1] > np.mean(
             val_loss[-(FLAGS.early_stopping + 1):-1]):
