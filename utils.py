@@ -327,7 +327,7 @@ def get_data_info(args, adata, n_ref, n_query):
     
     data_info['test_idx'] = [i + n_ref for i in range(n_query)]
     
-    if args.active_learning:
+    if args.al:
         data_info['train_idx'] = train_idx_for_active_learning        
     else:
         data_info['train_idx'] = train_idx        
@@ -489,7 +489,7 @@ def active_learning(g_data, epoch, out_prob, norm_centrality, args, data_info):
     gamma = np.random.beta(1, 1.005 - args.basef ** epoch)
     alpha = beta = (1 - gamma) / 2
     prob = out_prob
-    if args.active_learning and len(data_info['train_idx']) < data_info['max_nodes_num']:
+    if args.al and len(data_info['train_idx']) < data_info['max_nodes_num']:
         print("Active learning!")
         entropy = scipy.stats.entropy(prob.T)
         kmeans = KMeans(n_clusters=data_info['class_num'], random_state=0).fit(prob)

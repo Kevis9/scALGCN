@@ -105,7 +105,7 @@ class ProGNN:
             
         # Train model
         t_total = time.time()
-        if args.active_learning and not args.is_auxilary:
+        if args.al and not args.is_auxilary:
             graph = nx.Graph(adj.detach().cpu().numpy())
             norm_centrality = centralissimo(graph)
                             
@@ -118,7 +118,7 @@ class ProGNN:
                                 criterion=criterion)
                             
             
-            if args.active_learning and not args.is_auxilary:
+            if args.al and not args.is_auxilary:
                 # will change outer data_info (the parameter is reference)
                 active_learning(g_data=g_data,
                                 epoch=epoch,
@@ -128,7 +128,7 @@ class ProGNN:
                                 data_info=self.data_info)
                     
             # auxilary model不需要GL
-            if args.adj_training and not args.is_auxilary:
+            if args.gsl and not args.is_auxilary:
                 if epoch % args.gt_interval == 0 or args.gt_interval == 0:
                     # Update S       
                     train_idx = self.data_info['gt_idx']                    
@@ -142,7 +142,8 @@ class ProGNN:
 
         # Testing
         print("picking the best model according to validation performance")
-        self.model.load_state_dict(self.weights)
+        if args.best_save:
+            self.model.load_state_dict(self.weights)
 
     def train_gnn(self, adj, features, labels, epoch, criterion):
         args = self.args

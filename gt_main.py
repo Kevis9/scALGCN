@@ -89,13 +89,13 @@ parser.add_argument('--residual', action='store_true',
 parser.add_argument('--symmetric', action='store_true', 
                             default=True,
                             help='whether use symmetric matrix')
-parser.add_argument('--adj_training', action='store_true',
+parser.add_argument('--gsl', action='store_true',
                     default=False,
-                    help='whether update the adj')
+                    help='whether use graph structure learning')
 parser.add_argument('--add_pos_enc', action='store_true',
                              default=True, 
                              help='whether adding postional encoding to node feature')
-parser.add_argument('--active_learning', action='store_true', 
+parser.add_argument('--al', action='store_true', 
                              default=False, 
                              help='active learning mode')
 parser.add_argument('--is_auxilary', action='store_true',
@@ -108,6 +108,9 @@ parser.add_argument('--graph_method', type=str,
                     default='knn',
                     help='graph contruction method: knn or mnn')
 
+parser.add_argument('--best_save', action='store_true',
+                    default=False, 
+                    help='save best model or not')
 
 args = parser.parse_args()
 
@@ -127,7 +130,7 @@ print("data path is {:}, \n ref_data num: {:}, \nquery_data num :{:}, \n auxilar
 if args.use_auxilary:        
     # auxilary model no need: AL and GL
     auxilary_args = copy.copy(args)
-    auxilary_args.active_learning = False
+    auxilary_args.al = False
     auxilary_args.updated_adj = False
     auxilary_model = GTModel(args=auxilary_args,                    
                     class_num=data_info['auxilary_class_num'],
@@ -137,7 +140,7 @@ if args.use_auxilary:
     # use Pro-GNN to train the GT
     auxilary_model_prognn = ProGNN(auxilary_model, data_info=data_info, args=auxilary_args, device=device)
     auxilary_model_prognn.fit(g_data=auxilary_g_data)
-
+    torch.cuda.empty_cache() # release memory
 
 '''
  ========= For cell type prediction ========= 
@@ -185,10 +188,10 @@ with open('config/{:}-{:}-{:}_acc_{:.3f}.json'.format(ref_proj, query_proj, auxi
     
 second_key = 'GT'
 
-if args.active_learning:
+if args.al:
     second_key += ' + AL'
 
-if args.adj_training:
+if args.gsl:
     second_key += ' + GL'
     
 first_key = ref_proj + '-' + query_proj
