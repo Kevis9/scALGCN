@@ -58,10 +58,9 @@ def load_data(datadir,rgraph=True):
 
     # print('lab_data2 shape', lab_data2.shape)
 
-    train2 = pd.concat([data_train1, lab_data2])
-    # print(train2.shape)
+    train2 = pd.concat([data_train1, lab_data2])        
     lab_train2 = pd.concat([label_train1, lab_label2])
-
+    
     datas_train = np.array(train2)
     datas_test = np.array(data_test1)
     datas_val = np.array(data_val1)
@@ -135,10 +134,10 @@ def load_data(datadir,rgraph=True):
     pred_mask = sample_mask(idx_pred, new_label.shape[0])
     val_mask = sample_mask(idx_val, new_label.shape[0])
     test_mask = sample_mask(idx_test, new_label.shape[0])
-    print('train shape', idx_train)
-    print('pred  shape', idx_pred)
-    print('val shape', idx_val)
-    print('test shape', idx_test)
+    print('train shape', len(train_mask))
+    print('pred  shape', len(pred_mask))
+    print('val shape', len(val_mask))
+    print('test shape', len(test_mask))
     labels_binary_train = np.zeros(new_label.shape)
     labels_binary_val = np.zeros(new_label.shape)
     labels_binary_test = np.zeros(new_label.shape)
