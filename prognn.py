@@ -61,7 +61,7 @@ class ProGNN:
                 
         args = self.args    
         self.model_optimizer = optim.Adam(self.model.parameters(),
-                               lr=1e-3, weight_decay=5e-4)
+                               lr=1e-2)
                                        
         # 不需要转为numpy
         # save_adj = g_data.adj_external(scipy_fmt='csr')
@@ -75,7 +75,7 @@ class ProGNN:
         estimator = EstimateAdj(adj, symmetric=args.symmetric, device=self.device).to(self.device)
         self.estimator = estimator
         self.model_optimizer_adj = optim.SGD(estimator.parameters(),
-                              momentum=0.9, lr=1e-1)
+                              momentum=0.9, lr=1e-2)
 
         self.model_optimizer_l1 = PGD(estimator.parameters(),
                         proxs=[prox_operators.prox_l1],
