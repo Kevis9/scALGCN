@@ -109,7 +109,7 @@ class GTModel(nn.Module):
         # 论文中使用的nn.Embedding， 原因是输入的数据是词嵌入（整数类型），而我们这里只需要直接映射就好
         self.h_embedding = nn.Linear(self.in_dim, self.hidden_dim)                        
         self.pos_linear = nn.Linear(self.pos_enc_dim, self.hidden_dim)
-        self.dropout = nn.Dropout(0.5)
+        self.dropout = nn.Dropout(args.dropout)
         self.layers = nn.ModuleList(
             [GTLayer(self.hidden_dim, self.num_heads, residual=self.residual, bias=args.bias) for _ in range(self.num_layers)]            
         )                                  
