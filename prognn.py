@@ -61,7 +61,7 @@ class ProGNN:
                 
         args = self.args    
         self.model_optimizer = optim.Adam(self.model.parameters(),
-                               lr=1e-2)
+                               lr=1e-3)
                                        
         # 不需要转为numpy
         # save_adj = g_data.adj_external(scipy_fmt='csr')
