@@ -60,7 +60,7 @@ parser.add_argument('--n_layers', type=int,
 parser.add_argument('--pos_enc_dim', type=int,
                              default=8, 
                              help='positional encoding dim')
-parser.add_argument('--dropout', type=int,
+parser.add_argument('--dropout', type=float,
                              default=0, 
                              help='dropout rate')
 
