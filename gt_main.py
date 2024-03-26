@@ -111,10 +111,12 @@ parser.add_argument('--use_auxilary', action='store_true',
 parser.add_argument('--graph_method', type=str,
                     default='knn',
                     help='graph contruction method: knn or mnn')
-
 parser.add_argument('--best_save', action='store_true',
                     default=False, 
                     help='save best model or not')
+parser.add_argument('--bias', action='store_true',
+                    default=False,
+                    help='whether use bias in GTModel')
 
 args = parser.parse_args()
 

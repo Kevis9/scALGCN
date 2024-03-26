@@ -10,17 +10,17 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 class SparseMHA(nn.Module):
     """Sparse Multi-head Attention Module"""
 
-    def __init__(self, hidden_dim, num_heads):
+    def __init__(self, hidden_dim, num_heads, bias=False):
         super().__init__()
         self.num_heads = num_heads
         self.head_dim = hidden_dim // num_heads
         self.scaling = hidden_dim ** -0.5
         
 
-        self.q_proj = nn.Linear(hidden_dim, hidden_dim)
-        self.k_proj = nn.Linear(hidden_dim, hidden_dim)
-        self.v_proj = nn.Linear(hidden_dim, hidden_dim)
-        self.out_proj = nn.Linear(hidden_dim, hidden_dim)
+        self.q_proj = nn.Linear(hidden_dim, hidden_dim, bias=bias)
+        self.k_proj = nn.Linear(hidden_dim, hidden_dim, bias=bias)
+        self.v_proj = nn.Linear(hidden_dim, hidden_dim, bias=bias)
+        self.out_proj = nn.Linear(hidden_dim, hidden_dim, bias=bias)
 
     def forward(self, A, h):
         N = len(h)
@@ -55,14 +55,14 @@ class SparseMHA(nn.Module):
 class GTLayer(nn.Module):
     """Graph Transformer Layer"""
 
-    def __init__(self, hidden_dim, num_heads, residual):
+    def __init__(self, hidden_dim, num_heads, residual, bias=False):
         super().__init__()        
         self.residual = residual
-        self.MHA = SparseMHA(hidden_dim=hidden_dim, num_heads=num_heads)
+        self.MHA = SparseMHA(hidden_dim=hidden_dim, num_heads=num_heads, bias=bias)
         self.batchnorm1 = nn.BatchNorm1d(hidden_dim)
         self.batchnorm2 = nn.BatchNorm1d(hidden_dim)        
-        self.FFN1 = nn.Linear(hidden_dim, hidden_dim * 2)
-        self.FFN2 = nn.Linear(hidden_dim * 2, hidden_dim)
+        self.FFN1 = nn.Linear(hidden_dim, hidden_dim * 2, bias=bias)
+        self.FFN2 = nn.Linear(hidden_dim * 2, hidden_dim, bias=bias)
 
     def forward(self, A, h):
         # attention-layer
@@ -110,7 +110,7 @@ class GTModel(nn.Module):
         self.h_embedding = nn.Linear(self.in_dim, self.hidden_dim)                        
         self.pos_linear = nn.Linear(self.pos_enc_dim, self.hidden_dim)
         self.layers = nn.ModuleList(
-            [GTLayer(self.hidden_dim, self.num_heads, residual=self.residual) for _ in range(self.num_layers)]            
+            [GTLayer(self.hidden_dim, self.num_heads, residual=self.residual, bias=args.bias) for _ in range(self.num_layers)]            
         )                                  
         self.predictor = nn.Sequential(
             nn.Linear(self.hidden_dim, self.hidden_dim // 2),
@@ -157,7 +157,7 @@ class GTModel(nn.Module):
         
         for layer in self.layers:
             h = layer(A, h)        
-               
+            
         if self.residual:
             h = h1 + h
         
