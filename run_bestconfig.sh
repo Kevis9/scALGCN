@@ -6,9 +6,12 @@ max_acc_config=""  # 保存最高准确率对应的配置文件名
 
 # 遍历config目录下的所有json文件
 for file in config/*.json; do
+    # 获取文件名（不包含目录部分）
+    filename=$(basename "$file")
+    
     # 提取proj名称和准确率
-    proj_name=$(echo "$file" | grep -oE ".*_acc" | sed 's/_acc//')
-    accuracy=$(echo "$file" | grep -oE "acc_[0-9]+\.[0-9]+")
+    proj_name=$(echo "$filename" | grep -oE ".*_acc" | sed 's/_acc//' | sed 's/-*$//')
+    accuracy=$(echo "$filename" | grep -oE "acc_[0-9]+\.[0-9]+")
 
     # 检查是否是目标proj的文件
     if [[ "$proj_name" == "$proj" ]]; then
