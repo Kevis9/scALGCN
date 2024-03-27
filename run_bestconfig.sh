@@ -1,8 +1,8 @@
 #!/bin/bash
 
 projects=(        
-          "bcp1_6000-bcp2_6000-exp0050" \
-          "bcp2_6000-bcp1_6000-exp0050" \
+        #   "bcp1_6000-bcp2_6000-exp0050" \
+        #   "bcp2_6000-bcp1_6000-exp0050" \
           "bcp1_6000-bcp3_6000-exp0050" \
           "bcp3_6000-bcp1_6000-exp0050" \
           "bcp2_6000-bcp3_6000-exp0050" \
