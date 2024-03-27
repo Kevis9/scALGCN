@@ -55,5 +55,7 @@ for i in ${projects[@]}; do
         fi        
     done
     
+    # 开始跑模型
+    CUDA_VISIBLE_DEVICES=3 python gt_main.py --hyperpara=/home/hwl/scALGCN/config/"$max_acc_config"
 done
 
