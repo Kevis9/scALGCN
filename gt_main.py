@@ -120,11 +120,6 @@ parser.add_argument('--best_save', action='store_true',
 parser.add_argument('--bias', action='store_true',
                     default=False,
                     help='whether use bias in GTModel')
-
-parser.add_argument('--bias', action='store_true',
-                    default=False,
-                    help='whether use bias in GTModel')
-
 parser.add_argument('--config', type=str,
                     default=None,
                     help='hyperparameter setting')
@@ -137,7 +132,7 @@ if args.config is not None:
     old_args_dict = vars(args)
     old_args_dict.update(new_args_dict)    
     args = argparse.Namespace(**old_args_dict)
-    
+
     # 这里是对已读取的超参数文件进行配置，此处跑gsl+al+auxilary
     args.use_auxilary = True
     args.al = True
