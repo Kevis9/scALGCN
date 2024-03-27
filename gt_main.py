@@ -138,8 +138,8 @@ if args.config is not None:
     args.is_auxilary = True
     args.al = True
     args.gsl = True
-    args.init_num_per_class = 300
-    args.max_per_class = 330
+    args.init_num_per_class = 200
+    args.max_per_class = 250
     
 
 proj = args.data_dir.split('/')[-2]
