@@ -47,9 +47,12 @@ for i in ${projects[@]}; do
     # 删除其他准确率较低的配置文件
     for file in config/*.json; do
         filename=$(basename "$file")
-        if [[ "$filename" != "$max_acc_config" ]]; then
-            rm "$file"
-        fi
+        proj_name=$(echo "$filename" | grep -oE ".*_acc" | sed 's/_acc//' | sed 's/-*$//')
+        if [[ "$proj_name" == "$proj" ]]; then
+            if [[ "$filename" != "$max_acc_config" ]]; then
+                rm "$file"
+            fi
+        fi        
     done
     
 done
