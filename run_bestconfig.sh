@@ -17,7 +17,7 @@ for i in ${projects[@]}; do
     proj=$i  # 要查找的proj名称
     max_acc=0  # 最高准确率初始化为0
     max_acc_config=""  # 保存最高准确率对应的配置文件名
-    
+
     # 遍历config目录下的所有json文件
     for file in config/*.json; do
         # 获取文件名（不包含目录部分）
@@ -43,5 +43,14 @@ for i in ${projects[@]}; do
     # 输出最高准确率和对应的配置文件名
     echo "最高准确率：$max_acc"
     echo "对应的配置文件：$max_acc_config"
+
+    # 删除其他准确率较低的配置文件
+    for file in config/*.json; do
+        filename=$(basename "$file")
+        if [[ "$filename" != "$max_acc_config" ]]; then
+            rm "$file"
+        fi
+    done
+    
 done
 
