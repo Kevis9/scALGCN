@@ -132,9 +132,12 @@ parser.add_argument('--config', type=str,
 args = parser.parse_args()
 if args.config is not None:
     # 如果已经有了超参数文件，就直接读取    
-    args_dict = json.load(open(args.config, 'r'))
-    args = argparse.Namespace(**args_dict)
-
+    # 这样做最保险，因为当前文件本身中的参数需要保留
+    new_args_dict = json.load(open(args.config, 'r'))
+    old_args_dict = vars(args)
+    old_args_dict.update(new_args_dict)    
+    args = argparse.Namespace(**old_args_dict)
+    
     # 这里是对已读取的超参数文件进行配置，此处跑gsl+al+auxilary
     args.use_auxilary = True
     args.al = True

@@ -45,15 +45,15 @@ for i in ${projects[@]}; do
     echo "对应的配置文件：$max_acc_config"
 
     # 删除其他准确率较低的配置文件
-    for file in config/*.json; do
-        filename=$(basename "$file")
-        proj_name=$(echo "$filename" | grep -oE ".*_acc" | sed 's/_acc//' | sed 's/-*$//')
-        if [[ "$proj_name" == "$proj" ]]; then
-            if [[ "$filename" != "$max_acc_config" ]]; then
-                rm "$file"
-            fi
-        fi        
-    done
+    # for file in config/*.json; do
+    #     filename=$(basename "$file")
+    #     proj_name=$(echo "$filename" | grep -oE ".*_acc" | sed 's/_acc//' | sed 's/-*$//')
+    #     if [[ "$proj_name" == "$proj" ]]; then
+    #         if [[ "$filename" != "$max_acc_config" ]]; then
+    #             rm "$file"
+    #         fi
+    #     fi        
+    # done
     
     # 开始跑模型
     CUDA_VISIBLE_DEVICES=3 python gt_main.py --hyperpara=/home/hwl/scALGCN/config/"$max_acc_config"
