@@ -17,7 +17,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 parser = argparse.ArgumentParser()
 # data config
 parser.add_argument('--data_dir', type=str, 
-                             default='/home/Users/kevislin/scALGCN/experiments/bcp1_6000-bcp2_6000-exp0013', 
+                             default='/home/Users/kevislin/scALGCN/experiments/bcp1_6000-bcp2_6000-exp0013/data', 
                              help='data directory')
 ####### Active learning #######
 parser.add_argument('--basef', type=float, 
@@ -141,8 +141,7 @@ if args.config is not None:
     args.max_per_class = 330
     
 
-proj = args.data_dir.split('/')[-1]
-args.data_dir = os.path.join(args.data_dir, 'data')
+proj = args.data_dir.split('/')[-2]
 
 # load data
 g_data, auxilary_g_data, adata, data_info = load_data(args=args, use_auxilary=args.use_auxilary)
