@@ -121,7 +121,27 @@ parser.add_argument('--bias', action='store_true',
                     default=False,
                     help='whether use bias in GTModel')
 
+parser.add_argument('--bias', action='store_true',
+                    default=False,
+                    help='whether use bias in GTModel')
+
+parser.add_argument('--hyperpara', type=str,
+                    default=None,
+                    help='hyperparameter setting')
+
 args = parser.parse_args()
+if args.hyperpara is not None:
+    # 如果已经有了超参数文件，就直接读取    
+    args_dict = json.load(open(args.hyperpara, 'r'))
+    args = argparse.Namespace(**args_dict)
+
+    # 这里是对已读取的超参数文件进行配置，此处跑gsl+al+auxilary
+    args.use_auxilary = True
+    args.al = True
+    args.gsl = True
+    args.init_num_per_class = 300
+    args.max_per_class = 330
+    
 
 proj = args.data_dir.split('/')[-1]
 args.data_dir = os.path.join(args.data_dir, 'data')
