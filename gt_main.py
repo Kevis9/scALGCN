@@ -135,6 +135,7 @@ if args.config is not None:
 
     # 这里是对已读取的超参数文件进行配置，此处跑gsl+al+auxilary
     args.use_auxilary = True
+    args.is_auxilary = True
     args.al = True
     args.gsl = True
     args.init_num_per_class = 300
