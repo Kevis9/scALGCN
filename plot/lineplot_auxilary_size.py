@@ -32,7 +32,6 @@ all_projs = 'exp0050' * len(exp0050_projs) + 'exp0047' * len(exp0047_projs)
 res_data = pd.DataFrame({'size': all_x, 'accuracy': all_y, 'proj': all_projs})
 
 sns.lineplot(data=res_data, x='size', y='accuracy', hue='proj')
-sns.boxplot(data=res_data,x='x', y='val', hue='x', showfliers=False, width=.3)
 plt.xlabel('')
 plt.ylabel('')
 plt.savefig('lineplot_auxilary_size', dpi=300, transparent=True,bbox_inches="tight")
