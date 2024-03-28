@@ -19,7 +19,10 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--data_dir', type=str, 
                              default='/home/Users/kevislin/scALGCN/experiments/bcp1_6000-bcp2_6000-exp0013/data', 
                              help='data directory')
-####### Active learning #######
+
+'''
+    Active Learning
+'''
 parser.add_argument('--basef', type=float, 
                              default=0.8, 
                              help='base factor for active learning')
@@ -34,7 +37,9 @@ parser.add_argument('--max_per_class', type=int,
                              default=150, 
                              help='max number of nodes for each class')
 
-####### GT Model #######
+'''
+    GT model
+'''
 parser.add_argument('--auxilary_epochs', type=int, 
                              default=50, 
                              help='epochs for training')
@@ -64,7 +69,9 @@ parser.add_argument('--dropout', type=float,
                              default=0, 
                              help='dropout rate')
 
-####### Graph Learning #######
+'''
+    Graph Structure Learning
+'''
 parser.add_argument('--gt_interval', type=int, 
                              default=5 , #每隔一个interval训练一次
                              help='interval for GL')
@@ -82,8 +89,16 @@ parser.add_argument('--lambda_', type=float,
                     default=0, # LDS设置  
                     help='weight of feature smoothing')
 
+'''
+    auxilary settings
+'''
+parser.add_argument('--auxilary_num', type=int,
+                    default=-1,
+                    help='num of nodes for auxilary model')
 
-####### Switchs #######
+'''
+    Switches
+'''
 parser.add_argument('--layer_norm', action='store_true',
                              default=False, 
                              help='layer norm for GTModel')
@@ -159,6 +174,11 @@ if args.use_auxilary:
     auxilary_args = copy.copy(args)
     auxilary_args.al = False
     auxilary_args.updated_adj = False
+    if args.auxilary_num != -1:
+        obs_names = auxilary_g_data.obs_names[:args.auxilary_num]
+        auxilary_g_data = auxilary_g_data[obs_names, :]
+    
+
     auxilary_model = GTModel(args=auxilary_args,                    
                     class_num=data_info['auxilary_class_num'],
                     in_dim=auxilary_g_data.ndata['x'].shape[1],
@@ -207,6 +227,9 @@ ref_proj = proj.split('-')[0]
 query_proj = proj.split('-')[1]
 if args.use_auxilary:
     auxilary_proj = proj.split('-')[2]
+    if args.auxilary_num != -1:
+        auxilary_proj += '_{:}'.format(args.auxilary_num)
+
 else:
     auxilary_proj = ''
 
@@ -227,7 +250,14 @@ if args.use_auxilary:
 
 print("experimens {:}_{:} finished".format(first_key, second_key))
 acc_data = pd.read_csv(os.path.join('result', acc_file), index_col=0)
-acc_data.loc[first_key][second_key] = test_res[0]
+# 确保第一层索引存在
+acc_data.loc[first_key] = acc_data.loc[first_key].fillna({})
+# 确保第二层索引存在
+if second_key not in acc_data.loc[first_key]:
+    acc_data.loc[first_key, second_key] = None
+# 设置第二层索引对应的值
+acc_data.at[first_key, second_key] = test_res[0]
+
 acc_data.to_csv(os.path.join('result', acc_file))
 
 f1_data = pd.read_csv(os.path.join('result', f1_file), index_col=0)
