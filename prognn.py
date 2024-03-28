@@ -164,7 +164,7 @@ class ProGNN:
         
         if args.is_auxilary:
             train_idx = self.data_info['auxilary_train_idx']
-            val_idx = self.data_info['auxilary_val_idx']
+            val_idx = []            
         else:
             train_idx = self.data_info['train_idx']
             val_idx = self.data_info['val_idx']
