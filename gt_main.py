@@ -138,6 +138,10 @@ parser.add_argument('--bias', action='store_true',
 parser.add_argument('--config', type=str,
                     default=None,
                     help='hyperparameter setting')
+parser.add_argument('--turnoffalgsl', type=str,
+                    default=False,
+                    help='tmp 后面可以去掉')
+
 
 args = parser.parse_args()
 if args.config is not None:
@@ -150,9 +154,13 @@ if args.config is not None:
 
     # 这里是对已读取的超参数文件进行配置，此处跑gsl+al+auxilary
     args.use_auxilary = True
-    args.is_auxilary = True
+    args.is_auxilary = True        
     args.al = True
     args.gsl = True
+    if args.turnoffalgsl:
+        args.al = False
+        args.gsl = False
+    
     args.init_num_per_class = 200
     args.max_per_class = 250
     

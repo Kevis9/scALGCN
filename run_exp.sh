@@ -93,11 +93,11 @@ projects3=(
 
 for i in ${projects[@]}; do
     # ref_query_auxilary    
-    CUDA_VISIBLE_DEVICES=2 python gt_main.py --data_dir=./experiments/$i/data --use_auxilary --auxilary_num=200 --config='/home/hwl/scALGCN/config/bcp3_6000-bcp2_6000-exp0050_acc_0.936.json'
-    CUDA_VISIBLE_DEVICES=2 python gt_main.py --data_dir=./experiments/$i/data --use_auxilary --auxilary_num=400 --config='/home/hwl/scALGCN/config/bcp3_6000-bcp2_6000-exp0050_acc_0.936.json'
-    CUDA_VISIBLE_DEVICES=2 python gt_main.py --data_dir=./experiments/$i/data --use_auxilary --auxilary_num=600 --config='/home/hwl/scALGCN/config/bcp3_6000-bcp2_6000-exp0050_acc_0.936.json'
-    CUDA_VISIBLE_DEVICES=2 python gt_main.py --data_dir=./experiments/$i/data --use_auxilary --auxilary_num=800 --config='/home/hwl/scALGCN/config/bcp3_6000-bcp2_6000-exp0050_acc_0.936.json'
-    CUDA_VISIBLE_DEVICES=2 python gt_main.py --data_dir=./experiments/$i/data --use_auxilary --auxilary_num=1000 --config='/home/hwl/scALGCN/config/bcp3_6000-bcp2_6000-exp0050_acc_0.936.json'    
+    CUDA_VISIBLE_DEVICES=2 python gt_main.py --data_dir=./experiments/$i/data --use_auxilary --auxilary_num=200 --config='/home/hwl/scALGCN/config/bcp3_6000-bcp2_6000-exp0050_acc_0.936.json' --turnoffalgsl
+    CUDA_VISIBLE_DEVICES=2 python gt_main.py --data_dir=./experiments/$i/data --use_auxilary --auxilary_num=400 --config='/home/hwl/scALGCN/config/bcp3_6000-bcp2_6000-exp0050_acc_0.936.json' --turnoffalgsl
+    CUDA_VISIBLE_DEVICES=2 python gt_main.py --data_dir=./experiments/$i/data --use_auxilary --auxilary_num=600 --config='/home/hwl/scALGCN/config/bcp3_6000-bcp2_6000-exp0050_acc_0.936.json' --turnoffalgsl
+    CUDA_VISIBLE_DEVICES=2 python gt_main.py --data_dir=./experiments/$i/data --use_auxilary --auxilary_num=800 --config='/home/hwl/scALGCN/config/bcp3_6000-bcp2_6000-exp0050_acc_0.936.json' --turnoffalgsl
+    CUDA_VISIBLE_DEVICES=2 python gt_main.py --data_dir=./experiments/$i/data --use_auxilary --auxilary_num=1000 --config='/home/hwl/scALGCN/config/bcp3_6000-bcp2_6000-exp0050_acc_0.936.json' --turnoffalgsl
 done
 
 exit 0
