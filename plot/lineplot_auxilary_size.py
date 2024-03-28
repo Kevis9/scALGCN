@@ -18,11 +18,11 @@ exp0050_projs = [
 ]
 
 exp0047_projs = [
-    'bcp2_6000-bcp3_6000-exp0047_200',
-    'bcp2_6000-bcp3_6000-exp0047_400',
-    'bcp2_6000-bcp3_6000-exp0047_600',
-    'bcp2_6000-bcp3_6000-exp0047_800',
-    'bcp2_6000-bcp3_6000-exp0047_1000',    
+    'bcp3_6000-bcp2_6000-exp0047_200',
+    'bcp3_6000-bcp2_6000-exp0047_400',
+    'bcp3_6000-bcp2_6000-exp0047_600',
+    'bcp3_6000-bcp2_6000-exp0047_800',
+    'bcp3_6000-bcp2_6000-exp0047_1000',        
 ]
 
 all_y = acc_data.loc[exp0050_projs + exp0047_projs]['GT']   
