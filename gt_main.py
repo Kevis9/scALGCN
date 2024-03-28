@@ -174,11 +174,6 @@ if args.use_auxilary:
     auxilary_args = copy.copy(args)
     auxilary_args.al = False
     auxilary_args.updated_adj = False
-    if args.auxilary_num != -1:
-        obs_names = auxilary_g_data.obs_names[:args.auxilary_num]
-        auxilary_g_data = auxilary_g_data[obs_names, :]
-    
-
     auxilary_model = GTModel(args=auxilary_args,                    
                     class_num=data_info['auxilary_class_num'],
                     in_dim=auxilary_g_data.ndata['x'].shape[1],

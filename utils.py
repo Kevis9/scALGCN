@@ -194,11 +194,11 @@ def random_stratify_sample_with_train_idx(ref_labels, train_idx, init_num_per_cl
 def get_anndata(args):
     data_dir = args.data_dir                
     
-    ref_data_h5 = ad.read(os.path.join(data_dir, 'ref_data.h5ad'))
-    query_data_h5 = ad.read(os.path.join(data_dir, 'query_data.h5ad'))
+    ref_data_h5 = ad.read_h5ad(os.path.join(data_dir, 'ref_data.h5ad'))
+    query_data_h5 = ad.read_h5ad(os.path.join(data_dir, 'query_data.h5ad'))
 
     if args.use_auxilary:
-        auxilary_data_h5 = ad.read(os.path.join(data_dir, 'auxilary_data.h5ad'))
+        auxilary_data_h5 = ad.read_h5ad(os.path.join(data_dir, 'auxilary_data.h5ad'))
     
     ref_data = ref_data_h5.X.toarray()
     query_data = query_data_h5.X.toarray()
@@ -311,6 +311,8 @@ def get_data_info(args, adata, n_ref, n_query):
     if args.use_auxilary:
         auxilary_label = adata.uns['auxilary_label']
         idxs = [i for i in range(auxilary_label.shape[0])]
+        if args.auxilary_num != -1:
+            idxs = idxs[:args.auxilary_num]           
         random.shuffle(idxs)
         auxilary_train_size = 0.8
         auxilary_train_num = auxilary_label.shape[0]
