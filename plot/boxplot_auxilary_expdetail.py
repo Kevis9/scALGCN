@@ -71,7 +71,7 @@ all_x = ['exp0013'] * len(exp0013_acc) + ['exp0050'] * len(exp0050_acc) + ['exp0
 
 data = pd.DataFrame({'val': all_val, 'x': all_x})
 
-sns.boxplot(data=data,x='x', y='val', showfliers=False, width=.3, palette='Set2')
+sns.boxplot(data=data,x='x', y='val', hue='x', showfliers=False, width=.3)
 plt.xlabel('')
 plt.ylabel('')
 plt.savefig('exp_detail_boxplot', dpi=300, transparent=True,bbox_inches="tight")
