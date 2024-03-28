@@ -54,9 +54,17 @@ f1_data = pd.read_csv('../result/stable_macro-f1.csv', index_col=0)
 same_type_cancer_related_acc = acc_data.loc[same_type_cancer_related]['GT + GL']
 same_type_cancer_not_related_acc = acc_data.loc[same_type_cancer_not_related]['GT + GL']
 
+print("相同，相关，acc : {:.3f}".format(same_type_cancer_related_acc.mean())
+        , "不相关，acc : {:.3f}".format(same_type_cancer_not_related_acc.mean()))
+
 diff_type_cancer_ref_related_acc = acc_data.loc[diff_type_cancer_ref_related]['GT + GL']
 diff_type_cancer_query_related_acc = acc_data.loc[diff_type_cancer_query_related]['GT + GL']
 diff_type_cancer_not_related_acc = acc_data.loc[diff_type_cancer_not_related]['GT + GL']
+
+print("不同，ref相关，acc : {:.3f}".format(diff_type_cancer_ref_related_acc.mean())
+        , "query相关，acc : {:.3f}".format(diff_type_cancer_query_related_acc.mean())
+        , "不相关，acc : {:.3f}".format(diff_type_cancer_not_related_acc.mean())
+)
 
 all_val = same_type_cancer_related_acc.tolist() + \
             same_type_cancer_not_related_acc.tolist()
