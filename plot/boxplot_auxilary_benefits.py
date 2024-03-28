@@ -98,8 +98,8 @@ all_x = ['no_aux'] * (len(same_type_no_aux_acc)) + \
         # ['with_aux'] * (len(same_type_with_aux_f1))
 
 data = pd.DataFrame({'val': all_val, 'x': all_x})
-sns.boxplot(data=data,x='x', y='val', showfliers=False, width=.5)
-plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))    
+sns.boxplot(data=data,x='x', y='val', showfliers=False, width=.3)
+# plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))    
 plt.xlabel('')
 plt.ylabel('')
 plt.savefig('same_cancer_boxplot_auxilary', dpi=300, transparent=True,bbox_inches="tight")    
@@ -120,9 +120,9 @@ all_x = ['no_aux'] * (len(diff_type_no_aux_acc)) + \
 
 data = pd.DataFrame({'val': all_val, 'x': all_x})
 
-sns.boxplot(data=data,x='x', y='val', showfliers=False, width=.5)
+sns.boxplot(data=data,x='x', y='val', showfliers=False, width=.3)
 
-plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+# plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 plt.xlabel('')
 plt.ylabel('')
 plt.savefig('diff_cancer_boxplot_auxilary', dpi=300, transparent=True,bbox_inches="tight")
