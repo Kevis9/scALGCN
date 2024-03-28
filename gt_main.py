@@ -149,6 +149,9 @@ if args.config is not None:
     # 这样做最保险，因为当前文件本身中的参数需要保留
     new_args_dict = json.load(open(args.config, 'r'))
     del new_args_dict['data_dir']
+    if 'auxilary_num' in new_args_dict.keys():
+        del new_args_dict['auxilary_num']
+    
     old_args_dict = vars(args)
     old_args_dict.update(new_args_dict)    
     args = argparse.Namespace(**old_args_dict)
@@ -233,7 +236,6 @@ if args.use_auxilary:
     auxilary_proj = proj.split('-')[2]
     if args.auxilary_num != -1:
         auxilary_proj += '_{:}'.format(args.auxilary_num)
-
 else:
     auxilary_proj = ''
 
