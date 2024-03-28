@@ -68,7 +68,7 @@ all_x = ['related'] * (len(same_type_cancer_related_acc)) + \
 
 data = pd.DataFrame({'val': all_val, 'x': all_x})
 
-sns.boxplot(data=data,x='x', y='val', showfliers=False, width=.3)
+sns.boxplot(data=data,x='x', y='val', hue='x', showfliers=False, width=.3)
 # plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))    
 plt.xlabel('')
 plt.ylabel('')
@@ -85,7 +85,7 @@ all_x = ['ref_related'] * (len(diff_type_cancer_ref_related_acc)) + \
 
 data = pd.DataFrame({'val': all_val, 'x': all_x})
 
-sns.boxplot(data=data,x='x', y='val', showfliers=False, width=.3)
+sns.boxplot(data=data,x='x', y='val', hue='x', showfliers=False, width=.3)
 # plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 plt.xlabel('')
 plt.ylabel('')
