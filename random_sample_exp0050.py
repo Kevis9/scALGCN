@@ -1,6 +1,6 @@
 import anndata as ad
 
-sample_num = ['200', '400', '600', '800', '1000']
+sample_num = [200, 400, 600, 800, 1000]
 
 adata = ad.read_h5ad('/home/hwl/raw_data/cell_states_data/EXP0050/auxilary_data.h5ad')
 
