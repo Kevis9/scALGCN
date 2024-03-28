@@ -78,9 +78,16 @@ same_type_with_aux_acc = acc_data.loc[same_type_with_aux]['GT + GL']
 same_type_no_aux_acc = acc_data.loc[same_type_no_aux]['GT + GL']
 # same_type_with_aux_f1 = f1_data.loc[same_type_with_aux]['GT + GL']
 # same_type_no_aux_f1 = f1_data.loc[same_type_no_aux]['GT + GL']
+print("相同类型with aux平均acc:{:.3f}".format(same_type_with_aux_acc.mean()))
+print("相同类型no aux平均acc:{:.3f}".format(same_type_no_aux_acc.mean()))
+
 
 diff_type_with_aux_acc = acc_data.loc[diff_type_with_aux]['GT + GL']
 diff_type_no_aux_acc = acc_data.loc[diff_type_no_aux]['GT + GL']
+
+print("不同类型with aux平均acc:{:.3f}".format(diff_type_with_aux_acc.mean()))
+print("不同类型no aux平均acc:{:.3f}".format(diff_type_no_aux_acc.mean()))
+
 # diff_type_with_aux_f1 = f1_data.loc[diff_type_with_aux]['GT + GL']
 # diff_type_no_aux_f1 = f1_data.loc[diff_type_no_aux]['GT + GL']
 
