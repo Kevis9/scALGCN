@@ -253,14 +253,10 @@ if args.use_auxilary:
 
 print("experimens {:}_{:} finished".format(first_key, second_key))
 acc_data = pd.read_csv(os.path.join('result', acc_file), index_col=0)
-# 确保第一层索引存在
-acc_data.loc[first_key] = acc_data.loc[first_key].fillna({})
-# 确保第二层索引存在
-if second_key not in acc_data.loc[first_key]:
-    acc_data.loc[first_key, second_key] = None
-# 设置第二层索引对应的值
-acc_data.at[first_key, second_key] = test_res[0]
-
+if first_key not in acc_data.index.tolist():
+    new_row = {col: '' for col in acc_data.columns}
+    acc_data.loc[first_key] = new_row
+acc_data.loc[first_key][second_key] = test_res[0]
 acc_data.to_csv(os.path.join('result', acc_file))
 
 f1_data = pd.read_csv(os.path.join('result', f1_file), index_col=0)
