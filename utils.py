@@ -314,12 +314,9 @@ def get_data_info(args, adata, n_ref, n_query):
         if args.auxilary_num != -1:
             idxs = idxs[:args.auxilary_num]           
         random.shuffle(idxs)
-        auxilary_train_size = 0.8
-        auxilary_train_num = auxilary_label.shape[0]
-        auxilary_train_idx = idxs[:int(auxilary_train_size * auxilary_train_num)]        
-        auxilary_val_idx = idxs[int(auxilary_train_size * auxilary_train_num):]                
+        auxilary_train_idx = idxs        
         data_info['auxilary_train_idx'] = auxilary_train_idx
-        data_info['auxilary_val_idx'] = auxilary_val_idx
+        
 
     # 对val_idx再做一个split
     random.shuffle(val_idx)

@@ -148,6 +148,7 @@ if args.config is not None:
     # 如果已经有了超参数文件，就直接读取    
     # 这样做最保险，因为当前文件本身中的参数需要保留
     new_args_dict = json.load(open(args.config, 'r'))
+    del new_args_dict['data_dir']
     old_args_dict = vars(args)
     old_args_dict.update(new_args_dict)    
     args = argparse.Namespace(**old_args_dict)
