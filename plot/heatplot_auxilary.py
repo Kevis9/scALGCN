@@ -48,8 +48,8 @@ def read_pred_true_label(res_path):
 
     
 result_paths = [
-    '/home/Users/kevislin/scALGCN/result/bcp3_6000-bcp2_6000-exp0050_GT + GL',    
-    '/home/Users/kevislin/scALGCN/result/bcp3_6000-bcp2_6000_GT + GL',    
+    '/home/hwl/scALGCN/result/bcp3_6000-bcp2_6000-exp0050_GT + GL',    
+    '/home/hwl/scALGCN/result/bcp3_6000-bcp2_6000_GT + GL',    
 ]
 
 methods = [

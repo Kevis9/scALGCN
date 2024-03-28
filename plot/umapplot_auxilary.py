@@ -29,8 +29,8 @@ def read_data(data_paths):
     return datas
 
 result_paths = [
-    '/home/Users/kevislin/scALGCN/result/bcp3_6000-bcp2_6000-exp0050_GT + GL',
-    '/home/Users/kevislin/scALGCN/result/bcp3_6000-bcp2_6000_GT + GL',
+    '/home/hwl/scALGCN/result/bcp3_6000-bcp2_6000-exp0050_GT + GL',
+    '/home/hwl/scALGCN/result/bcp3_6000-bcp2_6000_GT + GL',
 ]
 
 methods = [
