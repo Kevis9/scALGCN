@@ -31,12 +31,17 @@ def confusion_matrix(true_labels, pred_labels):
 
 
     classes = [label for label, _ in sorted(label_to_int.items(), key=lambda x: x[1])]
+    
+    if 'Unassigned' in classes:
+        classes.remove('Unassigned')
+    
     conf_matrix_df = pd.DataFrame(matrix, index=classes, columns=classes)
     
     true_classes = []
     for label in classes:
-        if label in true_labels:
+        if label in true_labels and label != 'Unassigned':
             true_classes.append(label)
+            
     conf_matrix_df = conf_matrix_df.loc[true_classes][:]
     
     return conf_matrix_df
