@@ -260,6 +260,9 @@ acc_data.loc[first_key][second_key] = test_res[0]
 acc_data.to_csv(os.path.join('result', acc_file))
 
 f1_data = pd.read_csv(os.path.join('result', f1_file), index_col=0)
+if first_key not in f1_data.index.tolist():
+    new_row = {col: '' for col in f1_data.columns}
+    f1_data.loc[first_key] = new_row
 f1_data.loc[first_key][second_key] = test_res[1]
 f1_data.to_csv(os.path.join('result', f1_file))
 
