@@ -74,15 +74,15 @@ diff_type_no_aux = [
 acc_data = pd.read_csv('../result/stable_acc.csv', index_col=0)
 f1_data = pd.read_csv('../result/stable_macro-f1.csv', index_col=0)
 
-same_type_with_aux_acc = acc_data.loc[same_type_with_aux]['GT + AL + GL']
-same_type_no_aux_acc = acc_data.loc[same_type_no_aux]['GT + AL + GL']
-same_type_with_aux_f1 = f1_data.loc[same_type_with_aux]['GT + AL + GL']
-same_type_no_aux_f1 = f1_data.loc[same_type_no_aux]['GT + AL + GL']
+same_type_with_aux_acc = acc_data.loc[same_type_with_aux]['GT + GL']
+same_type_no_aux_acc = acc_data.loc[same_type_no_aux]['GT + GL']
+same_type_with_aux_f1 = f1_data.loc[same_type_with_aux]['GT + GL']
+same_type_no_aux_f1 = f1_data.loc[same_type_no_aux]['GT + GL']
 
-diff_type_with_aux_acc = acc_data.loc[diff_type_with_aux]['GT + AL + GL']
-diff_type_no_aux_acc = acc_data.loc[diff_type_no_aux]['GT + AL + GL']
-diff_type_with_aux_f1 = f1_data.loc[diff_type_with_aux]['GT + AL + GL']
-diff_type_no_aux_f1 = f1_data.loc[diff_type_no_aux]['GT + AL + GL']
+diff_type_with_aux_acc = acc_data.loc[diff_type_with_aux]['GT + GL']
+diff_type_no_aux_acc = acc_data.loc[diff_type_no_aux]['GT + GL']
+diff_type_with_aux_f1 = f1_data.loc[diff_type_with_aux]['GT + GL']
+diff_type_no_aux_f1 = f1_data.loc[diff_type_no_aux]['GT + GL']
 
 # 进行相同癌症的数据整合
 all_val = same_type_no_aux_acc.tolist() + \
