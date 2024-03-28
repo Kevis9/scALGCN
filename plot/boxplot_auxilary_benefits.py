@@ -76,29 +76,29 @@ f1_data = pd.read_csv('../result/stable_macro-f1.csv', index_col=0)
 
 same_type_with_aux_acc = acc_data.loc[same_type_with_aux]['GT + GL']
 same_type_no_aux_acc = acc_data.loc[same_type_no_aux]['GT + GL']
-same_type_with_aux_f1 = f1_data.loc[same_type_with_aux]['GT + GL']
-same_type_no_aux_f1 = f1_data.loc[same_type_no_aux]['GT + GL']
+# same_type_with_aux_f1 = f1_data.loc[same_type_with_aux]['GT + GL']
+# same_type_no_aux_f1 = f1_data.loc[same_type_no_aux]['GT + GL']
 
 diff_type_with_aux_acc = acc_data.loc[diff_type_with_aux]['GT + GL']
 diff_type_no_aux_acc = acc_data.loc[diff_type_no_aux]['GT + GL']
-diff_type_with_aux_f1 = f1_data.loc[diff_type_with_aux]['GT + GL']
-diff_type_no_aux_f1 = f1_data.loc[diff_type_no_aux]['GT + GL']
+# diff_type_with_aux_f1 = f1_data.loc[diff_type_with_aux]['GT + GL']
+# diff_type_no_aux_f1 = f1_data.loc[diff_type_no_aux]['GT + GL']
 
 # 进行相同癌症的数据整合
 all_val = same_type_no_aux_acc.tolist() + \
-          same_type_with_aux_acc.tolist() + \
-          same_type_no_aux_f1.tolist() + \
-            same_type_with_aux_f1.tolist()            
-all_metric = ['acc'] * (len(same_type_no_aux_acc) + len(same_type_with_aux_acc)) + \
-             ['f1'] * (len(same_type_no_aux_f1) + len(same_type_with_aux_f1))
+          same_type_with_aux_acc.tolist() 
+        #   same_type_no_aux_f1.tolist() + \
+        #     same_type_with_aux_f1.tolist()            
+all_metric = ['acc'] * (len(same_type_no_aux_acc) + len(same_type_with_aux_acc))
+            #  ['f1'] * (len(same_type_no_aux_f1) + len(same_type_with_aux_f1))
 
 all_x = ['no_aux'] * (len(same_type_no_aux_acc)) + \
-        ['with_aux'] * (len(same_type_with_aux_acc)) + \
-        ['no_aux'] * (len(same_type_no_aux_f1)) + \
-        ['with_aux'] * (len(same_type_with_aux_f1))
+        ['with_aux'] * (len(same_type_with_aux_acc)) 
+        # ['no_aux'] * (len(same_type_no_aux_f1)) + \
+        # ['with_aux'] * (len(same_type_with_aux_f1))
 
-data = pd.DataFrame({'val': all_val, 'x': all_x, 'metric': all_metric})
-sns.boxplot(data=data,x='x', y='val', hue='metric', showfliers=False, width=.5)
+data = pd.DataFrame({'val': all_val, 'x': all_x})
+sns.boxplot(data=data,x='x', y='val', showfliers=False, width=.5)
 plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))    
 plt.xlabel('')
 plt.ylabel('')
@@ -107,20 +107,20 @@ plt.clf()
 
 # 进行不同癌症的数据整合
 all_val = diff_type_no_aux_acc.tolist() + \
-          diff_type_with_aux_acc.tolist() + \
-          diff_type_no_aux_f1.tolist() + \
-            diff_type_with_aux_f1.tolist()
-all_metric = ['acc'] * (len(diff_type_no_aux_acc) + len(diff_type_with_aux_acc)) + \
-             ['f1'] * (len(diff_type_no_aux_f1) + len(diff_type_with_aux_f1))
+          diff_type_with_aux_acc.tolist()
+        #   diff_type_no_aux_f1.tolist() + \
+        #     diff_type_with_aux_f1.tolist()
+all_metric = ['acc'] * (len(diff_type_no_aux_acc) + len(diff_type_with_aux_acc))
+            #  ['f1'] * (len(diff_type_no_aux_f1) + len(diff_type_with_aux_f1))
 
 all_x = ['no_aux'] * (len(diff_type_no_aux_acc)) + \
-        ['with_aux'] * (len(diff_type_with_aux_acc)) + \
-        ['no_aux'] * (len(diff_type_no_aux_f1)) + \
-        ['with_aux'] * (len(diff_type_with_aux_f1))
+        ['with_aux'] * (len(diff_type_with_aux_acc))
+        # ['no_aux'] * (len(diff_type_no_aux_f1)) + \
+        # ['with_aux'] * (len(diff_type_with_aux_f1))
 
-data = pd.DataFrame({'val': all_val, 'x': all_x, 'metric': all_metric})
+data = pd.DataFrame({'val': all_val, 'x': all_x})
 
-sns.boxplot(data=data,x='x', y='val', hue='metric', showfliers=False, width=.5)
+sns.boxplot(data=data,x='x', y='val', showfliers=False, width=.5)
 
 plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 plt.xlabel('')
