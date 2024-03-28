@@ -47,8 +47,9 @@ for i, path in enumerate(result_paths):
     n_ref = len(all_true) - len(query_pred)
     all_pred = all_true[:n_ref] + query_pred        
     all_emb = np.concatenate([ref_emb, query_emb], axis=0)
-    all_emb_2d = run_umap(all_emb)
+    all_emb_2d = run_umap(all_emb)    
     print(methods[i])
+    print(all_emb_2d.shape)
     print("ARI, {:.3f}, sil score {:.3f}".format(adjusted_rand_score(all_true, all_pred), silhouette_score(all_emb_2d, all_pred)))
     plot_umap(all_emb_2d, all_pred, methods[i]+'_'+'umap_pred')
     
