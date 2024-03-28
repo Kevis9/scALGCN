@@ -27,7 +27,7 @@ exp0047_projs = [
 
 all_y = acc_data.loc[exp0050_projs + exp0047_projs]['GT']   
 all_x = [200, 400, 600, 800, 1000] * 2
-all_projs = 'exp0050' * len(exp0050_projs) + 'exp0047' * len(exp0047_projs)
+all_projs = ['exp0050'] * len(exp0050_projs) + ['exp0047'] * len(exp0047_projs)
 
 res_data = pd.DataFrame({'size': all_x, 'accuracy': all_y, 'proj': all_projs})
 
