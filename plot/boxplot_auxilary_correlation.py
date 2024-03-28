@@ -45,8 +45,7 @@ diff_type_cancer_not_related = [
     "mp1_6000-bcp1_6000-exp0050",
     "bcp1_6000-pcp1_6000-exp0047",
     "pcp1_6000-bcp1_6000-exp0047",
-    "bcp1_6000-mp1_6000-exp0047",
-    "mp1_6000-bcp1_6000-exp0047"
+    "bcp1_6000-mp1_6000-exp0047",    
 ]
 
 acc_data = pd.read_csv('../result/stable_acc.csv', index_col=0)
