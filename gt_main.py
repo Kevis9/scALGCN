@@ -138,7 +138,7 @@ parser.add_argument('--bias', action='store_true',
 parser.add_argument('--config', type=str,
                     default=None,
                     help='hyperparameter setting')
-parser.add_argument('--turnoffalgsl', type=str,
+parser.add_argument('--turnoffalgsl',action='store_true',
                     default=False,
                     help='tmp 后面可以去掉')
 
