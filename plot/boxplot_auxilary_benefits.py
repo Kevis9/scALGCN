@@ -60,8 +60,7 @@ diff_type_with_aux = [
 
     'mp1_6000-bcp1_6000-exp0040',
     'mp1_6000-bcp1_6000-exp0013',
-    'mp1_6000-bcp1_6000-exp0050',
-    'mp1_6000-bcp1_6000-exp0047'
+    'mp1_6000-bcp1_6000-exp0050'    
 ]
 
 # 不同类型癌症，没有 auxilary data
