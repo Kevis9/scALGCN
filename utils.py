@@ -311,9 +311,9 @@ def get_data_info(args, adata, n_ref, n_query):
     if args.use_auxilary:
         auxilary_label = adata.uns['auxilary_label']
         idxs = [i for i in range(auxilary_label.shape[0])]
-        if args.auxilary_num != -1:
-            idxs = idxs[:args.auxilary_num]           
         random.shuffle(idxs)
+        if args.auxilary_num != -1:
+            idxs = idxs[:args.auxilary_num]                   
         auxilary_train_idx = idxs        
         data_info['auxilary_train_idx'] = auxilary_train_idx
         
