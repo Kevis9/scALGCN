@@ -495,7 +495,7 @@ def active_learning(g_data, epoch, out_prob, norm_centrality, args, data_info):
         cluster_centers = []
         all_idx = [i for i in range(g_data.ndata['x'].shape[0])]       
         all_idx = np.array(all_idx) 
-        ref_data_idx = np.setdiff1d(all_idx, np.union1d(np.union1d(data_info['train_idx'], data_info['test_idx']), data_info['val_idx']))
+        ref_data_idx = np.setdiff1d(all_idx, data_info['test_idx'])
         prob = prob[ref_data_idx]        
         y_true = g_data.ndata['y_true'].numpy()[ref_data_idx]        
         for i in set(y_true):
