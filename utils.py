@@ -484,15 +484,25 @@ def accuracy(output, labels):
     correct = correct.sum()
     return correct / len(labels)
 
-def active_learning(g_data, epoch, out_prob, norm_centrality, args, data_info):
+def active_learning(g_data, epoch, out_prob, norm_centrality, args, data_info):    
     gamma = np.random.beta(1, 1.005 - args.basef ** epoch)
     alpha = beta = (1 - gamma) / 2
     prob = out_prob
     if args.al and len(data_info['train_idx']) < data_info['max_nodes_num']:
         print("Active learning!")
         entropy = scipy.stats.entropy(prob.T)
-        kmeans = KMeans(n_clusters=data_info['class_num'], random_state=0).fit(prob)
-        ed_score = euclidean_distances(prob, kmeans.cluster_centers_)
+        # kmeans = KMeans(n_clusters=data_info['class_num'], random_state=0).fit(prob)
+        cluster_centers = []
+        all_idx = [i for i in range(g_data.ndata['x'].shape[0])]       
+        all_idx = np.array(all_idx) 
+        ref_data_idx = np.setdiff1d(all_idx, np.union1d(data_info['train_idx'], data_info['test_idx'], data_info['val_idx']))
+        prob = prob[ref_data_idx]        
+        y_true = g_data.ndata['y_true'].numpy()[ref_data_idx]        
+        for i in set(y_true):
+            cluster_centers.append(np.mean(prob[np.where(y_true == i)], axis=0))
+        cluster_centers = np.array(cluster_centers)            
+        ed_score = euclidean_distances(prob, cluster_centers)        
+        # ed_score = euclidean_distances(prob, kmeans.cluster_centers_)
         density = np.min(ed_score, axis=1)
         # entropy和density的norm: 计算样本中的百分位数（因为只需要比较样本之间的分数即可）
         norm_entropy = np.array([perc_for_entropy(entropy, i) for i in range(len(entropy))])

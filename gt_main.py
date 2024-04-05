@@ -156,7 +156,7 @@ if args.config is not None:
     old_args_dict.update(new_args_dict)    
     args = argparse.Namespace(**old_args_dict)
 
-    # 这里是对已读取的超参数文件进行配置，此处运行 gsl+al+auxilary
+    # 这里是对已读取的超参数文件进行配置，此处跑gsl+al+auxilary
     args.use_auxilary = True
     args.is_auxilary = True        
     args.al = True
@@ -239,6 +239,8 @@ if args.use_auxilary:
 else:
     auxilary_proj = ''
 
+with open('config/{:}-{:}-{:}_acc_{:.3f}.json'.format(ref_proj, query_proj, auxilary_proj, test_res[0]), 'w') as f:
+    json.dump(vars(args), f)
     
 second_key = 'GT'
 
@@ -253,10 +255,6 @@ if args.use_auxilary:
     first_key += ('-' + auxilary_proj)
 
 print("experimens {:}_{:} finished".format(first_key, second_key))
-
-with open('config/{:}-{:}-{:}_{:}_acc_{:.3f}.json'.format(ref_proj, query_proj, auxilary_proj, second_key, test_res[0]), 'w') as f:    
-    json.dump(vars(args), f)
-
 acc_data = pd.read_csv(os.path.join('result', acc_file), index_col=0)
 if first_key not in acc_data.index.tolist():
     new_row = {col: '' for col in acc_data.columns}

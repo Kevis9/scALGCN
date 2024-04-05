@@ -124,7 +124,8 @@ class ProGNN:
             
             if args.al and not args.is_auxilary:
                 # will change outer data_info (the parameter is reference)
-                active_learning(g_data=g_data,
+                active_learning(
+                                g_data=g_data,
                                 epoch=epoch,
                                 out_prob=prob,
                                 norm_centrality=norm_centrality,
