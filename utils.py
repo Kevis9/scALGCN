@@ -508,10 +508,10 @@ def active_learning(g_data, epoch, out_prob, norm_centrality, args, data_info):
         norm_entropy = np.array([perc_for_entropy(entropy, i) for i in range(len(entropy))])
         norm_density = np.array([perc_for_density(density, i) for i in range(len(density))])
         norm_centrality = norm_centrality.squeeze()
-        finalweight = alpha * norm_entropy + beta * norm_density + gamma * norm_centrality
+        finalweight = alpha * norm_entropy[ref_data_idx] + beta * norm_density + gamma * norm_centrality[ref_data_idx]
 
         # 把train, val, test的数据排除, 从剩余的label budget里面获取节点
-        finalweight[data_info['train_idx'] + data_info['test_idx'] + data_info['val_idx']] = -100
+        finalweight[data_info['train_idx'] + data_info['val_idx']] = -100
         select_arr = np.argpartition(finalweight, -args.k_select)[-args.k_select:]
         for node_idx in select_arr:
             data_info['train_idx'].append(node_idx)
