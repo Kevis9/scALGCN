@@ -147,6 +147,8 @@ class ProGNN:
 
         # Testing
         print("picking the best model according to validation performance")
+        print("train set now has {:}".format(len(self.data_info['train_idx'])))
+        
         if args.best_save:
             self.model.load_state_dict(self.weights)
 
