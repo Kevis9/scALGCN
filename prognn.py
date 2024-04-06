@@ -131,7 +131,8 @@ class ProGNN:
                                 norm_centrality=norm_centrality,
                                 args=self.args,
                                 data_info=self.data_info)
-                    
+                print("train set now has {:}".format(len(self.data_info['train_idx'])))
+                
             # auxilary model不需要GL
             if args.gsl and not args.is_auxilary:
                 if epoch % args.gt_interval == 0 or args.gt_interval == 0:
@@ -146,8 +147,7 @@ class ProGNN:
         print("Total time elapsed: {:.4f}s".format(time.time() - t_total))                
 
         # Testing
-        print("picking the best model according to validation performance")
-        print("train set now has {:}".format(len(self.data_info['train_idx'])))
+        print("picking the best model according to validation performance")        
         
         if args.best_save:
             self.model.load_state_dict(self.weights)
