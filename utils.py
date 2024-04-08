@@ -516,11 +516,10 @@ def active_learning(g_data, epoch, out_prob, norm_centrality, args, data_info):
         finalweight[data_info['train_idx'] + data_info['val_idx']] = -100
         select_arr = np.argpartition(finalweight, -args.k_select)[-args.k_select:]
         for node_idx in select_arr:
-            data_info['train_idx'].append(node_idx)
-            # 注意y_predict是tensor
-            # g_data.ndata['y_predict'][node_idx] = g_data.ndata['y_true'][node_idx]
-            if (args.debug):
-                print("Epoch {:}: pick up {:} node to the training set!".format(epoch, args.k_select))
+            if node_idx not in data_info['train_idx']:
+                data_info['train_idx'].append(node_idx)
+                if (args.debug):
+                    print("Epoch {:}: pick up {:} node to the training set!".format(epoch, args.k_select))
 
 
 def construct_graph_with_knn(data, k=5):
