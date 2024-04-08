@@ -303,7 +303,9 @@ def get_data_info(args, adata, n_ref, n_query):
     # if the task is cell type prediction, we can use random stratify sample
     train_idx, val_idx = random_stratify_sample(ref_label, train_size=0.8)
                             
-    # 按照论文，train label一开始每个类别设置成4个, 剩余的training node作为label budget里面的一部分
+    print("initial train idx:{:}".format(len(train_idx)))
+    print("class num is {:}".format(len(np.unique(ref_label))))
+    
     train_idx_for_active_learning = random_stratify_sample_with_train_idx(ref_label,
                                                                 train_idx=train_idx,
                                                                 init_num_per_class=args.init_num_per_class)        
