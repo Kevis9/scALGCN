@@ -174,10 +174,18 @@ main <- function(ref_data_dir,
     colnames(norm.ref_data) = paste("cell_", 1:ncol(norm.ref_data), sep = "")
     colnames(norm.query_data) = paste("cell_", 1:ncol(norm.query_data), sep = "")
     
-    
-
     # save selected genes
     write.csv(sel.features, file=paste(paste(base_path, 'data' , 'selected_genes_middle.csv', sep='/')))
+        
+    norm.auxilary_data = NULL
+    # 加入auxilary data逻辑的判断，这里考虑到cross platform没有auxilaray data
+    if (has_auxilary) {
+        sel.auxilary_data = auxilary_data[sel.features, ]
+        norm.auxilary_data = normalize_data(sel.auxilary_data)
+        colnames(norm.auxilary_data) = paste("cell_", 1:ncol(norm.auxilary_data), sep = "")        
+        s.norm.auxilary_data <- Matrix(norm.auxilary_data, sparse = TRUE)
+        writeMM(s.norm.auxilary_data, auxilary_save_path)    
+    }
     
     graphs <- suppressWarnings(GenerateGraph(Dat1=norm.ref_data,Dat2=norm.query_data,Dat3=norm.auxilary_data,
                                                  Lab1=ref_label,K=10,has_auxilary
@@ -186,21 +194,16 @@ main <- function(ref_data_dir,
 
     write.csv(graphs[[1]],file=paste(paste(base_path, 'data' , 'inter_graph.csv', sep='/')), quote=F,row.names=T)
     write.csv(graphs[[2]],file=paste(paste(base_path, 'data' , 'intra_graph.csv', sep='/')),quote=F,row.names=T)        
+    if (has_auxilary) {
+        write.csv(graphs[[3]],file=paste(paste(base_path, 'data' , 'auxilary_graph.csv', sep='/')),quote=F,row.names=T)    
+    }
     
     # save sparse matrix
     s.norm.ref_data <- Matrix(norm.ref_data, sparse = TRUE)
     s.norm.query_data <- Matrix(norm.query_data, sparse = TRUE)    
     
     writeMM(s.norm.ref_data, ref_save_path)
-    writeMM(s.norm.query_data, query_save_path)
-    if (has_auxilary) {
-        sel.auxilary_data = auxilary_data[sel.features, ]
-        norm.auxilary_data = normalize_data(sel.auxilary_data)
-        colnames(norm.auxilary_data) = paste("cell_", 1:ncol(norm.auxilary_data), sep = "")
-        write.csv(graphs[[3]],file=paste(paste(base_path, 'data' , 'auxilary_graph.csv', sep='/')),quote=F,row.names=T)    
-        s.norm.auxilary_data <- Matrix(norm.auxilary_data, sparse = TRUE)
-        writeMM(s.norm.auxilary_data, auxilary_save_path)    
-    }
+    writeMM(s.norm.query_data, query_save_path)    
     
 }
 
