@@ -23,6 +23,10 @@ for i, method in enumerate(methods):
     query_true = pd.read_csv(os.path.join('result', proj, method, 'query_true.csv')).to_numpy()
     acc = accuracy_score(query_pred, query_true)
     f1_macro = f1_score(query_true, query_pred, average='macro')    
+    if proj not in acc_data.index.tolist():
+        new_row = {col: '' for col in acc_data.columns}
+        acc_data.loc[proj] = new_row
+    
     acc_data.loc[proj][method]=acc
     f1_data.loc[proj][method]=f1_macro
 
