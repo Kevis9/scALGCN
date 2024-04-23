@@ -182,6 +182,10 @@ print("silhoutte score is {:.3f}".format(sil))
 print("ARI is {:.3f}".format(ari))
 
 scgcn_res = pd.read_csv('scgcn_res.csv', index_col=0)
+if FLAGS.proj not in scgcn_res.index.tolist():
+    new_row = {col: '' for col in scgcn_res.columns}
+    scgcn_res.loc[FLAGS.proj] = new_row
+    
 scgcn_res.loc[FLAGS.proj]['acc'] = acc
 scgcn_res.loc[FLAGS.proj]['f1'] = macrof1
 scgcn_res.loc[FLAGS.proj]['sil'] = sil
