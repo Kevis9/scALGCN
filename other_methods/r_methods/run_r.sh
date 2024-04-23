@@ -33,6 +33,6 @@ length=${#projs[@]}
 
 for ((i = 0; i < length; i++)); do
    python h5_adaptor.py --dir_name=/home/Users/kevislin/scALGCN/experiments/${dir_name[i]} --proj=${projs[i]}
-   Rscript r_methods.R /home/Users/kevislin/scALGCN/experiments/${dir_name[i]} ${projs[i]}
+   Rscript r_methods.R /home/hwl/scALGCN/experiments/${dir_name[i]} ${projs[i]}
    python decoder.py --proj=${projs[i]}
 done

@@ -98,12 +98,12 @@ test_loss = []
 # Train model
 
 # configurate checkpoint directory to save intermediate model training weights
-saver = tf.train.Saver()
-save_dir = 'checkpoints/'
-if not os.path.exists(save_dir):
-    os.makedirs(save_dir)
+# saver = tf.train.Saver()
+# save_dir = 'checkpoints/'
+# if not os.path.exists(save_dir):
+#     os.makedirs(save_dir)
 
-save_path = os.path.join(save_dir, 'best_validation')
+# save_path = os.path.join(save_dir, 'best_validation')
 
 for epoch in range(FLAGS.epochs):
     t = time.time()
@@ -131,7 +131,7 @@ for epoch in range(FLAGS.epochs):
     #                                               test_mask, placeholders)
     # test_accuracy.append(test_acc)
     # test_loss.append(test_cost)
-    saver.save(sess=sess, save_path=save_path)
+    # saver.save(sess=sess, save_path=save_path)
     print("Epoch:", '%04d' % (epoch + 1), "train_loss=",
           "{:.5f}".format(outs[1]), "train_acc=", "{:.5f}".format(outs[2]),
           "val_loss=", "{:.5f}".format(cost), "val_acc=", "{:.5f}".format(acc),
@@ -185,7 +185,7 @@ scgcn_res = pd.read_csv('scgcn_res.csv', index_col=0)
 if FLAGS.proj not in scgcn_res.index.tolist():
     new_row = {col: '' for col in scgcn_res.columns}
     scgcn_res.loc[FLAGS.proj] = new_row
-    
+
 scgcn_res.loc[FLAGS.proj]['acc'] = acc
 scgcn_res.loc[FLAGS.proj]['f1'] = macrof1
 scgcn_res.loc[FLAGS.proj]['sil'] = sil
@@ -200,14 +200,16 @@ all_preds = pd.DataFrame(data=preds, columns=['cell_type'])
 
 # embeddings_2d = pd.DataFrame(data=data_2d, columns=['x', 'y'])
 # query_embeddings_2d = pd.DataFrame(data=data_2d[pred_mask], columns=['x', 'y'])
+save_path = 'result' + '/' + FLAGS.proj + '/'
+if not os.path.exists(save_path):
+    os.makedirs(save_path)
 
 query_trues.to_csv(os.path.join(save_path, 'query_labels.csv'), index=False)
 query_preds.to_csv(os.path.join(save_path, 'query_preds.csv'), index=False)
 query_prob.to_csv(os.path.join(save_path, 'query_prob.csv'), index=False)
 all_preds.to_csv(os.path.join(save_path, 'all_preds.csv'), index=False)
-
-np.save('all_embeddings.npy', activation_output)
-np.save('query_embeddings.npy', activation_output[pred_mask])
+np.save(os.path.join(save_path, 'all_embeddings.npy'), activation_output)
+np.save(os.path.join(save_path, 'query_embeddings.npy'), activation_output[pred_mask])
 
 print("finish")
 
