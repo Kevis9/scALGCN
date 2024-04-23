@@ -1,5 +1,5 @@
 suppressPackageStartupMessages(library(Seurat))
-suppressPackageStartupMessages(library(CHETAH))
+# suppressPackageStartupMessages(library(CHETAH)) // CHETAH不支持 R4.1 直接删除
 suppressPackageStartupMessages(library(SingleR))
 suppressPackageStartupMessages(library(scmap))
 # suppressPackageStartupMessages(library(conos))
@@ -423,7 +423,7 @@ query_label = data[[4]]
     
 save_labels(query_label,proj, "seurat")
 save_labels(query_label,proj, "scmap")    
-save_labels(query_label,proj, "chetah")
+# save_labels(query_label,proj, "chetah")
 save_labels(query_label, proj, "singler")
 
 print("数据读取完成")
@@ -431,8 +431,8 @@ print("数据读取完成")
 acc = c(
     main(data, 'seurat', proj),
     main(data, 'singler', proj),
-    main(data, 'scmap', proj),
-    main(data, 'chetah', proj)
+    main(data, 'scmap', proj)
+    # main(data, 'chetah', proj)
 )
 acc = as.matrix(acc)
 print(acc)
