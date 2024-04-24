@@ -1,98 +1,13 @@
 #!/bin/bash
 
 dir_name=(
-    "bcp1_6000-bcp2_6000-exp0013" \
-    "bcp2_6000-bcp3_6000-exp0013" \
-    "bcp1_6000-pcp1_6000-exp0013" \
-    "bcp1_6000-mp1_6000-exp0013" \
-    "bcp2_6000-bcp1_6000-exp0013" \
-    "bcp3_6000-bcp1_6000-exp0013" \
-    "bcp3_6000-bcp2_6000-exp0013" \
-    "pcp1_6000-bcp1_6000-exp0013" \
-    "mp1_6000-bcp1_6000-exp0013" \
-    "bcp1_6000-bcp3_6000-exp0013" \
-    "celseq-10xv3" \
-    "celseq-dropseq" \
-    "celseq-indrop" \
-    "celseq-seqwell" \
-    "celseq-smartseq" \
-    "10xv3-celseq" \
-    "10xv3-dropseq" \
-    "10xv3-indrop" \
-    "10xv3-seqwell" \
-    "10xv3-smartseq" \
-    "dropseq-celseq" \
-    "dropseq-10xv3" \
-    "dropseq-indrop" \
-    "dropseq-seqwell" \
-    "dropseq-smartseq" \
-    "indrop-celseq" \
-    "indrop-10xv3" \
-    "indrop-dropseq" \
-    "indrop-seqwell" \
-    "indrop-smartseq" \
-    "seqwell-celseq" \
-    "seqwell-10xv3" \
-    "seqwell-dropseq" \
-    "seqwell-indrop" \
-    "seqwell-smartseq" \
-    "smartseq-celseq" \
-    "smartseq-10xv3" \
-    "smartseq-dropseq" \
-    "smartseq-indrop" \
-    "smartseq-seqwell" \
-    "mouse-human" \
-    "human-mouse" \
-    "mouse-humancombine" \
-    "humancombine-mouse"
-    
+    "mp1_6000-pcp1_6000-exp0050" \
+    "pcp1_6000-mp1_6000-exp0050"     
 )
 
 projs=(
-    "bcp1_6000-bcp2_6000" \
-    "bcp2_6000-bcp3_6000" \
-    "bcp1_6000-pcp1_6000" \
-    "bcp1_6000-mp1_6000" \
-    "bcp2_6000-bcp1_6000" \
-    "bcp3_6000-bcp1_6000" \
-    "bcp3_6000-bcp2_6000" \
-    "pcp1_6000-bcp1_6000" \
-    "mp1_6000-bcp1_6000" \
-    "bcp1_6000-bcp3_6000" \
-    "celseq-10xv3" \
-    "celseq-dropseq" \
-    "celseq-indrop" \
-    "celseq-seqwell" \
-    "celseq-smartseq" \
-    "10xv3-celseq" \
-    "10xv3-dropseq" \
-    "10xv3-indrop" \
-    "10xv3-seqwell" \
-    "10xv3-smartseq" \
-    "dropseq-celseq" \
-    "dropseq-10xv3" \
-    "dropseq-indrop" \
-    "dropseq-seqwell" \
-    "dropseq-smartseq" \
-    "indrop-celseq" \
-    "indrop-10xv3" \
-    "indrop-dropseq" \
-    "indrop-seqwell" \
-    "indrop-smartseq" \
-    "seqwell-celseq" \
-    "seqwell-10xv3" \
-    "seqwell-dropseq" \
-    "seqwell-indrop" \
-    "seqwell-smartseq" \
-    "smartseq-celseq" \
-    "smartseq-10xv3" \
-    "smartseq-dropseq" \
-    "smartseq-indrop" \
-    "smartseq-seqwell" \
-    "mouse-human" \
-    "human-mouse" \
-    "mouse-humancombine" \
-    "humancombine-mouse"
+    "mp1_6000-pcp1_6000" \
+    "pcp1_6000-mp1_6000"
 )
 
 # 获取数组长度
