@@ -5,6 +5,7 @@ suppressPackageStartupMessages(library(scmap))
 # suppressPackageStartupMessages(library(conos))
 suppressPackageStartupMessages(library(pagoda2))
 suppressPackageStartupMessages(library(Matrix))
+suppressPackageStartupMessages(library(SingleCellExperiment))
 
 read_data <- function(path) {
     # return matrix    
