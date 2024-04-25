@@ -27,6 +27,10 @@ for i, method in enumerate(methods):
         new_row = {col: '' for col in acc_data.columns}
         acc_data.loc[proj] = new_row
     
+    if proj not in f1_data.index.tolist():
+        new_row = {col: '' for col in f1_data.columns}
+        f1_data.loc[proj] = new_row
+    
     acc_data.loc[proj][method]=acc
     f1_data.loc[proj][method]=f1_macro
 
