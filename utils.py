@@ -233,13 +233,13 @@ def get_anndata(args):
 
 
 def load_data(args, use_auxilary=True):
-    if os.path.exists(os.path.join(args.data_dir, 'all_data.h5ad')):
-        adata = ad.read_h5ad(os.path.join(args.data_dir, 'all_data.h5ad'))
-        n_ref = adata.uns['n_ref']
-        n_query = adata.uns['n_query']
-    else:
-        # 数据准备
-        adata, n_ref, n_query = get_anndata(args=args)    
+    # if os.path.exists(os.path.join(args.data_dir, 'all_data.h5ad')):
+    #     adata = ad.read_h5ad(os.path.join(args.data_dir, 'all_data.h5ad'))
+    #     n_ref = adata.uns['n_ref']
+    #     n_query = adata.uns['n_query']
+    # else:
+    # 数据准备
+    adata, n_ref, n_query = get_anndata(args=args)    
     
     # if not 'edge_index_knn' in adata.uns:
     adata.uns['edge_index_knn'] = construct_graph_with_knn(adata.X.toarray())
