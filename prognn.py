@@ -442,6 +442,7 @@ class EstimateAdj(nn.Module):
             采用伯努利采样来进行0-1映射
         '''        
         edge_probs = self.estimated_adj
+        torch.manual_seed(32)
         adj = torch.distributions.Bernoulli(edge_probs).sample()                
         # STE                    
         adj = (adj - edge_probs).detach() + edge_probs

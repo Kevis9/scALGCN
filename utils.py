@@ -367,8 +367,8 @@ def train(model, g_data, data_info, config):
     # # 已选取的节点数目
 
     max_val_acc = 0
-    tolerance_epoch = 0
-        
+    tolerance_epoch = 0        
+    np.random.seed(20)
     for epoch in range(config['para_config']['epochs']):
         gamma = np.random.beta(1, 1.005 - config['para_config']['basef'] ** epoch)
         alpha = beta = (1 - gamma) / 2
@@ -487,6 +487,7 @@ def accuracy(output, labels):
     return correct / len(labels)
 
 def active_learning(g_data, epoch, out_prob, norm_centrality, args, data_info):    
+    
     gamma = np.random.beta(1, 1.005 - args.basef ** epoch)
     alpha = beta = (1 - gamma) / 2
     prob = out_prob
