@@ -188,7 +188,7 @@ class ProGNN:
         # deactivates dropout during validation run.
         self.model.eval()
         output = self.model(adj, features)
-
+        
         loss_val = criterion(output[val_idx], labels[val_idx])
         if args.is_auxilary:
             if loss_val < self.best_val_loss:
@@ -200,6 +200,7 @@ class ProGNN:
         else:            
             acc_val = accuracy(output[val_idx], labels[val_idx])
             acc_test = accuracy(output[test_idx], labels[test_idx])
+            f1_test = f1_score(output[test_idx], labels[test_idx], average='macro')
             if acc_val > self.best_val_acc:
                 self.best_val_acc = acc_val
                 self.best_graph = adj
@@ -219,6 +220,7 @@ class ProGNN:
                         'loss_val: {:.4f}'.format(loss_val.item()),
                         'acc_val: {:.4f}'.format(acc_val.item()),
                         'acc_test：{:.4f}'.format(acc_test.item()),
+                        'acc_f1:{:.4f}'.format(f1_test),
                         'time: {:.4f}s'.format(time.time() - t))
                 
         self.model_optimizer.zero_grad() # 清除缓存
