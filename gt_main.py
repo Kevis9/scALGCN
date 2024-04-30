@@ -219,7 +219,6 @@ test_res = prognn.test(features=g_data.ndata['x'].to(device),
                        labels=g_data.ndata['y_true'].to(device))
 
 
-print("acc is {:.3f}".format(test_res[0]))
 
 old_adj = g_data.adj_external(scipy_fmt='csr')
 new_adj = test_res[3]
@@ -268,6 +267,9 @@ if first_key not in f1_data.index.tolist():
     f1_data.loc[first_key] = new_row
 f1_data.loc[first_key][second_key] = test_res[1]
 f1_data.to_csv(os.path.join('result', f1_file))
+
+print("acc is {:.3f}".format(test_res[0]))
+print("f1 is {:.3f}".format(test_res[1]))
 
 # save query_true.csv, query_predict.csv
 ref_true = data_info['label_encoder'].inverse_transform(g_data.ndata['y_true'].numpy()[:adata.uns['n_ref']])
