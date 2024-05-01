@@ -207,7 +207,7 @@ type_model = GTModel(args=args,
 
 if args.use_auxilary:
     auxilary_embeddings = auxilary_model.get_embeddings(g_data=g_data, args=args)
-    auxilary_output = auxilary_model.pred_cellstates(features=g_data.ndata['x'].to(device), 
+    auxilary_output = auxilary_model_prognn.pred_cellstates(features=g_data.ndata['x'].to(device), 
                                                     adj=g_data.adj).detach().cpu().numpy()
         
     
