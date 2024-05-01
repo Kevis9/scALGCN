@@ -200,7 +200,7 @@ class ProGNN:
         else:            
             acc_val = accuracy(output[val_idx], labels[val_idx])
             acc_test = accuracy(output[test_idx], labels[test_idx])
-            f1_test = f1_score(output[test_idx].detach().cpu().numpy(), labels[test_idx].detach().cpu().numpy(), average='macro')
+            f1_test = f1_score(torch.argmax(output[test_idx], dim=1).cpu().numpy(), labels[test_idx].detach().cpu().numpy(), average='macro')            
             if acc_val > self.best_val_acc:
                 self.best_val_acc = acc_val
                 self.best_graph = adj
