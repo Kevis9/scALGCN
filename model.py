@@ -142,6 +142,29 @@ class GTModel(nn.Module):
         
         return h
     
+    def pred_cellstates(self, g_data, args):
+        self.eval()                        
+        A = g_data.adj().to_dense().to(device)
+        features = g_data.ndata['x'].to(device)    
+        if args.add_pos_enc: 
+            pos_enc = g_data.ndata['PE'].to(device)
+        N = features.shape[0] # N * feature_dim        
+        # A = dglsp.spmatrix(indices, shape=(N, N))                        
+        h = self.h_embedding(features)     
+        h1 = h       
+        if args.add_pos_enc:
+            h = h + self.pos_linear(pos_enc)
+        
+        for layer in self.layers:
+            h = layer(A, h)
+
+        if self.residual:
+            h = h1 + h
+        
+        h = self.predictor(h)
+        
+        return h
+    
     def set_state_embeddings(self, embeddings):
         self.state_embeddings = embeddings.detach()     
 
