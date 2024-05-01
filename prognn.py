@@ -325,7 +325,17 @@ class ProGNN:
                       'loss_total: {:.4f}'.format(total_loss.item()),
                       'loss_nuclear: {:.4f}'.format(loss_nuclear.item()))
 
-
+    def pred_cellstates(self, features, adj):
+        if self.args.is_auxilary:
+            print("\t=== predicting cell states ===")
+            """
+                Predict cell states
+            """                        
+            with torch.no_grad():
+                output = self.model(adj, features)
+            return output            
+            
+        
     def test(self, features, idx_test, labels):
         """
             Evaluate the performance of ProGNN on test set
