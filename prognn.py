@@ -200,7 +200,7 @@ class ProGNN:
         else:            
             acc_val = accuracy(output[val_idx], labels[val_idx])
             acc_test = accuracy(output[test_idx], labels[test_idx])
-            f1_test = f1_score(output[test_idx], labels[test_idx], average='macro')
+            f1_test = f1_score(output[test_idx].cpu().numpy(), labels[test_idx].cpu().numpy(), average='macro')
             if acc_val > self.best_val_acc:
                 self.best_val_acc = acc_val
                 self.best_graph = adj
