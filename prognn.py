@@ -121,8 +121,8 @@ class ProGNN:
                                 epoch=epoch,
                                 criterion=criterion)
                             
-            
-            if args.al and not args.is_auxilary:
+            # 预留10个epoch去学习
+            if args.al and not args.is_auxilary and epoch < args.al_epochs - 10:
                 # will change outer data_info (the parameter is reference)
                 active_learning(
                                 g_data=g_data,
