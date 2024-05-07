@@ -197,6 +197,7 @@ if args.use_auxilary:
     auxilary_model_prognn.fit(g_data=auxilary_g_data)
     torch.cuda.empty_cache() # release memory
 
+
 '''
  ========= For cell type prediction ========= 
 '''
@@ -211,6 +212,11 @@ if args.use_auxilary:
     auxilary_output = auxilary_model.pred_cellstates(g_data=g_data, args=args).detach().cpu().numpy()
     
     
+    print("auxilary label distribution is:")
+    label = np.argmax(auxilary_output, axis=1)
+    # 打印label的分布
+    print(np.unique(label, return_counts=True))
+    exit()
     type_model.set_state_embeddings(auxilary_embeddings)
 
 
