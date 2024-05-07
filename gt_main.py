@@ -198,22 +198,6 @@ if args.use_auxilary:
     torch.cuda.empty_cache() # release memory
 
 '''
-    验证细胞状态预测的可行性
-'''
-state_true_label = auxilary_g_data.ndata['y_true'].numpy()
-state_pred_label = auxilary_model.pred_cellstates(g_data=auxilary_g_data, args=auxilary_args).detach().cpu().numpy()
-# 取最大的作为state label
-state_pred_label = np.argmax(state_pred_label, axis=1)
-state_acc = np.mean(state_true_label == state_pred_label)
-print("state acc is {:.3f}".format(state_acc))
-
-typedata_pred_state_label = auxilary_model.pred_cellstates(g_data=g_data, args=args).detach().cpu().numpy()
-# 打印分布
-typedata_pred_state_label = np.argmax(typedata_pred_state_label, axis=1)
-print("cell state distribution is:")
-print(pd.Series(typedata_pred_state_label).value_counts())
-exit()
-'''
  ========= For cell type prediction ========= 
 '''
 args.is_auxilary = False
