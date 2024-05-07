@@ -98,10 +98,10 @@ class ProGNN:
             val_idx = self.data_info['val_idx']
         
         
-        if args.is_auxilary:
-            criterion = torch.nn.MSELoss()
-        else:            
-            criterion = torch.nn.CrossEntropyLoss()
+        # if args.is_auxilary:
+        #     criterion = torch.nn.MSELoss()
+        # else:            
+        criterion = torch.nn.CrossEntropyLoss()
             
         # Train model
         t_total = time.time()
@@ -187,10 +187,12 @@ class ProGNN:
         # Evaluate validation set performance separately,
         # deactivates dropout during validation run.
         self.model.eval()
-        output = self.model(adj, features)
+        output = self.model(adj, features)        
         
         loss_val = criterion(output[val_idx], labels[val_idx])
+
         if args.is_auxilary:
+            acc_train = accuracy(output[train_idx], labels[train_idx])
             if loss_val < self.best_val_loss:
                 self.best_val_loss = loss_val
                 self.best_graph = adj
@@ -211,7 +213,7 @@ class ProGNN:
             if args.is_auxilary:          
                 print('Epoch: {:04d}'.format(epoch+1),
                         'loss_train: {:.4f}'.format(loss_train.item()),
-                        'loss_val: {:.4f}'.format(loss_val.item()),
+                        'acc_train: {:.4f}'.format(acc_train.item()),
                         'time: {:.4f}s'.format(time.time() - t))
             else:
                 print('Epoch: {:04d}'.format(epoch+1),

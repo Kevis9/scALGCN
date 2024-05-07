@@ -208,10 +208,8 @@ state_pred_label = np.argmax(state_pred_label, axis=1)
 state_acc = np.mean(state_true_label == state_pred_label)
 print("state acc is {:.3f}".format(state_acc))
 # 打印true label的分布
-state_true_label = pd.Series(state_true_label)
-print(state_true_label.value_counts())
-
-exit()
+# state_true_label = pd.Series(state_true_label)
+# print(state_true_label.value_counts())
 '''
  ========= For cell type prediction ========= 
 '''

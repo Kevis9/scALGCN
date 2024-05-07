@@ -347,7 +347,9 @@ def get_auxilary_g_data(adata):
     src, dst = adata.uns['auxilary_edge_index_knn'][0], adata.uns['auxilary_edge_index_knn'][1]
     g_data = dgl.graph((src, dst), num_nodes=adata.uns['auxilary_data'].shape[0])
     g_data.ndata['x'] = torch.tensor(adata.uns['auxilary_data'], dtype=torch.float)
-    g_data.ndata['y_true'] = torch.tensor(adata.uns['auxilary_label'], dtype=torch.float)
+    if adata.uns['auxilary_label'].shape[1] > 1:
+        # 获取到最大的作为下标
+        g_data.ndata['y_true'] = torch.tensor(np.argmax(adata.uns['auxilary_label'], axis=1), dtype=torch.long)        
     return g_data
 
 
