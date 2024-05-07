@@ -203,13 +203,16 @@ if args.use_auxilary:
 state_true_label = auxilary_g_data.ndata['y_true'].numpy()
 state_pred_label = auxilary_model.pred_cellstates(g_data=auxilary_g_data, args=auxilary_args).detach().cpu().numpy()
 # 取最大的作为state label
-state_true_label = np.argmax(state_true_label, axis=1)
 state_pred_label = np.argmax(state_pred_label, axis=1)
 state_acc = np.mean(state_true_label == state_pred_label)
 print("state acc is {:.3f}".format(state_acc))
-# 打印true label的分布
-# state_true_label = pd.Series(state_true_label)
-# print(state_true_label.value_counts())
+
+typedata_pred_state_label = auxilary_model.pred_cellstates(g_data=g_data, args=args).detach().cpu().numpy()
+# 打印分布
+typedata_pred_state_label = np.argmax(typedata_pred_state_label, axis=1)
+print("cell state distribution is:")
+print(pd.Series(typedata_pred_state_label).value_counts())
+exit()
 '''
  ========= For cell type prediction ========= 
 '''
