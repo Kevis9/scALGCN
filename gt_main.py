@@ -157,7 +157,7 @@ if args.config is not None:
     args = argparse.Namespace(**old_args_dict)
 
     # 这里是对已读取的超参数文件进行配置，此处跑gsl+al+auxilary
-    args.use_auxilary = True
+    args.use_auxilary = False
     args.is_auxilary = True        
     args.al = True
     args.gsl = True

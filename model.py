@@ -142,6 +142,31 @@ class GTModel(nn.Module):
         
         return h
     
+    def get_classifier_embeddings(self, g_data, args):
+        self.eval()                
+        # 这里edge_index 变成 torch.tensor([[srt...], [dst...]])                                  
+        # edge_index = torch.stack(g_data.edges())
+        # indices = edge_index.to(device)        
+        A = g_data.adj().to_dense().to(device)
+        features = g_data.ndata['x'].to(device)    
+        if args.add_pos_enc: 
+            pos_enc = g_data.ndata['PE'].to(device)
+        N = features.shape[0] # N * feature_dim        
+        # A = dglsp.spmatrix(indices, shape=(N, N))                        
+        h = self.h_embedding(features)            
+        if args.add_pos_enc:
+            h = h + self.pos_linear(pos_enc)
+        
+        for layer in self.layers:
+            h = layer(A, h)
+
+        if not args.is_auxilary and args.use_auxilary and self.state_embeddings is not None:
+            h = h + self.state_embeddings
+
+        h = self.predictor(h)    
+        return h
+    
+
     def pred_cellstates(self, g_data, args):
         self.eval()                        
         A = g_data.adj().to_dense().to(device)
