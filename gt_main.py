@@ -157,7 +157,7 @@ if args.config is not None:
     args = argparse.Namespace(**old_args_dict)
 
     # 这里是对已读取的超参数文件进行配置，此处跑gsl+al+auxilary
-    args.use_auxilary = False
+    args.use_auxilary = True
     args.is_auxilary = True        
     args.al = True
     args.gsl = True
@@ -302,7 +302,7 @@ if args.use_auxilary:
     cell_states_score = pd.DataFrame(auxilary_output, columns=cell_states)
     cell_states_score.to_csv(os.path.join(exp_save_path, 'cell_states_score.csv'), index=False)
     
-ref_query_embeddings = type_model.get_embeddings(g_data=g_data, args=args).detach().cpu().numpy()
+ref_query_embeddings = type_model.get_classifier_embeddings(g_data=g_data, args=args).detach().cpu().numpy()
 ref_embeddings = ref_query_embeddings[:adata.uns['n_ref']]
 query_embeddings = ref_query_embeddings[adata.uns['n_ref']:]
 
