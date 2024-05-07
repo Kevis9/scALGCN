@@ -197,6 +197,21 @@ if args.use_auxilary:
     torch.cuda.empty_cache() # release memory
 
 '''
+    验证细胞状态预测的可行性
+'''
+state_true_label = auxilary_g_data.ndata['y_true'].numpy()
+state_pred_label = auxilary_model_prognn.pred_cellstates(g_data=auxilary_g_data, args=auxilary_args).detach().cpu().numpy()
+# 取最大的作为state label
+state_true_label = np.argmax(state_true_label, axis=1)
+state_pred_label = np.argmax(state_pred_label, axis=1)
+state_acc = np.mean(state_true_label == state_pred_label)
+print("state acc is {:.3f}".format(state_acc))
+# 打印true label的分布
+state_true_label = pd.Series(state_true_label)
+state_true_label = state_true_label.value_counts()
+
+exit()
+'''
  ========= For cell type prediction ========= 
 '''
 args.is_auxilary = False
@@ -308,4 +323,3 @@ query_embeddings = ref_query_embeddings[adata.uns['n_ref']:]
 
 np.save(os.path.join(exp_save_path, 'ref_embeddings.npy'), ref_embeddings)
 np.save(os.path.join(exp_save_path, 'query_embeddings.npy'), query_embeddings)
-
