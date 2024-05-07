@@ -184,6 +184,7 @@ print("data path is {:}, \n ref_data num: {:}, \nquery_data num :{:}, \n auxilar
 if args.use_auxilary:        
     # auxilary model no need: AL and GL
     auxilary_args = copy.copy(args)
+    auxilary_args.epochs = 200
     auxilary_args.al = False
     auxilary_args.updated_adj = False
     auxilary_model = GTModel(args=auxilary_args,                    
@@ -208,7 +209,7 @@ state_acc = np.mean(state_true_label == state_pred_label)
 print("state acc is {:.3f}".format(state_acc))
 # 打印true label的分布
 state_true_label = pd.Series(state_true_label)
-state_true_label = state_true_label.value_counts()
+print(state_true_label.value_counts())
 
 exit()
 '''
