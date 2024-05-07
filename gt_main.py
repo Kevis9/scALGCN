@@ -210,13 +210,12 @@ type_model = GTModel(args=args,
 if args.use_auxilary:
     auxilary_embeddings = auxilary_model.get_embeddings(g_data=g_data, args=args)
     auxilary_output = auxilary_model.pred_cellstates(g_data=g_data, args=args).detach().cpu().numpy()
-    
-    
+        
     print("auxilary label distribution is:")
     label = np.argmax(auxilary_output, axis=1)
     # 打印label的分布
     print(np.unique(label, return_counts=True))
-    exit()
+
     type_model.set_state_embeddings(auxilary_embeddings)
 
 
@@ -307,6 +306,10 @@ if args.use_auxilary:
     np.save(os.path.join(exp_save_path, 'auxilary_embeddings.npy'), auxilary_embeddings.detach().cpu().numpy())    
     cell_states = ['Angiogenesis', 'Apoptosis', 'CellCycle', 'Differentiation', 'DNAdamage', 'DNArepair', 'EMT', 'Hypoxia', 'Inflammation', 'Invasion', 'Metastasis', 'Proliferation', 'Quiescence', 'Stemness']    
     cell_states_score = pd.DataFrame(auxilary_output, columns=cell_states)
+    print("auxilary label distribution is:")
+    label = np.argmax(auxilary_output, axis=1)
+    # 打印label的分布
+    print(np.unique(label, return_counts=True))    
     cell_states_score.to_csv(os.path.join(exp_save_path, 'cell_states_score.csv'), index=False)
     
 ref_query_embeddings = type_model.get_classifier_embeddings(g_data=g_data, args=args).detach().cpu().numpy()
