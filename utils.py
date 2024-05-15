@@ -328,14 +328,18 @@ def get_data_info(args, adata, n_ref, n_query):
     ration = 0.5
     data_info['val_idx'] = val_idx[:int(len(val_idx) * 0.5)]
     data_info['gt_idx'] = val_idx[int(len(val_idx) * 0.5):]
-    
     data_info['test_idx'] = [i + n_ref for i in range(n_query)]
-    
-    if args.al:
-        data_info['train_idx'] = train_idx_for_active_learning        
+    # 记录主动学习选取的节点
+    data_info['selected_idx'] = []
+    if args.train_idx:
+        data_info['train_idx'] = np.load(args.train_idx).tolist()
     else:
-        data_info['train_idx'] = train_idx        
-
+        if args.al:
+            data_info['train_idx'] = train_idx_for_active_learning        
+        else:
+            data_info['train_idx'] = train_idx     
+       
+    
     data_info['class_num'] = len(np.unique(adata.obs['cell_type'].to_numpy()))
     # 回归任务也需要知道label的dim
     if args.use_auxilary:
@@ -410,6 +414,7 @@ def active_learning(g_data, epoch, out_prob, norm_centrality, args, data_info):
         for node_idx in select_arr:
             if node_idx not in data_info['train_idx']:
                 data_info['train_idx'].append(node_idx)
+                data_info['selected_idx'].append(node_idx)
                 if (args.debug):
                     print("Epoch {:}: pick up {:} node to the training set!".format(epoch, args.k_select))
 
