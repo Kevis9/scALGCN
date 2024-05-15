@@ -142,7 +142,12 @@ parser.add_argument('--turnoffalgsl',action='store_true',
                     default=False,
                     help='tmp 后面可以去掉')
 
-
+# 定义一个train_idx, 方便主动学习消融实验
+# 这里需要给出npy文件的路径
+parser.add_argument('--train_idx', type=str,action='store',
+                    default='',
+                    help='train index path')
+                    
 args = parser.parse_args()
 if args.config is not None:
     # 如果已经有了超参数文件，就直接读取    
@@ -318,3 +323,5 @@ query_embeddings = ref_query_embeddings[adata.uns['n_ref']:]
 
 np.save(os.path.join(exp_save_path, 'ref_embeddings.npy'), ref_embeddings)
 np.save(os.path.join(exp_save_path, 'query_embeddings.npy'), query_embeddings)
+np.save(os.path.join(exp_save_path, 'train_idx.npy'), np.array(data_info['train_idx']))
+np.save(os.path.join(exp_save_path, 'selected_idx.npy'), np.array(data_info['selected_idx']))
